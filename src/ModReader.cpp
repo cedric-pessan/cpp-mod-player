@@ -16,6 +16,7 @@ namespace mods
    std::unique_ptr<ModReader> ModReader::buildReader()
      {
         std::cout << "TODO: ModReader::buildReader" << std::endl;
+        return std::unique_ptr<ModReader>(nullptr);
      }
    
    ModReader::~ModReader()
