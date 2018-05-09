@@ -9,7 +9,8 @@ namespace mods
 {
    enum struct ModFormat
      {
-        Unknown
+        WAV,
+        UNKNOWN
      };
    
    class ModReader

@@ -24,7 +24,7 @@ int main(int argc, char** argv)
    std::transform(format.begin(), format.end(), format.begin(), ::tolower);
    
    auto fmt = mods::ModReader::parseFormat(format);
-   if(fmt == mods::ModFormat::Unknown) 
+   if(fmt == mods::ModFormat::UNKNOWN) 
      {
         std::cout << "unknown format:" << format << std::endl;
         return 0;

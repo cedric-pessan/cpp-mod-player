@@ -8,8 +8,10 @@ namespace mods
    // static
    ModFormat ModReader::parseFormat(const std::string& format)
      {
-        std::cout << "TODO: ModReader::parseFormat" << std::endl;
-        return ModFormat::Unknown;
+        if(format == "wav") 
+          return ModFormat::WAV;
+        
+        return ModFormat::UNKNOWN;
      }
    
    // static
