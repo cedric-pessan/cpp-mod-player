@@ -1,5 +1,6 @@
 
 #include "ModuleReader.hpp"
+#include "SoundPlayer.hpp"
 
 #include <iostream>
 #include <algorithm>
@@ -36,6 +37,9 @@ int main(int argc, char** argv)
         std::cout << "could not initialize reader for " << filename << std::endl;
         return 0;
      }
+   
+   auto player = std::make_unique<SoundPlayer>();
+   player->play();
    
    return 0;
 }

@@ -11,4 +11,5 @@ endif()
 
 add_executable(modreader src/main.cpp
                          src/ModuleReader.cpp
+                         src/SoundPlayer.cpp
                          src/WavReader.cpp)
