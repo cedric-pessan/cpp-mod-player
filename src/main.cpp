@@ -1,5 +1,5 @@
 
-#include "ModReader.hpp"
+#include "ModuleReader.hpp"
 
 #include <iostream>
 #include <algorithm>
@@ -23,14 +23,14 @@ int main(int argc, char** argv)
    std::string format = filename.substr(dotIdx+1);
    std::transform(format.begin(), format.end(), format.begin(), ::tolower);
    
-   auto fmt = mods::ModReader::parseFormat(format);
-   if(fmt == mods::ModFormat::UNKNOWN) 
+   auto fmt = mods::ModuleReader::parseFormat(format);
+   if(fmt == mods::ModuleFormat::UNKNOWN) 
      {
         std::cout << "unknown format:" << format << std::endl;
         return 0;
      }
    
-   std::unique_ptr<mods::ModReader> reader = mods::ModReader::buildReader();
+   std::unique_ptr<mods::ModuleReader> reader = mods::ModuleReader::buildReader(fmt);
    if(!reader)
      {
         std::cout << "could not initialize reader for " << filename << std::endl;
