@@ -36,13 +36,17 @@ namespace mods
      }
    
    ModuleReader::ModuleReader()
+     : _valid(true)
      {
-        std::cout << "TODO: ModuleReader::ModuleReader()" << std::endl;
      }
    
    ModuleReader::~ModuleReader()
      {
-        std::cout << "TODO: ModReader::~ModReader()" << std::endl;
+     }
+   
+   bool ModuleReader::isValid() const
+     {
+        return _valid;
      }
    
 }
