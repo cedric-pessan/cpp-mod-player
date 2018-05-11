@@ -9,7 +9,13 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
+Find_Package(SDL REQUIRED)
+
+include_directories(${SDL_INCLUDE_DIR})
+
 add_executable(modreader src/main.cpp
                          src/ModuleReader.cpp
                          src/SoundPlayer.cpp
                          src/WavReader.cpp)
+
+target_link_libraries(modreader ${SDL_LIBRARY})
