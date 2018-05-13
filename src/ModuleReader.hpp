@@ -21,8 +21,6 @@ namespace mods
         static ModuleFormat parseFormat(const std::string& format);
         static std::unique_ptr<ModuleReader> buildReader(ModuleFormat format);
         
-        bool isValid() const;
-        
       protected:
         ModuleReader();
         
@@ -30,7 +28,19 @@ namespace mods
         ModuleReader(const ModuleReader&);
         ModuleReader& operator=(const ModuleReader&);
         
-        bool _valid;
+        class ModuleReaderInitException : public std::exception
+          {
+           public:
+             ModuleReaderInitException(const ModuleReaderInitException&);
+             virtual ~ModuleReaderInitException();
+             virtual const char* what() const noexcept override;
+             
+           private:
+             ModuleReaderInitException();
+             ModuleReaderInitException& operator=(const ModuleReaderInitException&);
+             
+             const std::string _reason;
+          };
      };
    
 }

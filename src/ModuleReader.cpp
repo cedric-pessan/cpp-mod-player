@@ -19,24 +19,25 @@ namespace mods
    std::unique_ptr<ModuleReader> ModuleReader::buildReader(ModuleFormat format)
      {
         std::unique_ptr<ModuleReader> reader;
-        switch(format) 
+        try
           {
-           case ModuleFormat::WAV:
-             reader = std::make_unique<WavReader>();
-             break;
-           case ModuleFormat::UNKNOWN:
-             // keep null reader
-             break;
+             switch(format) 
+               {
+                case ModuleFormat::WAV:
+                  reader = std::make_unique<WavReader>();
+                  break;
+                case ModuleFormat::UNKNOWN:
+                  // keep null reader
+                  break;
+               }
           }
-        if(reader && !reader->isValid()) 
+        catch(ModuleReaderInitException ex)
           {
-             return std::unique_ptr<ModuleReader>(nullptr);
           }
         return reader;
      }
    
    ModuleReader::ModuleReader()
-     : _valid(true)
      {
      }
    
@@ -44,9 +45,18 @@ namespace mods
      {
      }
    
-   bool ModuleReader::isValid() const
+   ModuleReader::ModuleReaderInitException::ModuleReaderInitException(const ModuleReaderInitException& ex)
+     : std::exception(ex),
+     _reason(ex._reason)
      {
-        return _valid;
      }
    
+   ModuleReader::ModuleReaderInitException::~ModuleReaderInitException()
+     {
+     }
+   
+   const char* ModuleReader::ModuleReaderInitException::what() const noexcept
+     {
+        return _reason.c_str();
+     }
 }
