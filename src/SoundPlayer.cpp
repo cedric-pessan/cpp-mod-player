@@ -36,6 +36,7 @@ namespace mods
    
    SoundPlayer::~SoundPlayer()
      {
+        SDL_CloseAudio();
         SDL_Quit();
      }
    
