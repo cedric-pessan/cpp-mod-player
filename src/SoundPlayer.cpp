@@ -1,8 +1,10 @@
 
 #include "SoundPlayer.hpp"
+#include "ModuleReader.hpp"
 
 #include <iostream>
 #include <SDL.h>
+#include <memory>
 
 namespace mods
 {
@@ -45,9 +47,23 @@ namespace mods
         if(!condition) throw SoundPlayerInitException(description);
      }
    
-   void SoundPlayer::play()
+   void SoundPlayer::play(const std::shared_ptr<ModuleReader>& reader)
      {
-        std::cout << "TODO: SoundPlayer::play()" << std::endl;
+        addReaderToPlayList();
+        SDL_PauseAudio(0);
+        reader->waitUntilFinished();
+        SDL_PauseAudio(1);
+        removeOldestReaderFromPlayList();
+     }
+   
+   void SoundPlayer::addReaderToPlayList()
+     {
+        std::cout << "TODO: SoundPlayer::addReaderToPlayList()" << std::endl;
+     }
+   
+   void SoundPlayer::removeOldestReaderFromPlayList()
+     {
+        std::cout << "TODO: SoundPlyaer::removeOldestReaderFromPlayList()" << std::endl;
      }
    
    SoundPlayer::SoundPlayerInitException::SoundPlayerInitException(const std::string& reason)

@@ -3,9 +3,11 @@
 
 #include <exception>
 #include <string>
+#include <memory>
 
 namespace mods
 {
+   class ModuleReader;
    
    class SoundPlayer
      {
@@ -13,13 +15,15 @@ namespace mods
         SoundPlayer();
         ~SoundPlayer();
         
-        void play();
+        void play(const std::shared_ptr<ModuleReader>& reader);
         
       private:
         SoundPlayer(const SoundPlayer&);
         SoundPlayer& operator=(const SoundPlayer&);
         
         void check_init(bool condition, const std::string& description);
+        void addReaderToPlayList();
+        void removeOldestReaderFromPlayList();
         
         class SoundPlayerInitException : public std::exception
           {

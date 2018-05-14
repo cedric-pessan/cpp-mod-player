@@ -31,7 +31,7 @@ int main(int argc, char** argv)
         return 0;
      }
    
-   std::unique_ptr<mods::ModuleReader> reader = mods::ModuleReader::buildReader(fmt);
+   std::shared_ptr<mods::ModuleReader> reader(std::move(mods::ModuleReader::buildReader(fmt)));
    if(!reader)
      {
         std::cout << "could not initialize reader for " << filename << std::endl;
@@ -39,7 +39,7 @@ int main(int argc, char** argv)
      }
    
    auto player = std::make_unique<mods::SoundPlayer>();
-   player->play();
+   player->play(reader);
    
    return 0;
 }
