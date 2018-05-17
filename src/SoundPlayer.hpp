@@ -15,7 +15,7 @@ namespace mods
         SoundPlayer();
         ~SoundPlayer();
         
-        void play(const std::shared_ptr<ModuleReader>& reader);
+        void play(const std::unique_ptr<ModuleReader>& reader);
         
       private:
         SoundPlayer(const SoundPlayer&);

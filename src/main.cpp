@@ -31,7 +31,7 @@ int main(int argc, char** argv)
         return 0;
      }
    
-   std::shared_ptr<mods::ModuleReader> reader(std::move(mods::ModuleReader::buildReader(fmt)));
+   auto reader = mods::ModuleReader::buildReader(fmt);
    if(!reader)
      {
         std::cout << "could not initialize reader for " << filename << std::endl;

@@ -47,7 +47,7 @@ namespace mods
         if(!condition) throw SoundPlayerInitException(description);
      }
    
-   void SoundPlayer::play(const std::shared_ptr<ModuleReader>& reader)
+   void SoundPlayer::play(const std::unique_ptr<ModuleReader>& reader)
      {
         addReaderToPlayList();
         SDL_PauseAudio(0);
