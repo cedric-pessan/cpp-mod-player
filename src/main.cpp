@@ -38,8 +38,8 @@ int main(int argc, char** argv)
         return 0;
      }
    
-   auto player = std::make_unique<mods::SoundPlayer>();
-   player->play(reader);
+   mods::SoundPlayer player;
+   player.play(reader);
    
    return 0;
 }
