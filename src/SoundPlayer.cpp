@@ -51,7 +51,7 @@ namespace mods
      {
         addReaderToPlayList();
         SDL_PauseAudio(0);
-        reader->waitUntilFinished();
+        waitUntilFinished();
         SDL_PauseAudio(1);
         removeOldestReaderFromPlayList();
      }
@@ -64,6 +64,11 @@ namespace mods
    void SoundPlayer::removeOldestReaderFromPlayList()
      {
         std::cout << "TODO: SoundPlyaer::removeOldestReaderFromPlayList()" << std::endl;
+     }
+   
+   void SoundPlayer::waitUntilFinished()
+     {
+        std::cout << "TODO: SoundPlayer::waitUntilFinished()" << std::endl;
      }
    
    SoundPlayer::SoundPlayerInitException::SoundPlayerInitException(const std::string& reason)

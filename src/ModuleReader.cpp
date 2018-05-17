@@ -45,11 +45,6 @@ namespace mods
      {
      }
    
-   void ModuleReader::waitUntilFinished()
-     {
-        std::cout << "TODO: ModuleReader::waitUnitFinished()" << std::endl;
-     }
-   
    ModuleReader::ModuleReaderInitException::ModuleReaderInitException(const ModuleReaderInitException& ex)
      : std::exception(ex),
      _reason(ex._reason)

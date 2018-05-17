@@ -24,6 +24,7 @@ namespace mods
         void check_init(bool condition, const std::string& description);
         void addReaderToPlayList();
         void removeOldestReaderFromPlayList();
+        void waitUntilFinished();
         
         class SoundPlayerInitException : public std::exception
           {

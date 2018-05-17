@@ -21,8 +21,6 @@ namespace mods
         static ModuleFormat parseFormat(const std::string& format);
         static std::unique_ptr<ModuleReader> buildReader(ModuleFormat format);
         
-        void waitUntilFinished();
-        
       protected:
         ModuleReader();
         
