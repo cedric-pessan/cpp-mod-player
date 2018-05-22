@@ -4,6 +4,8 @@
 #include <exception>
 #include <string>
 #include <memory>
+#include <mutex>
+#include <deque>
 
 namespace mods
 {
@@ -15,16 +17,20 @@ namespace mods
         SoundPlayer();
         ~SoundPlayer();
         
-        void play(const std::unique_ptr<ModuleReader>& reader);
+        void play(std::unique_ptr<ModuleReader> reader);
         
       private:
         SoundPlayer(const SoundPlayer&);
         SoundPlayer& operator=(const SoundPlayer&);
         
         void check_init(bool condition, const std::string& description);
-        void addReaderToPlayList();
+        std::shared_ptr<std::mutex> addReaderToPlayList(std::unique_ptr<ModuleReader> reader);
         void removeOldestReaderFromPlayList();
-        void waitUntilFinished();
+        void waitUntilFinished(const std::shared_ptr<std::mutex>& entryMutex);
+        
+        typedef std::pair<std::unique_ptr<ModuleReader>, std::shared_ptr<std::mutex>> SynchronizedReader;
+        std::mutex _playListMutex;
+        std::deque<SynchronizedReader> _playList;
         
         class SoundPlayerInitException : public std::exception
           {

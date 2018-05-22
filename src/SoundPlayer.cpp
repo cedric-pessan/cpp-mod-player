@@ -5,6 +5,7 @@
 #include <iostream>
 #include <SDL.h>
 #include <memory>
+#include <mutex>
 
 namespace mods
 {
@@ -47,18 +48,22 @@ namespace mods
         if(!condition) throw SoundPlayerInitException(description);
      }
    
-   void SoundPlayer::play(const std::unique_ptr<ModuleReader>& reader)
+   void SoundPlayer::play(std::unique_ptr<ModuleReader> reader)
      {
-        addReaderToPlayList();
+        auto entryMutex = addReaderToPlayList(std::move(reader));
         SDL_PauseAudio(0);
-        waitUntilFinished();
+        waitUntilFinished(entryMutex);
         SDL_PauseAudio(1);
         removeOldestReaderFromPlayList();
      }
    
-   void SoundPlayer::addReaderToPlayList()
+   std::shared_ptr<std::mutex> SoundPlayer::addReaderToPlayList(std::unique_ptr<ModuleReader> reader)
      {
-        std::cout << "TODO: SoundPlayer::addReaderToPlayList()" << std::endl;
+        std::lock_guard<std::mutex> lock(_playListMutex);
+        SynchronizedReader r(std::move(reader), std::make_shared<std::mutex>());
+        r.second->lock(); // we will unlock in callback when read is finished
+        _playList.push_back(std::move(r));
+        return _playList.back().second;
      }
    
    void SoundPlayer::removeOldestReaderFromPlayList()
@@ -66,9 +71,9 @@ namespace mods
         std::cout << "TODO: SoundPlyaer::removeOldestReaderFromPlayList()" << std::endl;
      }
    
-   void SoundPlayer::waitUntilFinished()
+   void SoundPlayer::waitUntilFinished(const std::shared_ptr<std::mutex>& entryMutex)
      {
-        std::cout << "TODO: SoundPlayer::waitUntilFinished()" << std::endl;
+        entryMutex->lock();
      }
    
    SoundPlayer::SoundPlayerInitException::SoundPlayerInitException(const std::string& reason)

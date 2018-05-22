@@ -39,7 +39,7 @@ int main(int argc, char** argv)
      }
    
    mods::SoundPlayer player;
-   player.play(reader);
+   player.play(std::move(reader));
    
    return 0;
 }
