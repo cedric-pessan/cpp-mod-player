@@ -50,20 +50,20 @@ namespace mods
    
    void SoundPlayer::play(ModuleReader::ptr reader)
      {
-        auto entryMutex = addReaderToPlayList(std::move(reader));
+        auto& entry = addReaderToPlayList(std::move(reader));
         SDL_PauseAudio(0);
-        waitUntilFinished(entryMutex);
+        waitUntilFinished(entry);
         SDL_PauseAudio(1);
         removeOldestReaderFromPlayList();
      }
    
-   std::shared_ptr<std::mutex> SoundPlayer::addReaderToPlayList(ModuleReader::ptr reader)
+   const SoundPlayer::SynchronizedReader& SoundPlayer::addReaderToPlayList(ModuleReader::ptr reader)
      {
         std::lock_guard<std::mutex> lock(_playListMutex);
         SynchronizedReader r(std::move(reader), std::make_shared<std::mutex>());
         r.second->lock(); // we will unlock in callback when read is finished
         _playList.push_back(std::move(r));
-        return _playList.back().second;
+        return _playList.back();
      }
    
    void SoundPlayer::removeOldestReaderFromPlayList()
@@ -71,9 +71,9 @@ namespace mods
         std::cout << "TODO: SoundPlyaer::removeOldestReaderFromPlayList()" << std::endl;
      }
    
-   void SoundPlayer::waitUntilFinished(const std::shared_ptr<std::mutex>& entryMutex)
+   void SoundPlayer::waitUntilFinished(const SynchronizedReader& entry)
      {
-        entryMutex->lock();
+        entry.second->lock();
      }
    
    SoundPlayer::SoundPlayerInitException::SoundPlayerInitException(const std::string& reason)

@@ -23,14 +23,14 @@ namespace mods
         SoundPlayer(const SoundPlayer&);
         SoundPlayer& operator=(const SoundPlayer&);
         
-        void check_init(bool condition, const std::string& description);
-        std::shared_ptr<std::mutex> addReaderToPlayList(ModuleReader::ptr reader);
-        void removeOldestReaderFromPlayList();
-        void waitUntilFinished(const std::shared_ptr<std::mutex>& entryMutex);
-        
         typedef std::pair<ModuleReader::ptr, std::shared_ptr<std::mutex>> SynchronizedReader;
         std::mutex _playListMutex;
         std::deque<SynchronizedReader> _playList;
+        
+        void check_init(bool condition, const std::string& description);
+        const SynchronizedReader& addReaderToPlayList(ModuleReader::ptr reader);
+        void removeOldestReaderFromPlayList();
+        void waitUntilFinished(const SynchronizedReader& entry);
         
         class SoundPlayerInitException : public std::exception
           {
