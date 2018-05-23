@@ -1,6 +1,8 @@
 #ifndef _SOUNDPLAYER_HPP_
 #define _SOUNDPLAYER_HPP_
 
+#include "ModuleReader.hpp"
+
 #include <exception>
 #include <string>
 #include <memory>
@@ -9,26 +11,24 @@
 
 namespace mods
 {
-   class ModuleReader;
-   
    class SoundPlayer
      {
       public:
         SoundPlayer();
         ~SoundPlayer();
         
-        void play(std::unique_ptr<ModuleReader> reader);
+        void play(ModuleReader::ptr reader);
         
       private:
         SoundPlayer(const SoundPlayer&);
         SoundPlayer& operator=(const SoundPlayer&);
         
         void check_init(bool condition, const std::string& description);
-        std::shared_ptr<std::mutex> addReaderToPlayList(std::unique_ptr<ModuleReader> reader);
+        std::shared_ptr<std::mutex> addReaderToPlayList(ModuleReader::ptr reader);
         void removeOldestReaderFromPlayList();
         void waitUntilFinished(const std::shared_ptr<std::mutex>& entryMutex);
         
-        typedef std::pair<std::unique_ptr<ModuleReader>, std::shared_ptr<std::mutex>> SynchronizedReader;
+        typedef std::pair<ModuleReader::ptr, std::shared_ptr<std::mutex>> SynchronizedReader;
         std::mutex _playListMutex;
         std::deque<SynchronizedReader> _playList;
         

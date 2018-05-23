@@ -16,10 +16,12 @@ namespace mods
    class ModuleReader
      {
       public:
+        typedef std::unique_ptr<ModuleReader> ptr;
+        
         virtual ~ModuleReader();
         
         static ModuleFormat parseFormat(const std::string& format);
-        static std::unique_ptr<ModuleReader> buildReader(ModuleFormat format);
+        static ModuleReader::ptr buildReader(ModuleFormat format);
         
       protected:
         ModuleReader();

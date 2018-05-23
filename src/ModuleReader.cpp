@@ -16,9 +16,9 @@ namespace mods
      }
    
    // static
-   std::unique_ptr<ModuleReader> ModuleReader::buildReader(ModuleFormat format)
+   ModuleReader::ptr ModuleReader::buildReader(ModuleFormat format)
      {
-        std::unique_ptr<ModuleReader> reader;
+        ModuleReader::ptr reader;
         try
           {
              switch(format) 

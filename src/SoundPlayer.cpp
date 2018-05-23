@@ -48,7 +48,7 @@ namespace mods
         if(!condition) throw SoundPlayerInitException(description);
      }
    
-   void SoundPlayer::play(std::unique_ptr<ModuleReader> reader)
+   void SoundPlayer::play(ModuleReader::ptr reader)
      {
         auto entryMutex = addReaderToPlayList(std::move(reader));
         SDL_PauseAudio(0);
@@ -57,7 +57,7 @@ namespace mods
         removeOldestReaderFromPlayList();
      }
    
-   std::shared_ptr<std::mutex> SoundPlayer::addReaderToPlayList(std::unique_ptr<ModuleReader> reader)
+   std::shared_ptr<std::mutex> SoundPlayer::addReaderToPlayList(ModuleReader::ptr reader)
      {
         std::lock_guard<std::mutex> lock(_playListMutex);
         SynchronizedReader r(std::move(reader), std::make_shared<std::mutex>());
