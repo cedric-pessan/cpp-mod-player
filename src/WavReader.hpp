@@ -12,6 +12,8 @@ namespace mods
         WavReader();
         virtual ~WavReader();
         
+        virtual bool isFinished() override;
+        
       private:
         WavReader(const WavReader&);
         WavReader& operator=(const WavReader&);

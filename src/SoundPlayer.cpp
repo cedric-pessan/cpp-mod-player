@@ -76,7 +76,21 @@ namespace mods
    
    void SoundPlayer::callback()
      {
-        std::cout << "TODO: SoundPlayer::callback()" << std::endl;
+        std::lock_guard<std::mutex> lock(_playListMutex);
+        for(auto& entry : _playList) 
+          {
+             auto& reader = entry.first;
+             if(!reader->isFinished())
+               {
+                  std::cout << "TODO: SoundPlayer::callback() something to fill" << std::endl;
+                  
+                  if(reader->isFinished())
+                    std::cout << "TODO: SoundPlayer::callback() everything was played we should unlock caller" << std::endl;
+                  
+                  return;
+               }
+          }
+        std::cout << "TODO: SoundPlayer::callback() nothing to play, we should 0 volume" << std::endl;
      }
    
    SoundPlayer::SoundPlayerInitException::SoundPlayerInitException(const std::string& reason)

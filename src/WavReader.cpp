@@ -14,4 +14,10 @@ namespace mods
      {
      }
    
+   bool WavReader::isFinished()
+     {
+        std::cout << "TODO: WavReader::isFinished()" << std::endl;
+        return false;
+     }
+   
 }
