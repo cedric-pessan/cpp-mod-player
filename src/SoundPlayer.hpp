@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <deque>
+#include <SDL.h>
 
 namespace mods
 {
@@ -31,6 +32,9 @@ namespace mods
         const SynchronizedReader& addReaderToPlayList(ModuleReader::ptr reader);
         void removeOldestReaderFromPlayList();
         void waitUntilFinished(const SynchronizedReader& entry);
+        
+        static void s_ccallback(void* udata, Uint8* stream, int len);
+        void callback();
         
         class SoundPlayerInitException : public std::exception
           {

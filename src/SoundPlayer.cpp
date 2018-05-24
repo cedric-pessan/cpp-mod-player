@@ -10,14 +10,12 @@
 namespace mods
 {
    
-   namespace
+   extern "C"
      {
-        extern "C"
+        void SoundPlayer::s_ccallback(void* udata, Uint8* stream, int len)
           {
-             void s_ccallback(void* udata, Uint8* stream, int len)
-               {
-                  std::cout << "TODO: audio callback" << std::endl;
-               }
+             SoundPlayer* sp = static_cast<SoundPlayer*>(udata);
+             sp->callback();
           }
      }
    
@@ -74,6 +72,11 @@ namespace mods
    void SoundPlayer::waitUntilFinished(const SynchronizedReader& entry)
      {
         entry.second->lock();
+     }
+   
+   void SoundPlayer::callback()
+     {
+        std::cout << "TODO: SoundPlayer::callback()" << std::endl;
      }
    
    SoundPlayer::SoundPlayerInitException::SoundPlayerInitException(const std::string& reason)
