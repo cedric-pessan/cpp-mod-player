@@ -8,16 +8,16 @@ namespace mods
    
    WavReader::WavReader()
      {
+        _converter = std::make_unique<WavConverter>();
      }
    
    WavReader::~WavReader()
      {
      }
    
-   bool WavReader::isFinished()
+   bool WavReader::isFinished() const
      {
-        std::cout << "TODO: WavReader::isFinished()" << std::endl;
-        return false;
+        return _converter->isFinished();
      }
    
 }

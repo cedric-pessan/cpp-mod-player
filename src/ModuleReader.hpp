@@ -20,7 +20,7 @@ namespace mods
         
         virtual ~ModuleReader();
         
-        virtual bool isFinished() = 0;
+        virtual bool isFinished() const = 0;
         
         static ModuleFormat parseFormat(const std::string& format);
         static ModuleReader::ptr buildReader(ModuleFormat format);
