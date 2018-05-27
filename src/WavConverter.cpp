@@ -5,6 +5,14 @@
 
 namespace mods
 {
+   // static
+   WavConverter::ptr WavConverter::buildConverter(int bitsPerSample)
+     {
+        std::cout << "TODO: WavConverter:: bitsPerSample: " << bitsPerSample << std::endl;
+        
+        std::cout << "TODO: WavConverter::buildConverter()" << std::endl;
+        return nullptr;
+     }
    
    WavConverter::WavConverter()
      {
@@ -13,11 +21,4 @@ namespace mods
    WavConverter::~WavConverter()
      {
      }
-   
-   bool WavConverter::isFinished() const
-     {
-        std::cout << "TODO: WavConverter::isFinished()" << std::endl;
-        return false;
-     }
-
 }

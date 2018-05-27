@@ -8,7 +8,7 @@ namespace mods
    
    WavReader::WavReader()
      {
-        _converter = std::make_unique<WavConverter>();
+        _converter = WavConverter::buildConverter(_headerBuffer->bitsPerSample);
      }
    
    WavReader::~WavReader()

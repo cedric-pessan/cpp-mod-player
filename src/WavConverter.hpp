@@ -10,10 +10,12 @@ namespace mods
       public:
         typedef std::unique_ptr<WavConverter> ptr;
         
+        static ptr buildConverter(int bitsPerSample);
+        
         WavConverter();
         virtual ~WavConverter();
         
-        bool isFinished() const;
+        virtual bool isFinished() const = 0;
         
       private:
         WavConverter(const WavConverter&);
