@@ -18,8 +18,8 @@ namespace mods
         virtual bool isFinished() const = 0;
         
       private:
-        WavConverter(const WavConverter&);
-        WavConverter& operator=(const WavConverter&);
+        WavConverter(const WavConverter&) = delete;
+        WavConverter& operator=(const WavConverter&) = delete;
      };
 }
 

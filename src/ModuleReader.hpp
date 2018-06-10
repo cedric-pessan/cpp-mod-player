@@ -29,8 +29,8 @@ namespace mods
         ModuleReader();
         
       private:
-        ModuleReader(const ModuleReader&);
-        ModuleReader& operator=(const ModuleReader&);
+        ModuleReader(const ModuleReader&) = delete;
+        ModuleReader& operator=(const ModuleReader&) = delete;
         
         class ModuleReaderInitException : public std::exception
           {
@@ -40,8 +40,8 @@ namespace mods
              virtual const char* what() const noexcept override;
              
            private:
-             ModuleReaderInitException();
-             ModuleReaderInitException& operator=(const ModuleReaderInitException&);
+             ModuleReaderInitException() = delete;
+             ModuleReaderInitException& operator=(const ModuleReaderInitException&) = delete;
              
              const std::string _reason;
           };

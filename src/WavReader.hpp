@@ -39,6 +39,7 @@ namespace mods
         WavReader& operator=(const WavReader&);
         
         WavConverter::ptr _converter;
+        RBuffer<u8> _fileBuffer;
         RBuffer<WavHeader> _headerBuffer;
      };
    

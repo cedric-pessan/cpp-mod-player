@@ -17,6 +17,8 @@ add_executable(modreader src/main.cpp
                          src/ModuleReader.cpp
                          src/SoundPlayer.cpp
                          src/WavConverter.cpp
-                         src/WavReader.cpp)
+                         src/WavReader.cpp
+                         src/Buffer.cpp
+                         src/FileUtils.cpp)
 
 target_link_libraries(modreader ${SDL_LIBRARY})

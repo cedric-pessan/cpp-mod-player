@@ -21,8 +21,8 @@ namespace mods
         void play(ModuleReader::ptr reader);
         
       private:
-        SoundPlayer(const SoundPlayer&);
-        SoundPlayer& operator=(const SoundPlayer&);
+        SoundPlayer(const SoundPlayer&) = delete;
+        SoundPlayer& operator=(const SoundPlayer&) = delete;
         
         typedef std::pair<ModuleReader::ptr, std::shared_ptr<std::mutex>> SynchronizedReader;
         std::mutex _playListMutex;
@@ -45,8 +45,8 @@ namespace mods
              virtual const char* what() const noexcept override;
              
            private:
-             SoundPlayerInitException();
-             SoundPlayerInitException& operator=(const SoundPlayerInitException&);
+             SoundPlayerInitException() = delete;
+             SoundPlayerInitException& operator=(const SoundPlayerInitException&) = delete;
              
              std::string _reason;
           };
