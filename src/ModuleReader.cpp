@@ -16,7 +16,7 @@ namespace mods
      }
    
    // static
-   ModuleReader::ptr ModuleReader::buildReader(ModuleFormat format)
+   ModuleReader::ptr ModuleReader::buildReader(ModuleFormat format, const std::string& filename)
      {
         ModuleReader::ptr reader;
         try
@@ -24,7 +24,7 @@ namespace mods
              switch(format) 
                {
                 case ModuleFormat::WAV:
-                  reader = std::make_unique<WavReader>();
+                  reader = std::make_unique<WavReader>(filename);
                   break;
                 case ModuleFormat::UNKNOWN:
                   // keep null reader

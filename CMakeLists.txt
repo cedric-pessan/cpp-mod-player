@@ -13,12 +13,15 @@ Find_Package(SDL REQUIRED)
 
 include_directories(${SDL_INCLUDE_DIR})
 
+set(SRCS_UNIX src/impl/unix/FileUtils.cpp)
+
 add_executable(modreader src/main.cpp
                          src/ModuleReader.cpp
                          src/SoundPlayer.cpp
                          src/WavConverter.cpp
                          src/WavReader.cpp
                          src/Buffer.cpp
-                         src/FileUtils.cpp)
+                         src/FileUtils.cpp
+                         ${SRCS_UNIX})
 
 target_link_libraries(modreader ${SDL_LIBRARY})

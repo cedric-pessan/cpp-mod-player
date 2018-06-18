@@ -31,7 +31,7 @@ int main(int argc, char** argv)
         return 0;
      }
    
-   auto reader = mods::ModuleReader::buildReader(fmt);
+   auto reader = mods::ModuleReader::buildReader(fmt, filename);
    if(!reader)
      {
         std::cout << "could not initialize reader for " << filename << std::endl;

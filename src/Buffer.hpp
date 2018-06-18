@@ -12,21 +12,32 @@ namespace mods
    
    class Buffer
      {
-      /*public:
+      public:
         typedef std::shared_ptr<Buffer> sptr;
-        typedef std::function<void()> callback;
+        class Deleter
+          {
+           public:
+             typedef std::unique_ptr<Deleter> ptr;
+             
+             Deleter();
+             virtual ~Deleter();
+             
+           private:
+             Deleter(const Deleter&) = delete;
+             Deleter& operator=(const Deleter&) = delete;
+          };
         
-        Buffer(u8* buf, callback freeCallback);
-        ~Buffer();*/
+        Buffer(u8* buf, size_t length, Deleter::ptr deleter);
+        ~Buffer();
         
       private:
         Buffer() = delete;
         Buffer(const Buffer&) = delete;
         Buffer& operator=(const Buffer&) = delete;
-        ~Buffer();
         
-        /*u8* _buf;
-        callback _freeResourceCallback;*/
+        u8* _buf;
+        size_t _length;
+        Deleter::ptr _deleter;
         
       public:
         class Attorney
@@ -37,10 +48,14 @@ namespace mods
              Attorney& operator=(const Attorney&) = delete;
              ~Attorney() = delete;
              
-             static u8* getBuffer()
+             static u8* getBuffer(Buffer& buffer)
                {
-                  std::cout << "TODO: Buffer::Attorney::getBuffer()" << std::endl;
-                  return nullptr;
+                  return buffer._buf;
+               }
+             
+             static size_t getLength(Buffer& buffer)
+               {
+                  return buffer._length;
                }
              
              template<typename T>

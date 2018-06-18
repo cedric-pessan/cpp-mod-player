@@ -29,14 +29,15 @@ namespace mods
    class WavReader : public ModuleReader
      {
       public:
-        WavReader();
+        explicit WavReader(const std::string& filename);
         virtual ~WavReader();
         
         virtual bool isFinished() const override;
         
       private:
-        WavReader(const WavReader&);
-        WavReader& operator=(const WavReader&);
+        WavReader() = delete;
+        WavReader(const WavReader&) = delete;
+        WavReader& operator=(const WavReader&) = delete;
         
         WavConverter::ptr _converter;
         RBuffer<u8> _fileBuffer;

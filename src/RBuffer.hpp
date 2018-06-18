@@ -11,10 +11,11 @@ namespace mods
      class RBuffer
      {
       public:
-        RBuffer()
+        explicit RBuffer(const Buffer::sptr& backend)
+          : _backend(backend),
+          _rbuf(reinterpret_cast<T*>(Buffer::Attorney::getBuffer(*_backend))),
+          _len(Buffer::Attorney::getLength(*_backend))
           {
-             /*_backend = std::make_shared<Buffer>();*/
-             _rbuf = reinterpret_cast<T*>(Buffer::Attorney::getBuffer());
           }
         
         RBuffer(RBuffer&&);
@@ -29,23 +30,35 @@ namespace mods
           }
         
         template<typename T2>
-          RBuffer<T2> slice() 
+          RBuffer<T2> slice(size_t offset, size_t len) 
             {
+               check(offset + len * sizeof(T2) <= _len, "invalid slice limits");
                std::cout << "TODO: RBuffer<T>::slice()" << std::endl;
-               return RBuffer<T2>();
+               return RBuffer<T2>(_backend, offset, len);
             }
         
       private:
-        /*RBuffer(Buffer::sptr backend, size_t offset)
-          : _backend(backend)
+        RBuffer(const Buffer::sptr& backend, size_t offset, size_t len)
+          : _backend(backend),
+          _rbuf(reinterpret_cast<T*>(Buffer::Attorney::getBuffer(*_backend) + offset)),
+          _len(len)
           {
-             _rbuf = _buf + offset;
-          }*/
+          }
         RBuffer(const RBuffer&) = delete;
         RBuffer& operator=(const RBuffer&) = delete;
         
-        /*Buffer::sptr _backend;*/
+        template<typename T2>
+          template<typename T3>
+          friend RBuffer<T3> RBuffer<T2>::slice(size_t offset, size_t len);
+        
+        void check(bool condition, const std::string& description)
+          {
+             if(!condition) throw std::out_of_range(description);
+          }
+        
+        Buffer::sptr _backend;
         T* _rbuf;
+        size_t _len;
      };
 }
 

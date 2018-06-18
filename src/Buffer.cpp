@@ -3,15 +3,23 @@
 
 namespace mods
 {
-   /*Buffer::Buffer(u8* buf, callback freeCallback)
+   Buffer::Buffer(u8* buf, size_t length, Deleter::ptr deleter)
      : _buf(buf),
-     _freeResourceCallback(freeCallback)
+     _length(length),
+     _deleter(std::move(deleter))
        {
        }
           
    
    Buffer::~Buffer()
      {
-        _freeResourceCallback();
-     }*/
+     }
+   
+   Buffer::Deleter::Deleter()
+     {
+     }
+   
+   Buffer::Deleter::~Deleter()
+     {
+     }
 }

@@ -5,7 +5,9 @@ namespace mods
 {
    namespace FileUtils
      {
-        RBuffer<u8> mapFile();
+        RBuffer<u8> mapFile(const std::string& filename);
+        
+        Buffer::sptr readFileToBuffer(const std::string& filename);
      }
 }
 

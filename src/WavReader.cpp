@@ -7,9 +7,9 @@
 namespace mods
 {
    
-   WavReader::WavReader()
-     : _fileBuffer(FileUtils::mapFile()),
-     _headerBuffer(_fileBuffer.slice<WavHeader>())
+   WavReader::WavReader(const std::string& filename)
+     : _fileBuffer(FileUtils::mapFile(filename)),
+     _headerBuffer(_fileBuffer.slice<WavHeader>(0, 1))
      {
         _converter = WavConverter::buildConverter(_headerBuffer->bitsPerSample);
      }

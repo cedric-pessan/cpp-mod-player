@@ -39,7 +39,7 @@ namespace mods
         class SoundPlayerInitException : public std::exception
           {
            public:
-             SoundPlayerInitException(const std::string& reason);
+             explicit SoundPlayerInitException(const std::string& reason);
              SoundPlayerInitException(const SoundPlayerInitException&);
              virtual ~SoundPlayerInitException();
              virtual const char* what() const noexcept override;
