@@ -1,6 +1,6 @@
 ##################
 # module reader
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.9)
 set(CMAKE_CXX_STANDARD 14)
 
 project(modreader)
@@ -25,3 +25,5 @@ add_executable(modreader src/main.cpp
                          ${SRCS_UNIX})
 
 target_link_libraries(modreader ${SDL_LIBRARY})
+
+set_property(TARGET modreader PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
