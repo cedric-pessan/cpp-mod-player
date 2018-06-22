@@ -5,7 +5,7 @@ namespace mods
 {
    namespace FileUtils
      {
-        Buffer::sptr mapFileToBuffer();
+        Buffer::sptr mapFileToBuffer(const std::string& filename);
      }
 }
 

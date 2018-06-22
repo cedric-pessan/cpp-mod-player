@@ -12,7 +12,7 @@ namespace mods
      {
         RBuffer<u8> mapFile(const std::string& filename)
           {
-             auto buffer = mapFileToBuffer();
+             auto buffer = mapFileToBuffer(filename);
              if(!buffer)
                buffer = readFileToBuffer(filename);
              return RBuffer<u8>(buffer);
