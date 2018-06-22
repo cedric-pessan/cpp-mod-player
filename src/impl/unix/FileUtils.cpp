@@ -46,7 +46,7 @@ namespace mods
              void* ptr = ::mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
              
              auto deleter = std::make_unique<UnixMapperDeleter>(fd, ptr, length);
-             return std::make_shared<Buffer>(nullptr, 0, std::move(deleter));
+             return std::make_shared<Buffer>(reinterpret_cast<u8*>(ptr), length, std::move(deleter));
           }
      }
 }
