@@ -33,7 +33,6 @@ namespace mods
           RBuffer<T2> slice(size_t offset, size_t len) 
             {
                check(offset + len * sizeof(T2) <= _len, "invalid slice limits");
-               std::cout << "TODO: RBuffer<T>::slice()" << std::endl;
                return RBuffer<T2>(_backend, offset, len);
             }
         
