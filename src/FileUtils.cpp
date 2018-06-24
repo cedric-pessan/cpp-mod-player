@@ -24,7 +24,7 @@ namespace mods
                {
                 public:
                   explicit FileReaderDeleter(std::vector<u8>&& v)
-                    : _v(v)
+                    : _v(std::move(v))
                     {
                     }
                   virtual ~FileReaderDeleter()
@@ -49,8 +49,10 @@ namespace mods
              std::vector<u8> v(size);
              if(file.read(reinterpret_cast<char*>(v.data()), size))
                {
+                  u8* ptr = v.data();
+                  size_t length = v.size();
                   auto deleter = std::make_unique<FileReaderDeleter>(std::move(v));
-                  return std::make_shared<Buffer>(v.data(), v.size(), std::move(deleter));
+                  return std::make_shared<Buffer>(ptr, length, std::move(deleter));
                }
              else
                return Buffer::sptr();
