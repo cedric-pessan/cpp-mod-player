@@ -23,6 +23,9 @@ namespace mods
         u32 byteRate;
         u16 blockAlign;
         u16 bitsPerSample;
+        
+        u32 getChunkSize() const noexcept;
+        u32 getSubchunkSize() const noexcept;
      };
 #pragma pack(pop)
    
@@ -41,7 +44,7 @@ namespace mods
         
         WavConverter::ptr _converter;
         RBuffer<u8> _fileBuffer;
-        RBuffer<WavHeader> _headerBuffer;
+        //RBuffer<WavHeader> _headerBuffer;
      };
    
 }

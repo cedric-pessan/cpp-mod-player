@@ -28,6 +28,8 @@ namespace mods
       protected:
         ModuleReader();
         
+        void checkInit(bool condition);
+        
       private:
         ModuleReader(const ModuleReader&) = delete;
         ModuleReader& operator=(const ModuleReader&) = delete;

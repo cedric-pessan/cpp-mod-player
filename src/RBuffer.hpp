@@ -11,6 +11,8 @@ namespace mods
      class RBuffer
      {
       public:
+        typedef size_t size_type;
+        
         explicit RBuffer(const Buffer::sptr& backend)
           : _backend(backend),
           _rbuf(reinterpret_cast<T*>(Buffer::Attorney::getBuffer(*_backend))),
@@ -35,6 +37,11 @@ namespace mods
                check(offset + len * sizeof(T2) <= _len, "invalid slice limits");
                return RBuffer<T2>(_backend, offset, len);
             }
+        
+        size_type size() const noexcept
+          {
+             return _len;
+          }
         
       private:
         RBuffer(const Buffer::sptr& backend, size_t offset, size_t len)
