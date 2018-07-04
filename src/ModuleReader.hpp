@@ -28,7 +28,7 @@ namespace mods
       protected:
         ModuleReader();
         
-        void checkInit(bool condition);
+        void checkInit(bool condition, const std::string& description);
         
       private:
         ModuleReader(const ModuleReader&) = delete;
@@ -37,6 +37,7 @@ namespace mods
         class ModuleReaderInitException : public std::exception
           {
            public:
+             explicit ModuleReaderInitException(const std::string& reason);
              ModuleReaderInitException(const ModuleReaderInitException&);
              virtual ~ModuleReaderInitException();
              virtual const char* what() const noexcept override;

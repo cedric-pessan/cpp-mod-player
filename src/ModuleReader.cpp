@@ -45,6 +45,16 @@ namespace mods
      {
      }
    
+   void ModuleReader::checkInit(bool condition, const std::string& description)
+     {
+        if(!condition) throw ModuleReaderInitException(description);
+     }
+   
+   ModuleReader::ModuleReaderInitException::ModuleReaderInitException(const std::string& reason)
+     : _reason(reason)
+       {
+       }
+   
    ModuleReader::ModuleReaderInitException::ModuleReaderInitException(const ModuleReaderInitException& ex)
      : std::exception(ex),
      _reason(ex._reason)

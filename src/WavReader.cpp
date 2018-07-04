@@ -14,22 +14,29 @@ namespace mods
      }
    
    WavReader::WavReader(const std::string& filename)
-     : _fileBuffer(FileUtils::mapFile(filename))/*,
-     _headerBuffer(_fileBuffer.slice<WavHeader>(0, 1))*/
+     : _fileBuffer(FileUtils::mapFile(filename)),
+     _headerBuffer(_fileBuffer.slice<ChunkHeader>(0, 1))
      {
+        checkInit(std::equal(RIFF.begin(), RIFF.end(), 
+                             _headerBuffer->chunkID, _headerBuffer->chunkID + sizeof(_headerBuffer->chunkID)), "Not a RIFF file");
+        checkInit(_fileBuffer.size() >= _headerBuffer->getChunkSize() - sizeof(ChunkHeader), "RIFF chunk not complete");
+        
+        auto riffHeader = _fileBuffer.slice<RiffHeader>(0, 1);
+        
+        checkInit(std::equal(WAVE.begin(), WAVE.end(),
+                             riffHeader->format, riffHeader->format + sizeof(riffHeader->format)), "Not a WAVE file");
+        
+        auto riffBuffer = _fileBuffer.slice<u8>(sizeof(RiffHeader), riffHeader->chunk.getChunkSize() - sizeof(riffHeader->format));
+        
         size_t offset = 0;
-        while(offset < _fileBuffer.size())
+        while(offset < riffBuffer.size())
           {
+             /*auto chunkHeader = _fileBuffer.slice<ChunkHeader>(offset, 1);
+             RBuffer<ChunkHeader>(_fileBuffer.slice<ChunkHeader>(*/
              std::cout << "TODO: WavReader: read chunk" << std::endl;
           }
         
-        /*checkInit(std::equal(RIFF.begin(), RIFF.end(), 
-                             _headerBuffer->chunkID, _headerBuffer->chunkID + sizeof(_headerBuffer->chunkID)));
-        checkInit(_fileBuffer.size() >= _headerBuffer->getChunkSize() - 8);
-        checkInit(std::equal(WAVE.begin(), WAVE.end(),
-                             _headerBuffer->format, _headerBuffer->format + sizeof(_headerBuffer->format)));
-        
-        checkInit(std::equal(FMT.begin(), FMT.end(),
+        /*checkInit(std::equal(FMT.begin(), FMT.end(),
                              _headerBuffer->subchunkID, _headerBuffer->subchunkID + sizeof(_headerBuffer->subchunkID)));
         checkInit(_headerBuffer->getChunkSize() >= _headerBuffer->getSubchunkSize() + 20);
         

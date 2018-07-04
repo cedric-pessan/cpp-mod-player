@@ -28,7 +28,7 @@ namespace mods
         std::mutex _playListMutex;
         std::deque<SynchronizedReader> _playList;
         
-        void check_init(bool condition, const std::string& description);
+        void checkInit(bool condition, const std::string& description);
         const SynchronizedReader& addReaderToPlayList(ModuleReader::ptr reader);
         void removeOldestReaderFromPlayList();
         void waitUntilFinished(const SynchronizedReader& entry);

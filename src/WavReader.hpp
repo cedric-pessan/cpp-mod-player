@@ -9,12 +9,26 @@
 namespace mods
 {
 #pragma pack(push, 1)
-   struct WavHeader
+   struct ChunkHeader
      {
         char chunkID[4];
         u32 chunkSize;
-        char format[4];
         
+        u32 getChunkSize() const noexcept
+          {
+             std::cout << "TODO: ChunkHeader::getChunkSize() necessary?" << std::endl;
+             return chunkSize;
+          }
+     };
+   
+   struct RiffHeader
+     {
+        ChunkHeader chunk;
+        char format[4];
+     };
+   
+   struct WavHeader
+     {
         char subchunkID[4];
         u32 subchunkSize;
         u16 audioFormat;
@@ -24,7 +38,6 @@ namespace mods
         u16 blockAlign;
         u16 bitsPerSample;
         
-        u32 getChunkSize() const noexcept;
         u32 getSubchunkSize() const noexcept;
      };
 #pragma pack(pop)
@@ -44,7 +57,7 @@ namespace mods
         
         WavConverter::ptr _converter;
         RBuffer<u8> _fileBuffer;
-        //RBuffer<WavHeader> _headerBuffer;
+        RBuffer<ChunkHeader> _headerBuffer;
      };
    
 }

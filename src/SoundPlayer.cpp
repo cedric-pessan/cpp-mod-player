@@ -22,7 +22,7 @@ namespace mods
    SoundPlayer::SoundPlayer()
      {
         int res = SDL_Init(SDL_INIT_AUDIO);
-        check_init(res == 0, "sdl audio subsystem could not be initialized");
+        checkInit(res == 0, "sdl audio subsystem could not be initialized");
         SDL_AudioSpec spec;
         spec.freq = 44100;
         spec.format = AUDIO_S16;
@@ -32,7 +32,7 @@ namespace mods
         spec.userdata = this;
         
         res = SDL_OpenAudio(&spec, NULL);
-        check_init(res >= 0, "audio device could not be opened");
+        checkInit(res >= 0, "audio device could not be opened");
      }
    
    SoundPlayer::~SoundPlayer()
@@ -41,7 +41,7 @@ namespace mods
         SDL_Quit();
      }
    
-   void SoundPlayer::check_init(bool condition, const std::string& description)
+   void SoundPlayer::checkInit(bool condition, const std::string& description)
      {
         if(!condition) throw SoundPlayerInitException(description);
      }
