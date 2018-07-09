@@ -34,7 +34,7 @@ template<Endianness endianness>
 };
 
 template<>
-  class u32leImpl<NativeEndianness::value>
+  class u32leImpl<Endianness::LittleEndian>
 {
  private:
    u32 _value;
