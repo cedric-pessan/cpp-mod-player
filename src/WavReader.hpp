@@ -18,8 +18,7 @@ namespace mods
       public:
         std::string getChunkID() const noexcept
           {
-             std::cout << "TODO: ChunkHeader::getChunkID() const noexcept" << std::endl;
-             return "";
+             return std::string(chunkID, sizeof(chunkID));
           }
         
         u32 getChunkSize() const noexcept
