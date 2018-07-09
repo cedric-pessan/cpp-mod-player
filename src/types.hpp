@@ -15,15 +15,15 @@ template<Endianness endianness>
   class u32leImpl
 {
  private:
-   u8 v[4];
+   u8 _v[4];
    
  public:
    operator u32() const
      {
-        return static_cast<u32>(v[0]) |
-          (static_cast<u32>(v[1]) << 8) |
-          (static_cast<u32>(v[2]) << 16) |
-          (static_cast<u32>(v[3]) << 24);
+        return static_cast<u32>(_v[0]) |
+          (static_cast<u32>(_v[1]) << 8) |
+          (static_cast<u32>(_v[2]) << 16) |
+          (static_cast<u32>(_v[3]) << 24);
      }
    
  private:
@@ -33,8 +33,24 @@ template<Endianness endianness>
    ~u32leImpl();
 };
 
-/*template<>
-  class u32leImpl<NativeEndianness::value>;*/ //TODO
+template<>
+  class u32leImpl<NativeEndianness::value>
+{
+ private:
+   u32 _value;
+   
+ public:
+   operator u32() const
+     {
+        return _value;
+     }
+   
+ private:
+   u32leImpl() = delete;
+   u32leImpl(const u32leImpl&) = delete;
+   u32leImpl& operator=(const u32leImpl&) = delete;
+   ~u32leImpl();
+};
 
 typedef u32leImpl<NativeEndianness::value> u32le;
 

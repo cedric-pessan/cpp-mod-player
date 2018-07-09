@@ -19,7 +19,6 @@ namespace mods
      {
         checkInit(_headerBuffer->getChunkID() == RIFF, "Not a RIFF file");
         checkInit(_fileBuffer.size() >= _headerBuffer->getChunkSize() - sizeof(ChunkHeader), "RIFF chunk not complete");
-        std::cout << "TODO: read chunk size: " << _headerBuffer->getChunkSize() << std::endl;
         
         auto riffHeader = _fileBuffer.slice<RiffHeader>(0, 1);
         
