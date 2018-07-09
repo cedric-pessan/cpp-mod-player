@@ -17,16 +17,14 @@ namespace mods
      : _fileBuffer(FileUtils::mapFile(filename)),
      _headerBuffer(_fileBuffer.slice<ChunkHeader>(0, 1))
      {
-        checkInit(std::equal(RIFF.begin(), RIFF.end(), 
-                             _headerBuffer->chunkID, _headerBuffer->chunkID + sizeof(_headerBuffer->chunkID)), "Not a RIFF file");
+        checkInit(_headerBuffer->getChunkID() == RIFF, "Not a RIFF file");
         checkInit(_fileBuffer.size() >= _headerBuffer->getChunkSize() - sizeof(ChunkHeader), "RIFF chunk not complete");
         
         auto riffHeader = _fileBuffer.slice<RiffHeader>(0, 1);
         
-        checkInit(std::equal(WAVE.begin(), WAVE.end(),
-                             riffHeader->format, riffHeader->format + sizeof(riffHeader->format)), "Not a WAVE file");
+        checkInit(riffHeader->getFormat() == WAVE, "Not a WAVE file");
         
-        auto riffBuffer = _fileBuffer.slice<u8>(sizeof(RiffHeader), riffHeader->chunk.getChunkSize() - sizeof(riffHeader->format));
+        auto riffBuffer = _fileBuffer.slice<u8>(sizeof(RiffHeader), riffHeader->chunk.getChunkSize() - sizeof(RiffHeader) + sizeof(ChunkHeader));
         
         size_t offset = 0;
         while(offset < riffBuffer.size())
@@ -45,6 +43,7 @@ namespace mods
         check data;
         check data size;*/
         
+        std::cout << "TODO: WavReader: everything is parsed" << std::endl;
         //_converter = WavConverter::buildConverter(_headerBuffer->bitsPerSample);
      }
    

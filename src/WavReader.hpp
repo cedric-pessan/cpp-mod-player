@@ -11,8 +11,16 @@ namespace mods
 #pragma pack(push, 1)
    struct ChunkHeader
      {
+      private:
         char chunkID[4];
-        u32 chunkSize;
+        u32le chunkSize;
+        
+      public:
+        std::string getChunkID() const noexcept
+          {
+             std::cout << "TODO: ChunkHeader::getChunkID() const noexcept" << std::endl;
+             return "";
+          }
         
         u32 getChunkSize() const noexcept
           {
@@ -23,12 +31,23 @@ namespace mods
    
    struct RiffHeader
      {
+      public:
         ChunkHeader chunk;
+        
+      private:
         char format[4];
+        
+      public:
+        std::string getFormat() const noexcept
+          {
+             std::cout << "TODO: RiffHeader::getFormat() const noexcept" << std::endl;
+             return "";
+          }
      };
    
    struct WavHeader
      {
+      private:
         char subchunkID[4];
         u32 subchunkSize;
         u16 audioFormat;

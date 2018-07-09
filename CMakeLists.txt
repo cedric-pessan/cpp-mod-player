@@ -9,9 +9,17 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
+include(TestBigEndian)
+
+TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
+
 Find_Package(SDL REQUIRED)
 
-include_directories(${SDL_INCLUDE_DIR})
+include_directories(${SDL_INCLUDE_DIR}
+                    ${CMAKE_BINARY_DIR}
+                    ${CMAKE_SOURCE_DIR}/src)
+
+configure_file(src/nativeEndian.hpp.in nativeEndian.hpp)
 
 set(SRCS_UNIX src/impl/unix/FileUtils.cpp)
 
