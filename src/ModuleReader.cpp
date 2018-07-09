@@ -19,20 +19,14 @@ namespace mods
    ModuleReader::ptr ModuleReader::buildReader(ModuleFormat format, const std::string& filename)
      {
         ModuleReader::ptr reader;
-        try
+        switch(format) 
           {
-             switch(format) 
-               {
-                case ModuleFormat::WAV:
-                  reader = std::make_unique<WavReader>(filename);
-                  break;
-                case ModuleFormat::UNKNOWN:
-                  // keep null reader
-                  break;
-               }
-          }
-        catch(ModuleReaderInitException ex)
-          {
+           case ModuleFormat::WAV:
+             reader = std::make_unique<WavReader>(filename);
+             break;
+           case ModuleFormat::UNKNOWN:
+             // keep null reader
+             break;
           }
         return reader;
      }
