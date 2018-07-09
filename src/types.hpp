@@ -14,11 +14,16 @@ typedef uint32_t u32;
 template<Endianness endianness>
   class u32leImpl
 {
+ private:
+   u8 v[4];
+   
  public:
    operator u32() const
      {
-        std::cout << "TODO: u32leImpl::operatoru32() const" << std::endl;
-        return 0;
+        return static_cast<u32>(v[0]) |
+          (static_cast<u32>(v[1]) << 8) |
+          (static_cast<u32>(v[2]) << 16) |
+          (static_cast<u32>(v[3]) << 24);
      }
    
  private:
