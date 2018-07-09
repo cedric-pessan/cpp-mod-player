@@ -23,7 +23,6 @@ namespace mods
         
         u32 getChunkSize() const noexcept
           {
-             std::cout << "TODO: ChunkHeader::getChunkSize() necessary?" << std::endl;
              return chunkSize;
           }
      };
