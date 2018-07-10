@@ -3,6 +3,7 @@
 #include "FileUtils.hpp"
 
 #include <iostream>
+#include <sstream>
 
 namespace mods
 {
@@ -29,9 +30,10 @@ namespace mods
         size_t offset = 0;
         while(offset < riffBuffer.size())
           {
-             /*auto chunkHeader = _fileBuffer.slice<ChunkHeader>(offset, 1);
-             RBuffer<ChunkHeader>(_fileBuffer.slice<ChunkHeader>(*/
-             std::cout << "TODO: WavReader: read chunk" << std::endl;
+             auto chunkHeader = riffBuffer.slice<ChunkHeader>(offset, 1);
+             std::stringstream ss;
+             ss << "Unknown RIFF chunk: " << chunkHeader->getChunkID();
+             checkInit(false, ss.str());
           }
         
         /*checkInit(std::equal(FMT.begin(), FMT.end(),

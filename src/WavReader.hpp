@@ -38,8 +38,7 @@ namespace mods
       public:
         std::string getFormat() const noexcept
           {
-             std::cout << "TODO: RiffHeader::getFormat() const noexcept" << std::endl;
-             return "";
+             return std::string(format, sizeof(format));
           }
      };
    
