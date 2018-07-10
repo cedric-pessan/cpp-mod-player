@@ -34,8 +34,9 @@ namespace mods
         template<typename T2>
           RBuffer<T2> slice(size_t offset, size_t len) 
             {
-               check(offset + len * sizeof(T2) <= _len, "invalid slice limits");
-               return RBuffer<T2>(_backend, offset, len);
+               size_t currentOffset = reinterpret_cast<u8*>(_rbuf) - reinterpret_cast<u8*>(Buffer::Attorney::getBuffer(*_backend));
+               check(currentOffset + offset + len * sizeof(T2) <= _len, "invalid slice limits");
+               return RBuffer<T2>(_backend, currentOffset + offset, len);
             }
         
         size_type size() const noexcept
