@@ -31,9 +31,17 @@ namespace mods
         while(offset < riffBuffer.size())
           {
              auto chunkHeader = riffBuffer.slice<ChunkHeader>(offset, 1);
-             std::stringstream ss;
-             ss << "Unknown RIFF chunk: " << chunkHeader->getChunkID();
-             checkInit(false, ss.str());
+             
+             if(chunkHeader->getChunkID() == FMT)
+               std::cout << "TODO: fmt chunk" << std::endl;
+             else
+               {
+                  std::stringstream ss;
+                  ss << "Unknown RIFF chunk: " << chunkHeader->getChunkID();
+                  checkInit(false, ss.str());
+               }
+             
+             offset += chunkHeader->getChunkSize() + sizeof(ChunkHeader);
           }
         
         /*checkInit(std::equal(FMT.begin(), FMT.end(),
