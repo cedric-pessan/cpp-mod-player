@@ -42,19 +42,18 @@ namespace mods
           }
      };
    
-   struct WavHeader
+   struct FmtHeader
      {
-      private:
-        char subchunkID[4];
-        u32 subchunkSize;
-        u16 audioFormat;
-        u16 numChannels;
-        u32 sampleRate;
-        u32 byteRate;
-        u16 blockAlign;
-        u16 bitsPerSample;
+      public:
+        ChunkHeader chunk;
         
-        u32 getSubchunkSize() const noexcept;
+      private:
+        u16le audioFormat;
+        u16le numChannels;
+        u32le sampleRate;
+        u32le byteRate;
+        u16le blockAlign;
+        u16le bitsPerSample;
      };
 #pragma pack(pop)
    

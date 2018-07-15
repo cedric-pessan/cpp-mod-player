@@ -12,6 +12,26 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 
 template<Endianness endianness>
+  class u16leImpl
+{
+ private:
+   u16leImpl() = delete;
+   u16leImpl(const u16leImpl&) = delete;
+   u16leImpl& operator=(const u16leImpl&) = delete;
+   ~u16leImpl();
+};
+
+template<>
+  class u16leImpl<Endianness::LittleEndian>
+{
+ private:
+   u16leImpl() = delete;
+   u16leImpl(const u16leImpl&) = delete;
+   u16leImpl& operator=(const u16leImpl&) = delete;
+   ~u16leImpl();
+};
+
+template<Endianness endianness>
   class u32leImpl
 {
  private:
@@ -52,6 +72,7 @@ template<>
    ~u32leImpl();
 };
 
+typedef u16leImpl<NativeEndianness::value> u16le;
 typedef u32leImpl<NativeEndianness::value> u32le;
 
 #endif // _TYPES_HPP_

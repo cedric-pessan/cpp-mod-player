@@ -33,7 +33,12 @@ namespace mods
              auto chunkHeader = riffBuffer.slice<ChunkHeader>(offset, 1);
              
              if(chunkHeader->getChunkID() == FMT)
-               std::cout << "TODO: fmt chunk" << std::endl;
+               {
+                  checkInit(chunkHeader->getChunkSize() >= riffBuffer.size() - offset &&
+                            chunkHeader->getChunkSize() >= sizeof(FmtHeader) , "Incomplete FMT chunk");
+                  
+                  std::cout << "TODO: fmt chunk" << std::endl;
+               }
              else
                {
                   std::stringstream ss;
@@ -44,9 +49,7 @@ namespace mods
              offset += chunkHeader->getChunkSize() + sizeof(ChunkHeader);
           }
         
-        /*checkInit(std::equal(FMT.begin(), FMT.end(),
-                             _headerBuffer->subchunkID, _headerBuffer->subchunkID + sizeof(_headerBuffer->subchunkID)));
-        checkInit(_headerBuffer->getChunkSize() >= _headerBuffer->getSubchunkSize() + 20);
+        /*checkInit(_headerBuffer->getChunkSize() >= _headerBuffer->getSubchunkSize() + 20);
         
         check pcm;
         
