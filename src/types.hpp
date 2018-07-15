@@ -15,6 +15,9 @@ template<Endianness endianness>
   class u16leImpl
 {
  private:
+   u8 _v[2];
+   
+ private:
    u16leImpl() = delete;
    u16leImpl(const u16leImpl&) = delete;
    u16leImpl& operator=(const u16leImpl&) = delete;
@@ -24,6 +27,9 @@ template<Endianness endianness>
 template<>
   class u16leImpl<Endianness::LittleEndian>
 {
+ private:
+   u16 _value;
+   
  private:
    u16leImpl() = delete;
    u16leImpl(const u16leImpl&) = delete;

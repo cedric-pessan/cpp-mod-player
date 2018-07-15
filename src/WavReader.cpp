@@ -34,8 +34,8 @@ namespace mods
              
              if(chunkHeader->getChunkID() == FMT)
                {
-                  checkInit(chunkHeader->getChunkSize() >= riffBuffer.size() - offset &&
-                            chunkHeader->getChunkSize() >= sizeof(FmtHeader) , "Incomplete FMT chunk");
+                  checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset &&
+                            chunkHeader->getChunkSize() >= sizeof(FmtHeader) - sizeof(ChunkHeader) , "Incomplete FMT chunk");
                   
                   std::cout << "TODO: fmt chunk" << std::endl;
                }
