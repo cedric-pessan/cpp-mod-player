@@ -41,6 +41,8 @@ namespace mods
                   
                   checkInit(fmtHeader->getAudioFormat() == WavAudioFormat::PCM, "Only PCM is supported at the moment");
                   
+                  checkInit(fmtHeader->chunk.getChunkSize() == sizeof(FmtHeader) - sizeof(ChunkHeader), "Extra fmt infos not yet implemented");
+                  
                   std::cout << "TODO: fmt chunk" << std::endl;
                }
              else
@@ -53,9 +55,7 @@ namespace mods
              offset += chunkHeader->getChunkSize() + sizeof(ChunkHeader);
           }
         
-        /*checkInit(_headerBuffer->getChunkSize() >= _headerBuffer->getSubchunkSize() + 20);
-        
-        check data;
+        /*check data;
         check data size;*/
         
         std::cout << "TODO: WavReader: everything is parsed" << std::endl;
