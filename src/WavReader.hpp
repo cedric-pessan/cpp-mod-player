@@ -8,6 +8,11 @@
 
 namespace mods
 {
+   enum struct WavAudioFormat : u16
+     {
+        PCM = 0x0001
+     };
+   
 #pragma pack(push, 1)
    struct ChunkHeader
      {
@@ -54,6 +59,13 @@ namespace mods
         u32le byteRate;
         u16le blockAlign;
         u16le bitsPerSample;
+        
+      public:
+        WavAudioFormat getAudioFormat() const noexcept
+          {
+             u16 value = audioFormat;
+             return static_cast<WavAudioFormat>(value);
+          }
      };
 #pragma pack(pop)
    

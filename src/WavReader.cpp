@@ -37,6 +37,10 @@ namespace mods
                   checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset &&
                             chunkHeader->getChunkSize() >= sizeof(FmtHeader) - sizeof(ChunkHeader) , "Incomplete FMT chunk");
                   
+                  auto fmtHeader = riffBuffer.slice<FmtHeader>(offset, 1);
+                  
+                  checkInit(fmtHeader->getAudioFormat() == WavAudioFormat::PCM, "Only PCM is supported at the moment");
+                  
                   std::cout << "TODO: fmt chunk" << std::endl;
                }
              else
@@ -50,8 +54,6 @@ namespace mods
           }
         
         /*checkInit(_headerBuffer->getChunkSize() >= _headerBuffer->getSubchunkSize() + 20);
-        
-        check pcm;
         
         check data;
         check data size;*/

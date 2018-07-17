@@ -11,11 +11,19 @@ typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 
+#pragma pack(push,1)
 template<Endianness endianness>
   class u16leImpl
 {
  private:
    u8 _v[2];
+   
+ public:
+   operator u16() const
+     {
+        return static_cast<u16>(_v[0]) |
+          (static_cast<u16>(_v[1]) << 8);
+     }
    
  private:
    u16leImpl() = delete;
@@ -29,6 +37,12 @@ template<>
 {
  private:
    u16 _value;
+   
+ public:
+   operator u16() const
+     {
+        return _value;
+     }
    
  private:
    u16leImpl() = delete;
@@ -77,6 +91,7 @@ template<>
    u32leImpl& operator=(const u32leImpl&) = delete;
    ~u32leImpl();
 };
+#pragma pack(pop)
 
 typedef u16leImpl<NativeEndianness::value> u16le;
 typedef u32leImpl<NativeEndianness::value> u32le;
