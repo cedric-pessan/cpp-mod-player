@@ -1,6 +1,7 @@
 
 #include "WavReader.hpp"
 #include "FileUtils.hpp"
+#include "optional.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -27,6 +28,8 @@ namespace mods
         
         auto riffBuffer = _fileBuffer.slice<u8>(sizeof(RiffHeader), riffHeader->chunk.getChunkSize() - sizeof(RiffHeader) + sizeof(ChunkHeader));
         
+        optional<RBuffer<FmtHeader>> optFmtHeader;
+        
         size_t offset = 0;
         while(offset < riffBuffer.size())
           {
@@ -43,7 +46,7 @@ namespace mods
                   
                   checkInit(fmtHeader->chunk.getChunkSize() == sizeof(FmtHeader) - sizeof(ChunkHeader), "Extra fmt infos not yet implemented");
                   
-                  std::cout << "TODO: fmt chunk" << std::endl;
+                  optFmtHeader = fmtHeader;
                }
              else
                {
