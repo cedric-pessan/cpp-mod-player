@@ -32,7 +32,7 @@ namespace mods
           }
         
         template<typename T2>
-          RBuffer<T2> slice(size_t offset, size_t len) 
+          RBuffer<T2> slice(size_t offset, size_t len) const
             {
                size_t currentOffset = reinterpret_cast<u8*>(_rbuf) - reinterpret_cast<u8*>(Buffer::Attorney::getBuffer(*_backend));
                check(currentOffset + offset * sizeof(T) + len * sizeof(T2) <= _len * sizeof(T), "invalid slice limits");
@@ -56,9 +56,9 @@ namespace mods
         
         template<typename T2>
           template<typename T3>
-          friend RBuffer<T3> RBuffer<T2>::slice(size_t offset, size_t len);
+          friend RBuffer<T3> RBuffer<T2>::slice(size_t offset, size_t len) const;
         
-        void check(bool condition, const std::string& description)
+        void check(bool condition, const std::string& description) const
           {
              if(!condition) throw std::out_of_range(description);
           }

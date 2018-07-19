@@ -39,7 +39,7 @@ namespace mods
      {
      }
    
-   void ModuleReader::checkInit(bool condition, const std::string& description)
+   void ModuleReader::checkInit(bool condition, const std::string& description) const
      {
         if(!condition) throw ModuleReaderInitException(description);
      }

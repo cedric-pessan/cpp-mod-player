@@ -28,7 +28,7 @@ namespace mods
       protected:
         ModuleReader();
         
-        void checkInit(bool condition, const std::string& description);
+        void checkInit(bool condition, const std::string& description) const;
         
       private:
         ModuleReader(const ModuleReader&) = delete;

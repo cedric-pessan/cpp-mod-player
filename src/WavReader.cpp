@@ -38,17 +38,7 @@ namespace mods
              if(chunkHeader->getChunkID() == FMT)
                {
                   checkInit(!optFmtHeader.has_value(), "Multiple fmt chunks defined");
-                  
-                  checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset &&
-                            chunkHeader->getChunkSize() >= sizeof(FmtHeader) - sizeof(ChunkHeader) , "Incomplete FMT chunk");
-                  
-                  auto fmtHeader = riffBuffer.slice<FmtHeader>(offset, 1);
-                  
-                  checkInit(fmtHeader->getAudioFormat() == WavAudioFormat::PCM, "Only PCM is supported at the moment");
-                  
-                  checkInit(fmtHeader->chunk.getChunkSize() == sizeof(FmtHeader) - sizeof(ChunkHeader), "Extra fmt infos not yet implemented");
-                  
-                  optFmtHeader = fmtHeader;
+                  optFmtHeader = readFMT(chunkHeader, riffBuffer, offset);
                }
              else
                {
@@ -69,6 +59,22 @@ namespace mods
    
    WavReader::~WavReader()
      {
+     }
+   
+   RBuffer<FmtHeader> WavReader::readFMT(const RBuffer<ChunkHeader>& chunkHeader,
+                                         const RBuffer<u8>& riffBuffer,
+                                         size_t offset) const
+     {
+        checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset &&
+                  chunkHeader->getChunkSize() >= sizeof(FmtHeader) - sizeof(ChunkHeader) , "Incomplete FMT chunk");
+        
+        auto fmtHeader = riffBuffer.slice<FmtHeader>(offset, 1);
+        
+        checkInit(fmtHeader->getAudioFormat() == WavAudioFormat::PCM, "Only PCM is supported at the moment");
+        
+        checkInit(fmtHeader->chunk.getChunkSize() == sizeof(FmtHeader) - sizeof(ChunkHeader), "Extra fmt infos not yet implemented");
+        
+        return fmtHeader;
      }
    
    bool WavReader::isFinished() const

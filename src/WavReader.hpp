@@ -82,6 +82,10 @@ namespace mods
         WavReader(const WavReader&) = delete;
         WavReader& operator=(const WavReader&) = delete;
         
+        RBuffer<FmtHeader> readFMT(const RBuffer<ChunkHeader>& chunkHeader,
+                                   const RBuffer<u8>& riffBuffer,
+                                   size_t offset) const;
+        
         WavConverter::ptr _converter;
         RBuffer<u8> _fileBuffer;
         RBuffer<ChunkHeader> _headerBuffer;

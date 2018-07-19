@@ -41,7 +41,7 @@ namespace mods
         SDL_Quit();
      }
    
-   void SoundPlayer::checkInit(bool condition, const std::string& description)
+   void SoundPlayer::checkInit(bool condition, const std::string& description) const
      {
         if(!condition) throw SoundPlayerInitException(description);
      }
