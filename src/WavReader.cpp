@@ -13,6 +13,7 @@ namespace mods
         const std::string RIFF = "RIFF";
         const std::string WAVE = "WAVE";
         const std::string FMT = "fmt ";
+        const std::string FACT = "fact";
      }
    
    WavReader::WavReader(const std::string& filename)
@@ -39,6 +40,10 @@ namespace mods
                {
                   checkInit(!optFmtHeader.has_value(), "Multiple fmt chunks defined");
                   optFmtHeader = readFMT(chunkHeader, riffBuffer, offset);
+               }
+             else if(chunkHeader->getChunkID() == FACT)
+               {
+                  std::cout << "TODO: read FACT chunk" << std::endl;
                }
              else
                {
