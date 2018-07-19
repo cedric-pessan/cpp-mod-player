@@ -12,6 +12,7 @@ namespace mods
      {
       public:
         constexpr optional() noexcept
+          : _hasValue(false)
           {
           }
         ~optional()
@@ -21,12 +22,20 @@ namespace mods
         template<typename U = T>
           optional& operator=(U&& value)
             {
+               _hasValue = true;
                return *this;
             }
+        
+        constexpr bool has_value() const noexcept
+          {
+             return _hasValue;
+          }
         
       private:
         optional(const optional&) = delete;
         optional& operator=(const optional&) = delete;
+        
+        bool _hasValue;
      };
    
 }

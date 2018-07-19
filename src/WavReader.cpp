@@ -37,6 +37,8 @@ namespace mods
              
              if(chunkHeader->getChunkID() == FMT)
                {
+                  checkInit(!optFmtHeader.has_value(), "Multiple fmt chunks defined");
+                  
                   checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset &&
                             chunkHeader->getChunkSize() >= sizeof(FmtHeader) - sizeof(ChunkHeader) , "Incomplete FMT chunk");
                   
