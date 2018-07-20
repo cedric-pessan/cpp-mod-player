@@ -67,6 +67,15 @@ namespace mods
              return static_cast<WavAudioFormat>(value);
           }
      };
+   
+   struct FactHeader
+     {
+      public:
+        ChunkHeader chunk;
+        
+      private:
+        u32le sampleLength;
+     };
 #pragma pack(pop)
    
    class WavReader : public ModuleReader
@@ -85,6 +94,9 @@ namespace mods
         RBuffer<FmtHeader> readFMT(const RBuffer<ChunkHeader>& chunkHeader,
                                    const RBuffer<u8>& riffBuffer,
                                    size_t offset) const;
+        RBuffer<FactHeader> readFact(const RBuffer<ChunkHeader>& chunkHeader,
+                                     const RBuffer<u8>& riffBuffer,
+                                     size_t offset) const;
         
         WavConverter::ptr _converter;
         RBuffer<u8> _fileBuffer;

@@ -30,6 +30,7 @@ namespace mods
         auto riffBuffer = _fileBuffer.slice<u8>(sizeof(RiffHeader), riffHeader->chunk.getChunkSize() - sizeof(RiffHeader) + sizeof(ChunkHeader));
         
         optional<RBuffer<FmtHeader>> optFmtHeader;
+        optional<RBuffer<FactHeader>> optFactHeader;
         
         size_t offset = 0;
         while(offset < riffBuffer.size())
@@ -43,7 +44,8 @@ namespace mods
                }
              else if(chunkHeader->getChunkID() == FACT)
                {
-                  std::cout << "TODO: read FACT chunk" << std::endl;
+                  checkInit(!optFactHeader.has_value(), "Multiple fact chunks defined");
+                  optFactHeader = readFact(chunkHeader, riffBuffer, offset);
                }
              else
                {
@@ -70,7 +72,7 @@ namespace mods
                                          const RBuffer<u8>& riffBuffer,
                                          size_t offset) const
      {
-        checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset &&
+        checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
                   chunkHeader->getChunkSize() >= sizeof(FmtHeader) - sizeof(ChunkHeader) , "Incomplete FMT chunk");
         
         auto fmtHeader = riffBuffer.slice<FmtHeader>(offset, 1);
@@ -80,6 +82,18 @@ namespace mods
         checkInit(fmtHeader->chunk.getChunkSize() == sizeof(FmtHeader) - sizeof(ChunkHeader), "Extra fmt infos not yet implemented");
         
         return fmtHeader;
+     }
+   
+   RBuffer<FactHeader> WavReader::readFact(const RBuffer<ChunkHeader>& chunkHeader,
+                                           const RBuffer<u8>& riffBuffer,
+                                           size_t offset) const
+     {
+        checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
+                  chunkHeader->getChunkSize() == sizeof(FactHeader) - sizeof(ChunkHeader) , "Incomplete Fact chunk");
+        
+        auto factHeader = riffBuffer.slice<FactHeader>(offset, 1);
+        
+        return factHeader;
      }
    
    bool WavReader::isFinished() const
