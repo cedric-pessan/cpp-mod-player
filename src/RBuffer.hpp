@@ -35,7 +35,7 @@ namespace mods
           RBuffer<T2> slice(size_t offset, size_t len) const
             {
                size_t currentOffset = reinterpret_cast<u8*>(_rbuf) - reinterpret_cast<u8*>(Buffer::Attorney::getBuffer(*_backend));
-               check(currentOffset + offset * sizeof(T) + len * sizeof(T2) <= _len * sizeof(T), "invalid slice limits");
+               check(offset * sizeof(T) + len * sizeof(T2) <= _len * sizeof(T), "invalid slice limits");
                return RBuffer<T2>(_backend, currentOffset + offset * sizeof(T), len);
             }
         

@@ -14,6 +14,7 @@ namespace mods
         const std::string WAVE = "WAVE";
         const std::string FMT = "fmt ";
         const std::string FACT = "fact";
+        const std::string DATA = "data";
      }
    
    WavReader::WavReader(const std::string& filename)
@@ -31,6 +32,7 @@ namespace mods
         
         optional<RBuffer<FmtHeader>> optFmtHeader;
         optional<RBuffer<FactHeader>> optFactHeader;
+        optional<RBuffer<u8>> optData;
         
         size_t offset = 0;
         while(offset < riffBuffer.size())
@@ -46,6 +48,11 @@ namespace mods
                {
                   checkInit(!optFactHeader.has_value(), "Multiple fact chunks defined");
                   optFactHeader = readFact(chunkHeader, riffBuffer, offset);
+               }
+             else if(chunkHeader->getChunkID() == DATA)
+               {
+                  checkInit(!optData.has_value(), "Multiple data chunks defined");
+                  optData = readData(chunkHeader, riffBuffer, offset);
                }
              else
                {
@@ -94,6 +101,18 @@ namespace mods
         auto factHeader = riffBuffer.slice<FactHeader>(offset, 1);
         
         return factHeader;
+     }
+   
+   RBuffer<u8> WavReader::readData(const RBuffer<ChunkHeader>& chunkHeader,
+                                   const RBuffer<u8>& riffBuffer,
+                                   size_t offset) const
+     {
+        checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader),
+                  "Incomplete Fact chunk");
+        
+        auto data = riffBuffer.slice<u8>(offset + sizeof(ChunkHeader), chunkHeader->getChunkSize());
+        
+        return data;
      }
    
    bool WavReader::isFinished() const

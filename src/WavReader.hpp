@@ -97,6 +97,10 @@ namespace mods
         RBuffer<FactHeader> readFact(const RBuffer<ChunkHeader>& chunkHeader,
                                      const RBuffer<u8>& riffBuffer,
                                      size_t offset) const;
+        RBuffer<u8> readData(const RBuffer<ChunkHeader>& chunkHeader,
+                             const RBuffer<u8>& riffBuffer,
+                             size_t offset) const;
+        
         
         WavConverter::ptr _converter;
         RBuffer<u8> _fileBuffer;
