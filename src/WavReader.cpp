@@ -64,6 +64,8 @@ namespace mods
              offset += chunkHeader->getChunkSize() + sizeof(ChunkHeader);
           }
         
+        checkInit(optFmtHeader.has_value() && optData.has_value(), "Wav file should have at least a fmt and data chunk");
+        
         /*check data;
         check data size;*/
         

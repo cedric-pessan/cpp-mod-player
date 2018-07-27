@@ -55,8 +55,7 @@ namespace mods
         RBuffer& operator=(const RBuffer&) = delete;
         
         template<typename T2>
-          template<typename T3>
-          friend RBuffer<T3> RBuffer<T2>::slice(size_t offset, size_t len) const;
+          friend class RBuffer;
         
         void check(bool condition, const std::string& description) const
           {
