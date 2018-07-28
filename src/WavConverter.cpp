@@ -13,12 +13,4 @@ namespace mods
         std::cout << "TODO: WavConverter::buildConverter()" << std::endl;
         return nullptr;
      }
-   
-   WavConverter::WavConverter()
-     {
-     }
-   
-   WavConverter::~WavConverter()
-     {
-     }
 }

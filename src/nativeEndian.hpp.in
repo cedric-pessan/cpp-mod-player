@@ -1,12 +1,12 @@
-#ifndef _NATIVE_ENDIAN_HPP_
-#define _NATIVE_ENDIAN_HPP_
+#ifndef _SRC_NATIVEENDIAN_HPP_
+#define _SRC_NATIVEENDIAN_HPP_
 
 #include "endianness.hpp"
 
 class NativeEndianness {
   public:
-    static constexpr Endianness value = ${IS_BIG_ENDIAN} ?
+    static constexpr Endianness value = ${IS_BIG_ENDIAN} != 0 ?
       Endianness::BigEndian : Endianness::LittleEndian;
 };
 
-#endif
+#endif // _SRC_NATIVEENDIAN_HPP_

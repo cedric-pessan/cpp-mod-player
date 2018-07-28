@@ -12,8 +12,8 @@ namespace mods
         
         static ptr buildConverter(int bitsPerSample);
         
-        WavConverter();
-        virtual ~WavConverter();
+        WavConverter() = default;
+        virtual ~WavConverter() = default;
         
         virtual bool isFinished() const = 0;
         
