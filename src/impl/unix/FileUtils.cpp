@@ -1,11 +1,11 @@
 
 #include "../../Buffer.hpp"
 
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 namespace mods
 {
@@ -22,22 +22,23 @@ namespace mods
                     _length(length)
                     {
                     }
-                  virtual ~UnixMapperDeleter()
+                  UnixMapperDeleter() = delete;
+                  UnixMapperDeleter(const UnixMapperDeleter&) = delete;
+                  UnixMapperDeleter(const UnixMapperDeleter&&) = delete;
+                  UnixMapperDeleter& operator=(const UnixMapperDeleter&) = delete;
+                  UnixMapperDeleter& operator=(const UnixMapperDeleter&&) = delete;
+                  ~UnixMapperDeleter() override
                     {
                        ::munmap(_ptr, _length);
                        ::close(_fd);
                     }
                   
                 private:
-                  UnixMapperDeleter() = delete;
-                  UnixMapperDeleter(const UnixMapperDeleter&) = delete;
-                  UnixMapperDeleter& operator=(const UnixMapperDeleter&) = delete;
-                  
                   int _fd;
                   void* _ptr;
                   size_t _length;
                };
-          }
+          } // namespace
         
         Buffer::sptr mapFileToBuffer(const std::string& filename)
           {

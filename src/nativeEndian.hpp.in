@@ -1,5 +1,5 @@
-#ifndef _SRC_NATIVEENDIAN_HPP_
-#define _SRC_NATIVEENDIAN_HPP_
+#ifndef NATIVEENDIAN_HPP_
+#define NATIVEENDIAN_HPP_
 
 #include "endianness.hpp"
 
@@ -9,4 +9,4 @@ class NativeEndianness {
       Endianness::BigEndian : Endianness::LittleEndian;
 };
 
-#endif // _SRC_NATIVEENDIAN_HPP_
+#endif // NATIVEENDIAN_HPP_

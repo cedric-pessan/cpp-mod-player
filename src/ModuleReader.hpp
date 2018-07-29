@@ -18,7 +18,7 @@ namespace mods
       public:
         typedef std::unique_ptr<ModuleReader> ptr;
         
-        virtual ~ModuleReader();
+        virtual ~ModuleReader() = default;
         
         virtual bool isFinished() const = 0;
         
@@ -26,7 +26,7 @@ namespace mods
         static ModuleReader::ptr buildReader(ModuleFormat format, const std::string& filename);
         
       protected:
-        ModuleReader();
+        ModuleReader() = default;
         
         void checkInit(bool condition, const std::string& description) const;
         
@@ -34,19 +34,16 @@ namespace mods
         ModuleReader(const ModuleReader&) = delete;
         ModuleReader& operator=(const ModuleReader&) = delete;
         
-        class ModuleReaderInitException : public std::exception
+        class ModuleReaderInitException : public std::runtime_error
           {
            public:
              explicit ModuleReaderInitException(const std::string& reason);
-             ModuleReaderInitException(const ModuleReaderInitException&);
-             virtual ~ModuleReaderInitException();
-             virtual const char* what() const noexcept override;
+             ModuleReaderInitException(const ModuleReaderInitException&) noexcept = default;
+             virtual ~ModuleReaderInitException() = default;
              
            private:
              ModuleReaderInitException() = delete;
              ModuleReaderInitException& operator=(const ModuleReaderInitException&) = delete;
-             
-             const std::string _reason;
           };
      };
    

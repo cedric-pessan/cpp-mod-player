@@ -9,8 +9,10 @@ namespace mods
    // static
    ModuleFormat ModuleReader::parseFormat(const std::string& format)
      {
-        if(format == "wav") 
-          return ModuleFormat::WAV;
+        if(format == "wav")
+          {
+             return ModuleFormat::WAV;
+          }
         
         return ModuleFormat::UNKNOWN;
      }
@@ -31,36 +33,16 @@ namespace mods
         return reader;
      }
    
-   ModuleReader::ModuleReader()
-     {
-     }
-   
-   ModuleReader::~ModuleReader()
-     {
-     }
-   
    void ModuleReader::checkInit(bool condition, const std::string& description) const
      {
-        if(!condition) throw ModuleReaderInitException(description);
+        if(!condition)
+          {
+             throw ModuleReaderInitException(description);
+          }
      }
    
    ModuleReader::ModuleReaderInitException::ModuleReaderInitException(const std::string& reason)
-     : _reason(reason)
+     : std::runtime_error(reason)
        {
        }
-   
-   ModuleReader::ModuleReaderInitException::ModuleReaderInitException(const ModuleReaderInitException& ex)
-     : std::exception(ex),
-     _reason(ex._reason)
-     {
-     }
-   
-   ModuleReader::ModuleReaderInitException::~ModuleReaderInitException()
-     {
-     }
-   
-   const char* ModuleReader::ModuleReaderInitException::what() const noexcept
-     {
-        return _reason.c_str();
-     }
-}
+} // namespace mods

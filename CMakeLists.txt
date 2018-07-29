@@ -16,10 +16,10 @@ TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 Find_Package(SDL REQUIRED)
 
 include_directories(${SDL_INCLUDE_DIR}
-                    ${CMAKE_BINARY_DIR}/src
+                    ${CMAKE_BINARY_DIR}/include
                     ${CMAKE_SOURCE_DIR}/src)
 
-configure_file(src/nativeEndian.hpp.in src/nativeEndian.hpp)
+configure_file(src/nativeEndian.hpp.in include/nativeEndian.hpp)
 
 set(SRCS_UNIX src/impl/unix/FileUtils.cpp)
 

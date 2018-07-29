@@ -9,17 +9,4 @@ namespace mods
      _deleter(std::move(deleter))
        {
        }
-          
-   
-   Buffer::~Buffer()
-     {
-     }
-   
-   Buffer::Deleter::Deleter()
-     {
-     }
-   
-   Buffer::Deleter::~Deleter()
-     {
-     }
-}
+} // namespace mods

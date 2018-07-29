@@ -19,8 +19,8 @@ namespace mods
            public:
              typedef std::unique_ptr<Deleter> ptr;
              
-             Deleter();
-             virtual ~Deleter();
+             Deleter() = default;
+             virtual ~Deleter() = default;
              
            private:
              Deleter(const Deleter&) = delete;
@@ -28,7 +28,7 @@ namespace mods
           };
         
         Buffer(u8* buf, size_t length, Deleter::ptr deleter);
-        ~Buffer();
+        ~Buffer() = default;
         
       private:
         Buffer() = delete;
