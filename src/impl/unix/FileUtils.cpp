@@ -1,5 +1,6 @@
 
 #include "../../Buffer.hpp"
+#include "modopen.h"
 
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -42,7 +43,7 @@ namespace mods
         
         Buffer::sptr mapFileToBuffer(const std::string& filename)
           {
-             int fd = ::open(filename.c_str(), O_RDONLY);
+             int fd = modOpen(filename.c_str(), O_RDONLY);
              if(fd == -1) return Buffer::sptr();
              size_t length = ::lseek(fd, 0, SEEK_END);
              if(length == (size_t)(off_t)-1) return Buffer::sptr();
