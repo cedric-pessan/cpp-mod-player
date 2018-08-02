@@ -23,7 +23,7 @@ include_directories(${SDL_INCLUDE_DIR}
 configure_file(src/nativeEndian.hpp.in include/nativeEndian.hpp)
 
 set(SRCS_UNIX src/impl/unix/FileUtils.cpp
-              src/impl/unix/modopen.c)
+              src/impl/unix/FileUtils.c)
 
 add_executable(modreader src/main.cpp
                          src/ModuleReader.cpp

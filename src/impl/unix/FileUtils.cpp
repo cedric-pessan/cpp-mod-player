@@ -1,6 +1,6 @@
 
 #include "../../Buffer.hpp"
-#include "modopen.h"
+#include "FileUtils.h"
 
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -43,12 +43,21 @@ namespace mods
         
         Buffer::sptr mapFileToBuffer(const std::string& filename)
           {
-             int fd = modOpen(filename.c_str(), O_RDONLY);
-             if(fd == -1) return Buffer::sptr();
+             int fd = modsOpen(filename.c_str(), O_RDONLY);
+             if(fd == -1)
+               {
+                  return Buffer::sptr();
+               }
              size_t length = ::lseek(fd, 0, SEEK_END);
-             if(length == (size_t)(off_t)-1) return Buffer::sptr();
+             if(length == static_cast<size_t>(static_cast<off_t>(-1)))
+               {
+                  return Buffer::sptr();
+               }
              void* ptr = ::mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
-             if(ptr == MAP_FAILED) return Buffer::sptr();
+             if(modsHasMapFailed(ptr) == FILEUTILS_TRUE)
+               {
+                  return Buffer::sptr();
+               }
              
              auto deleter = std::make_unique<UnixMapperDeleter>(fd, ptr, length);
              return std::make_shared<Buffer>(reinterpret_cast<u8*>(ptr), length, std::move(deleter));
