@@ -2,9 +2,10 @@
 #include "ModuleReader.hpp"
 #include "SoundPlayer.hpp"
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <memory>
+#include <vector>
 
 int main(int argc, char** argv)
 {
@@ -14,7 +15,7 @@ int main(int argc, char** argv)
         return 0;
      }
    
-   std::string filename = argv[1];
+   std::string filename = *(argv + 1);
    auto dotIdx = filename.find_last_of(".");
    if(dotIdx == std::string::npos) 
      {

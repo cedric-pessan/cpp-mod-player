@@ -3,8 +3,8 @@
 #include "FileUtils.hpp"
 #include "impl/FileUtils.hpp"
 
-#include <vector>
 #include <fstream>
+#include <vector>
 
 namespace mods
 {
@@ -14,7 +14,9 @@ namespace mods
           {
              auto buffer = mapFileToBuffer(filename);
              if(!buffer)
-               buffer = readFileToBuffer(filename);
+               {
+                  buffer = readFileToBuffer(filename);
+               }
              return RBuffer<u8>(buffer);
           }
         
@@ -27,18 +29,18 @@ namespace mods
                     : _v(std::move(v))
                     {
                     }
-                  virtual ~FileReaderDeleter()
-                    {
-                    }
+                  ~FileReaderDeleter() override = default;
                   
-                private:
                   FileReaderDeleter() = delete;
                   FileReaderDeleter(const FileReaderDeleter&) = delete;
+                  FileReaderDeleter(const FileReaderDeleter&&) = delete;
                   FileReaderDeleter& operator=(const FileReaderDeleter&) = delete;
+                  FileReaderDeleter& operator=(const FileReaderDeleter&&) = delete;
                   
+                private:
                   std::vector<u8> _v;
                };
-          }
+          } // namespace
         
         Buffer::sptr readFileToBuffer(const std::string& filename)
           {
@@ -47,15 +49,14 @@ namespace mods
              file.seekg(0, std::ios::beg);
              
              std::vector<u8> v(size);
-             if(file.read(reinterpret_cast<char*>(v.data()), size))
+             if(file.read(static_cast<char*>(static_cast<void*>(v.data())), size))
                {
                   u8* ptr = v.data();
                   size_t length = v.size();
                   auto deleter = std::make_unique<FileReaderDeleter>(std::move(v));
                   return std::make_shared<Buffer>(ptr, length, std::move(deleter));
                }
-             else
-               return Buffer::sptr();
+             return Buffer::sptr();
           }
-     }
-}
+     } // namespace FileUtils
+} // namespace mods

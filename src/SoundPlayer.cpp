@@ -2,8 +2,8 @@
 #include "SoundPlayer.hpp"
 #include "ModuleReader.hpp"
 
-#include <iostream>
 #include <SDL.h>
+#include <iostream>
 #include <memory>
 #include <mutex>
 
@@ -12,9 +12,9 @@ namespace mods
    
    extern "C"
      {
-        void SoundPlayer::s_ccallback(void* udata, Uint8* stream, int len)
+        void SoundPlayer::s_ccallback(void* udata, Uint8* /*stream*/, int /*len*/)
           {
-             SoundPlayer* sp = static_cast<SoundPlayer*>(udata);
+             auto sp = static_cast<SoundPlayer*>(udata);
              sp->callback();
           }
      }
@@ -31,7 +31,7 @@ namespace mods
         spec.callback = s_ccallback;
         spec.userdata = this;
         
-        res = SDL_OpenAudio(&spec, NULL);
+        res = SDL_OpenAudio(&spec, nullptr);
         checkInit(res >= 0, "audio device could not be opened");
      }
    
@@ -43,7 +43,10 @@ namespace mods
    
    void SoundPlayer::checkInit(bool condition, const std::string& description) const
      {
-        if(!condition) throw SoundPlayerInitException(description);
+        if(!condition)
+          {
+             throw SoundPlayerInitException(description);
+          }
      }
    
    void SoundPlayer::play(ModuleReader::ptr reader)
@@ -85,7 +88,9 @@ namespace mods
                   std::cout << "TODO: SoundPlayer::callback() something to fill" << std::endl;
                   
                   if(reader->isFinished())
-                    std::cout << "TODO: SoundPlayer::callback() everything was played we should unlock caller" << std::endl;
+                    {
+                       std::cout << "TODO: SoundPlayer::callback() everything was played we should unlock caller" << std::endl;
+                    }
                   
                   return;
                }
@@ -93,12 +98,8 @@ namespace mods
         std::cout << "TODO: SoundPlayer::callback() nothing to play, we should 0 volume" << std::endl;
      }
    
-   SoundPlayer::SoundPlayerInitException::SoundPlayerInitException(const std::string& reason)
-     : _reason(reason)
-     {
-     }
-   
-   SoundPlayer::SoundPlayerInitException::~SoundPlayerInitException()
+   SoundPlayer::SoundPlayerInitException::SoundPlayerInitException(std::string reason)
+     : _reason(std::move(reason))
      {
      }
    
@@ -107,4 +108,4 @@ namespace mods
         return _reason.c_str();
      }
 
-}
+} // namespace mods

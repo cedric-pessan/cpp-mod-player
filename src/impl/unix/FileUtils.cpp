@@ -60,7 +60,7 @@ namespace mods
                }
              
              auto deleter = std::make_unique<UnixMapperDeleter>(fd, ptr, length);
-             return std::make_shared<Buffer>(reinterpret_cast<u8*>(ptr), length, std::move(deleter));
+             return std::make_shared<Buffer>(static_cast<u8*>(ptr), length, std::move(deleter));
           }
-     }
-}
+     } // namespace FileUtils
+} // namespace mods
