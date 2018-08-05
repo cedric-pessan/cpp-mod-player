@@ -1,11 +1,27 @@
 
 #include "ModuleReader.hpp"
+#include "RBuffer.hpp"
 #include "SoundPlayer.hpp"
 
 #include <algorithm>
 #include <iostream>
 #include <memory>
 #include <vector>
+
+namespace
+{
+   class EmptyDeleter : public mods::Buffer::Deleter
+     {
+      public:
+        EmptyDeleter() = default;
+        ~EmptyDeleter() override = default;
+        
+        EmptyDeleter(const EmptyDeleter&) = delete;
+        EmptyDeleter(const EmptyDeleter&&) = delete;
+        EmptyDeleter& operator=(const EmptyDeleter&) = delete;
+        EmptyDeleter& operator=(const EmptyDeleter&&) = delete;
+     };
+} // namespace
 
 int main(int argc, char** argv)
 {
@@ -15,8 +31,12 @@ int main(int argc, char** argv)
         return 0;
      }
    
-   std::string filename = *(argv + 1);
-   auto dotIdx = filename.find_last_of(".");
+   auto deleter = std::make_unique<EmptyDeleter>();
+   auto argBuffer = std::make_shared<mods::Buffer>(static_cast<u8*>(static_cast<void*>(argv)), argc * sizeof(char*), std::move(deleter));
+   mods::RBuffer<char*> args(argBuffer);
+   
+   std::string filename = args[1];
+   auto dotIdx = filename.find_last_of('.');
    if(dotIdx == std::string::npos) 
      {
         std::cout << "count not find extension: " << filename << std::endl;

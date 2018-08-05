@@ -12,6 +12,7 @@ namespace mods
      {
       public:
         typedef size_t size_type;
+        typedef const T& const_reference;
         
         explicit RBuffer(const Buffer::sptr& backend)
           : _backend(backend),
@@ -42,6 +43,11 @@ namespace mods
         size_type size() const noexcept
           {
              return _len;
+          }
+        
+        const_reference operator[](size_type pos) const
+          {
+             return *(_rbuf + pos);
           }
         
       private:
