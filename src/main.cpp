@@ -1,7 +1,7 @@
 
-#include "ModuleReader.hpp"
-#include "RBuffer.hpp"
-#include "SoundPlayer.hpp"
+#include "mods/ModuleReader.hpp"
+#include "mods/utils/RBuffer.hpp"
+#include "mods/SoundPlayer.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -10,7 +10,7 @@
 
 namespace
 {
-   class EmptyDeleter : public mods::Buffer::Deleter
+   class EmptyDeleter : public mods::utils::Buffer::Deleter
      {
       public:
         EmptyDeleter() = default;
@@ -32,8 +32,9 @@ int main(int argc, char** argv)
      }
    
    auto deleter = std::make_unique<EmptyDeleter>();
-   auto argBuffer = std::make_shared<mods::Buffer>(static_cast<u8*>(static_cast<void*>(argv)), argc * sizeof(char*), std::move(deleter));
-   mods::RBuffer<char*> args(argBuffer);
+   auto argvp = static_cast<u8*>(static_cast<void*>(argv));
+   auto argBuffer = std::make_shared<mods::utils::Buffer>(argvp, argc * sizeof(char*), std::move(deleter));
+   mods::utils::RBuffer<char*> args(argBuffer);
    
    std::string filename = args[1];
    auto dotIdx = filename.find_last_of('.');

@@ -1,7 +1,7 @@
 #ifndef NATIVEENDIAN_HPP_
 #define NATIVEENDIAN_HPP_
 
-#include "endianness.hpp"
+#include "mods/utils/endianness.hpp"
 
 class NativeEndianness {
   public:

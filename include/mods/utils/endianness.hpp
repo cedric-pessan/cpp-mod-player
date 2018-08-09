@@ -1,5 +1,5 @@
-#ifndef _ENDIANNESS_HPP_
-#define _ENDIANNESS_HPP_
+#ifndef ENDIANNESS_HPP
+#define ENDIANNESS_HPP
 
 enum struct Endianness
 {
@@ -8,4 +8,4 @@ enum struct Endianness
      Unknown
 };
 
-#endif // _ENDIANNESS_HPP_
+#endif // ENDIANNESS_HPP

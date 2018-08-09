@@ -1,6 +1,6 @@
 
-#include "ModuleReader.hpp"
-#include "WavReader.hpp"
+#include "mods/ModuleReader.hpp"
+#include "mods/wav/WavReader.hpp"
 
 #include <iostream>
 
@@ -24,7 +24,7 @@ namespace mods
         switch(format) 
           {
            case ModuleFormat::WAV:
-             reader = std::make_unique<WavReader>(filename);
+             reader = std::make_unique<wav::WavReader>(filename);
              break;
            case ModuleFormat::UNKNOWN:
              // keep null reader

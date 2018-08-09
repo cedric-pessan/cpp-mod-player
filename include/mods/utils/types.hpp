@@ -2,7 +2,7 @@
 #define _TYPES_HPP_
 
 #include "endianness.hpp"
-#include "nativeEndian.hpp"
+#include "mods/utils/nativeEndian.hpp"
 
 #include <stdint.h>
 #include <iostream>

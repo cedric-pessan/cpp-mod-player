@@ -1,6 +1,6 @@
 
-#include "SoundPlayer.hpp"
-#include "ModuleReader.hpp"
+#include "mods/SoundPlayer.hpp"
+#include "mods/ModuleReader.hpp"
 
 #include <SDL.h>
 #include <iostream>
