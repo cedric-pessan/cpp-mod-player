@@ -1,14 +1,14 @@
-#ifndef _SOUNDPLAYER_HPP_
-#define _SOUNDPLAYER_HPP_
+#ifndef MODS_SOUNDPLAYER_HPP
+#define MODS_SOUNDPLAYER_HPP
 
 #include "ModuleReader.hpp"
 
+#include <SDL.h>
+#include <deque>
 #include <exception>
-#include <string>
 #include <memory>
 #include <mutex>
-#include <deque>
-#include <SDL.h>
+#include <string>
 
 namespace mods
 {
@@ -18,13 +18,15 @@ namespace mods
         SoundPlayer();
         ~SoundPlayer();
         
+        SoundPlayer(const SoundPlayer&) = delete;
+        SoundPlayer(const SoundPlayer&&) = delete;
+        SoundPlayer& operator=(const SoundPlayer&) = delete;
+        SoundPlayer& operator=(const SoundPlayer&&) = delete;
+        
         void play(ModuleReader::ptr reader);
         
       private:
-        SoundPlayer(const SoundPlayer&) = delete;
-        SoundPlayer& operator=(const SoundPlayer&) = delete;
-        
-        typedef std::pair<ModuleReader::ptr, std::shared_ptr<std::mutex>> SynchronizedReader;
+        using SynchronizedReader = std::pair<ModuleReader::ptr, std::shared_ptr<std::mutex>>;
         std::mutex _playListMutex;
         std::deque<SynchronizedReader> _playList;
         
@@ -41,17 +43,19 @@ namespace mods
            public:
              explicit SoundPlayerInitException(std::string reason);
              SoundPlayerInitException(const SoundPlayerInitException&) noexcept;
-             virtual ~SoundPlayerInitException() = default;
-             virtual const char* what() const noexcept override;
+             SoundPlayerInitException(SoundPlayerInitException&&) = default;
+             ~SoundPlayerInitException() override = default;
+             const char* what() const noexcept override;
              
-           private:
              SoundPlayerInitException() = delete;
              SoundPlayerInitException& operator=(const SoundPlayerInitException&) = delete;
+             SoundPlayerInitException& operator=(const SoundPlayerInitException&&) = delete;
              
+           private:
              std::string _reason;
           };
      };
    
-}
+} // namespace mods
 
-#endif // _SOUNDPLAYER_HPP_
+#endif // MODS_SOUNDPLAYER_HPP

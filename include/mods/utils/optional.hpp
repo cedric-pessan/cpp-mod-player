@@ -1,5 +1,5 @@
-#ifndef _OPTIONAL_HPP_
-#define _OPTIONAL_HPP_
+#ifndef MODS_UTILS_OPTIONAL_HPP
+#define MODS_UTILS_OPTIONAL_HPP
 
 namespace mods
 {
@@ -12,16 +12,26 @@ namespace mods
      {
       public:
         constexpr optional() noexcept
-          : _hasValue(false)
+          : _value()
           {
           }
         ~optional()
           {
+             cleanValue();
           }
         
         template<typename U = T>
           optional& operator=(U&& value)
             {
+               cleanValue();
+               if(_hasValue) 
+                 {
+                    _value.value = std::forward<T>(value); // NOLINT(cppcoreguidelines-pro-type-union-access)
+                 }
+               else 
+                 {
+                    ::new(&_value.value)T(std::forward<T>(value)); // NOLINT(cppcoreguidelines-pro-type-union-access)
+                 }
                _hasValue = true;
                return *this;
             }
@@ -31,13 +41,42 @@ namespace mods
              return _hasValue;
           }
         
-      private:
         optional(const optional&) = delete;
+        optional(const optional&&) = delete;
         optional& operator=(const optional&) = delete;
+        optional& operator=(const optional&&) = delete;
         
-        bool _hasValue;
+      private:
+        void cleanValue()
+          {
+             if(_hasValue)
+               {
+                  _value.value.~T(); // NOLINT(cppcoreguidelines-pro-type-union-access)
+               }
+          }
+        
+        bool _hasValue = false;
+        union Value 
+          {
+             T value;
+             u8 empty;
+             
+             constexpr Value()
+               : empty(0)
+               {
+               }
+             ~Value()
+               {
+                  empty = 0;
+               }
+             
+             Value(const Value&) = delete;
+             Value(const Value&&) = delete;
+             Value& operator=(const Value&) = delete;
+             Value& operator=(const Value&&) = delete;
+          } _value;
      };
    
-}
+} // namespace mods
 
-#endif // _OPTIONAL_HPP_
+#endif // MODS_UTILS_OPTIONAL_HPP

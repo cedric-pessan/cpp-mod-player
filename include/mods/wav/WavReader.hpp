@@ -1,8 +1,8 @@
-#ifndef _WAVREADER_HPP_
-#define _WAVREADER_HPP_
+#ifndef MODS_WAV_WAVREADER_HPP
+#define MODS_WAV_WAVREADER_HPP
 
-#include "mods/ModuleReader.hpp"
 #include "WavConverter.hpp"
+#include "mods/ModuleReader.hpp"
 #include "mods/utils/RBuffer.hpp"
 #include "mods/utils/types.hpp"
 
@@ -25,12 +25,12 @@ namespace mods
            public:
              std::string getChunkID() const noexcept
                {
-                  return std::string(chunkID, sizeof(chunkID));
+                  return std::string(static_cast<const char*>(chunkID), sizeof(chunkID));
                }
              
              u32 getChunkSize() const noexcept
                {
-                  return chunkSize;
+                  return static_cast<u32>(chunkSize);
                }
           };
         
@@ -45,7 +45,7 @@ namespace mods
            public:
              std::string getFormat() const noexcept
                {
-                  return std::string(format, sizeof(format));
+                  return std::string(static_cast<const char*>(format), sizeof(format));
                }
           };
         
@@ -65,7 +65,7 @@ namespace mods
            public:
              WavAudioFormat getAudioFormat() const noexcept
                {
-                  u16 value = audioFormat;
+                  u16 value = static_cast<u16>(audioFormat);
                   return static_cast<WavAudioFormat>(value);
                }
           };
@@ -84,15 +84,17 @@ namespace mods
           {
            public:
              explicit WavReader(const std::string& filename);
-             virtual ~WavReader();
+             ~WavReader() override = default;
              
-             virtual bool isFinished() const override;
-             
-           private:
              WavReader() = delete;
              WavReader(const WavReader&) = delete;
+             WavReader(const WavReader&&) = delete;
              WavReader& operator=(const WavReader&) = delete;
+             WavReader& operator=(const WavReader&&) = delete;
              
+             bool isFinished() const override;
+             
+           private:
              mods::utils::RBuffer<FmtHeader> readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
                                                      const mods::utils::RBuffer<u8>& riffBuffer,
                                                      size_t offset) const;
@@ -108,7 +110,7 @@ namespace mods
              mods::utils::RBuffer<u8> _fileBuffer;
              mods::utils::RBuffer<ChunkHeader> _headerBuffer;
           };
-     }
-}
+     } // namespace wav
+} // namespace mods
 
-#endif // _WAVREADER_HPP_
+#endif // MODS_WAV_WAVREADER_HPP

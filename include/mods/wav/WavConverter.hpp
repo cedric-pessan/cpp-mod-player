@@ -1,5 +1,5 @@
-#ifndef WAVCONVERTER_HPP
-#define WAVCONVERTER_HPP
+#ifndef MODS_WAV_WAVCONVERTER_HPP
+#define MODS_WAV_WAVCONVERTER_HPP
 
 #include <memory>
 
@@ -10,7 +10,7 @@ namespace mods
         class WavConverter
           {
            public:
-             typedef std::unique_ptr<WavConverter> ptr;
+             using ptr = std::unique_ptr<WavConverter>;
              
              static ptr buildConverter(int bitsPerSample);
              
@@ -19,11 +19,12 @@ namespace mods
              
              virtual bool isFinished() const = 0;
              
-           private:
              WavConverter(const WavConverter&) = delete;
+             WavConverter(const WavConverter&&) = delete;
              WavConverter& operator=(const WavConverter&) = delete;
+             WavConverter& operator=(const WavConverter&&) = delete;
           };
-     }
-}
+     } // namespace wav
+} // namespace mods
 
-#endif // WAVCONVERTER_HPP
+#endif // MODS_WAV_WAVCONVERTER_HPP

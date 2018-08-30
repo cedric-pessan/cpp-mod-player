@@ -1,5 +1,5 @@
-#ifndef _RBUFFER_HPP_
-#define _RBUFFER_HPP_
+#ifndef MODS_UTILS_RBUFFER_HPP
+#define MODS_UTILS_RBUFFER_HPP
 
 #include "Buffer.hpp"
 
@@ -13,21 +13,23 @@ namespace mods
           class RBuffer
           {
            public:
-             typedef size_t size_type;
-             typedef const T& const_reference;
+             using size_type = size_t;
+             using const_reference = const T&;
              
-             explicit RBuffer(const Buffer::sptr& backend)
-               : _backend(backend),
-               _rbuf(reinterpret_cast<T*>(Buffer::Attorney::getBuffer(*_backend))),
+             explicit RBuffer(Buffer::sptr backend)
+               : _backend(std::move(backend)),
+               _rbuf(static_cast<T*>(static_cast<void*>(Buffer::Attorney::getBuffer(*_backend)))),
                _len(Buffer::Attorney::getLength(*_backend) / sizeof(T))
                  {
                  }
              
-             RBuffer(RBuffer&&);
+             RBuffer(RBuffer&&) noexcept = default;
              
-             ~RBuffer()
-               {
-               }
+             ~RBuffer() = default;
+             
+             RBuffer(const RBuffer&) = delete;
+             RBuffer& operator=(const RBuffer&) = delete;
+             RBuffer& operator=(RBuffer&&) noexcept = default;
              
              T* operator->() const
                {
@@ -37,7 +39,7 @@ namespace mods
              template<typename T2>
                RBuffer<T2> slice(size_t offset, size_t len) const
                {
-                  size_t currentOffset = reinterpret_cast<u8*>(_rbuf) - reinterpret_cast<u8*>(Buffer::Attorney::getBuffer(*_backend));
+                  size_t currentOffset = static_cast<u8*>(_rbuf) - static_cast<u8*>(Buffer::Attorney::getBuffer(*_backend));
                   check(offset * sizeof(T) + len * sizeof(T2) <= _len * sizeof(T), "invalid slice limits");
                   return RBuffer<T2>(_backend, currentOffset + offset * sizeof(T), len);
                }
@@ -49,31 +51,32 @@ namespace mods
              
              const_reference operator[](size_type pos) const
                {
-                  return *(_rbuf + pos);
+                  return *(_rbuf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                }
              
            private:
-             RBuffer(const Buffer::sptr& backend, size_t offset, size_t len)
-               : _backend(backend),
-               _rbuf(reinterpret_cast<T*>(Buffer::Attorney::getBuffer(*_backend) + offset)),
+             RBuffer(Buffer::sptr backend, size_t offset, size_t len)
+               : _backend(std::move(backend)),
+               _rbuf(static_cast<T*>(static_cast<void*>(Buffer::Attorney::getBuffer(*_backend) + offset))), // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                _len(len)
                  {
                  }
-             RBuffer(const RBuffer&) = delete;
-             RBuffer& operator=(const RBuffer&) = delete;
              
              template<typename T2>
                friend class RBuffer;
              
              void check(bool condition, const std::string& description) const
                {
-                  if(!condition) throw std::out_of_range(description);
+                  if(!condition)
+                    {
+                       throw std::out_of_range(description);
+                    }
                }
              
              Buffer::sptr _backend;
              T* _rbuf;
              size_t _len;
           };
-     }
-}
-#endif // _RBUFFER_HPP_
+     } // namespace utils
+} // namespace mods
+#endif // MODS_UTILS_RBUFFER_HPP

@@ -1,10 +1,10 @@
-#ifndef BUFFER_HPP
-#define BUFFER_HPP
+#ifndef MODS_UTILS_BUFFER_HPP
+#define MODS_UTILS_BUFFER_HPP
 
 #include "types.hpp"
 
-#include <memory>
 #include <iostream>
+#include <memory>
 
 namespace mods
 {
@@ -15,28 +15,31 @@ namespace mods
         class Buffer
           {
            public:
-             typedef std::shared_ptr<Buffer> sptr;
+             using sptr = std::shared_ptr<Buffer>;
              class Deleter
                {
                 public:
-                  typedef std::unique_ptr<Deleter> ptr;
+                  using ptr = std::unique_ptr<Deleter>;
                   
                   Deleter() = default;
                   virtual ~Deleter() = default;
                   
-                private:
                   Deleter(const Deleter&) = delete;
+                  Deleter(const Deleter&&) = delete;
                   Deleter& operator=(const Deleter&) = delete;
+                  Deleter& operator=(const Deleter&&) = delete;
                };
              
              Buffer(u8* buf, size_t length, Deleter::ptr deleter);
              ~Buffer() = default;
              
-           private:
              Buffer() = delete;
              Buffer(const Buffer&) = delete;
+             Buffer(const Buffer&&) = delete;
              Buffer& operator=(const Buffer&) = delete;
+             Buffer& operator=(const Buffer&&) = delete;
              
+           private:
              u8* _buf;
              size_t _length;
              Deleter::ptr _deleter;
@@ -44,18 +47,21 @@ namespace mods
            public:
              class Attorney
                {
-                private:
+                public:
                   Attorney() = delete;
                   Attorney(const Attorney&) = delete;
+                  Attorney(const Attorney&&) = delete;
                   Attorney& operator=(const Attorney&) = delete;
+                  Attorney& operator=(const Attorney&&) = delete;
                   ~Attorney() = delete;
                   
-                  static u8* getBuffer(Buffer& buffer)
+                private:
+                  static u8* getBuffer(const Buffer& buffer)
                     {
                        return buffer._buf;
                     }
                   
-                  static size_t getLength(Buffer& buffer)
+                  static size_t getLength(const Buffer& buffer)
                     {
                        return buffer._length;
                     }
@@ -64,6 +70,7 @@ namespace mods
                     friend class RBuffer;
                };
           };
-     }
-}
-#endif // BUFFER_HPP
+     } // namespace utils
+} // namespace mods
+
+#endif // MODS_UTILS_BUFFER_HPP

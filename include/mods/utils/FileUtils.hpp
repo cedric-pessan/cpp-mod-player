@@ -1,5 +1,5 @@
-#ifndef _FILEUTILS_HPP_
-#define _FILEUTILS_HPP_
+#ifndef MODS_UTILS_FILEUTILS_HPP
+#define MODS_UTILS_FILEUTILS_HPP
 
 namespace mods
 {
@@ -10,8 +10,8 @@ namespace mods
              RBuffer<u8> mapFile(const std::string& filename);
              
              Buffer::sptr readFileToBuffer(const std::string& filename);
-          }
-     }
-}
+          } // namespace FileUtils
+     } // namespace utils
+} // namespace mods
 
-#endif // _FILEUTILS_HPP_
+#endif // MODS_UTILS_FILEUTILS_HPP

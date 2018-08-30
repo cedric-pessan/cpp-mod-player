@@ -1,9 +1,9 @@
 
-#ifndef _MODULEREADER_HPP_
-#define _MODULEREADER_HPP_
+#ifndef MODS_MODULEREADER_HPP
+#define MODS_MODULEREADER_HPP
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace mods
 {
@@ -16,8 +16,12 @@ namespace mods
    class ModuleReader
      {
       public:
-        typedef std::unique_ptr<ModuleReader> ptr;
+        using ptr = std::unique_ptr<ModuleReader>;
         
+        ModuleReader(const ModuleReader&) = delete;
+        ModuleReader(const ModuleReader&&) = delete;
+        ModuleReader& operator=(const ModuleReader&) = delete;
+        ModuleReader& operator=(const ModuleReader&&) = delete;
         virtual ~ModuleReader() = default;
         
         virtual bool isFinished() const = 0;
@@ -31,22 +35,21 @@ namespace mods
         void checkInit(bool condition, const std::string& description) const;
         
       private:
-        ModuleReader(const ModuleReader&) = delete;
-        ModuleReader& operator=(const ModuleReader&) = delete;
         
         class ModuleReaderInitException : public std::runtime_error
           {
            public:
              explicit ModuleReaderInitException(const std::string& reason);
              ModuleReaderInitException(const ModuleReaderInitException&) noexcept = default;
-             virtual ~ModuleReaderInitException() = default;
+             ModuleReaderInitException(ModuleReaderInitException&&) noexcept = default;
+             ~ModuleReaderInitException() override = default;
              
-           private:
              ModuleReaderInitException() = delete;
              ModuleReaderInitException& operator=(const ModuleReaderInitException&) = delete;
+             ModuleReaderInitException& operator=(const ModuleReaderInitException&&) = delete;
           };
      };
    
-}
+} // namespace mods
 
-#endif // _MODULEREADER_HPP_
+#endif // MODS_MODULEREADER_HPP

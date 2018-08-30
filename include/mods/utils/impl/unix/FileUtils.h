@@ -1,5 +1,5 @@
-#ifndef _FILEUTILS_H_
-#define _FILEUTILS_H_
+#ifndef MODS_UTILS_IMPL_UNIX_FILEUTILS_H
+#define MODS_UTILS_IMPL_UNIX_FILEUTILS_H
 
 enum
 {
@@ -17,4 +17,4 @@ extern "C"
 }
 #endif
 
-#endif // _FILEUTILS_H_
+#endif // MODS_UTILS_IMPL_UNIX_FILEUTILS_H

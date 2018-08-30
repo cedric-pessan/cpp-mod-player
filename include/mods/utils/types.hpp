@@ -1,15 +1,15 @@
-#ifndef _TYPES_HPP_
-#define _TYPES_HPP_
+#ifndef MODS_UTILS_TYPES_HPP
+#define MODS_UTILS_TYPES_HPP
 
 #include "endianness.hpp"
 #include "mods/utils/nativeEndian.hpp"
 
-#include <stdint.h>
+#include <cstdint>
 #include <iostream>
 
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
+using u8 = uint8_t;
+using u16 = uint16_t;
+using u32 = uint32_t;
 
 #pragma pack(push,1)
 template<Endianness endianness>
@@ -19,17 +19,18 @@ template<Endianness endianness>
    u8 _v[2];
    
  public:
-   operator u16() const
+   explicit operator u16() const
      {
         return static_cast<u16>(_v[0]) |
-          (static_cast<u16>(_v[1]) << 8);
+          static_cast<u16>(static_cast<u16>(_v[1]) << 8u);
      }
    
- private:
    u16leImpl() = delete;
    u16leImpl(const u16leImpl&) = delete;
+   u16leImpl(const u16leImpl&&) = delete;
    u16leImpl& operator=(const u16leImpl&) = delete;
-   ~u16leImpl();
+   u16leImpl& operator=(const u16leImpl&&) = delete;
+   ~u16leImpl() = delete;
 };
 
 template<>
@@ -39,16 +40,17 @@ template<>
    u16 _value;
    
  public:
-   operator u16() const
+   explicit operator u16() const
      {
         return _value;
      }
    
- private:
    u16leImpl() = delete;
    u16leImpl(const u16leImpl&) = delete;
+   u16leImpl(const u16leImpl&&) = delete;
    u16leImpl& operator=(const u16leImpl&) = delete;
-   ~u16leImpl();
+   u16leImpl& operator=(const u16leImpl&&) = delete;
+   ~u16leImpl() = delete;
 };
 
 template<Endianness endianness>
@@ -58,19 +60,20 @@ template<Endianness endianness>
    u8 _v[4];
    
  public:
-   operator u32() const
+   explicit operator u32() const
      {
         return static_cast<u32>(_v[0]) |
-          (static_cast<u32>(_v[1]) << 8) |
-          (static_cast<u32>(_v[2]) << 16) |
-          (static_cast<u32>(_v[3]) << 24);
+          (static_cast<u32>(_v[1]) << 8u) |
+          (static_cast<u32>(_v[2]) << 16u) |
+          (static_cast<u32>(_v[3]) << 24u);
      }
    
- private:
    u32leImpl() = delete;
    u32leImpl(const u32leImpl&) = delete;
+   u32leImpl(const u32leImpl&&) = delete;
    u32leImpl& operator=(const u32leImpl&) = delete;
-   ~u32leImpl();
+   u32leImpl& operator=(const u32leImpl&&) = delete;
+   ~u32leImpl() = delete;
 };
 
 template<>
@@ -80,20 +83,21 @@ template<>
    u32 _value;
    
  public:
-   operator u32() const
+   explicit operator u32() const
      {
         return _value;
      }
    
- private:
    u32leImpl() = delete;
    u32leImpl(const u32leImpl&) = delete;
+   u32leImpl(const u32leImpl&&) = delete;
    u32leImpl& operator=(const u32leImpl&) = delete;
-   ~u32leImpl();
+   u32leImpl& operator=(const u32leImpl&&) = delete;
+   ~u32leImpl() = delete;
 };
 #pragma pack(pop)
 
-typedef u16leImpl<NativeEndianness::value> u16le;
-typedef u32leImpl<NativeEndianness::value> u32le;
+using u16le = u16leImpl<NativeEndianness::value>;
+using u32le = u32leImpl<NativeEndianness::value>;
 
-#endif // _TYPES_HPP_
+#endif // MODS_UTILS_TYPES_HPP

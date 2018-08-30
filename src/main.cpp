@@ -1,7 +1,7 @@
 
 #include "mods/ModuleReader.hpp"
-#include "mods/utils/RBuffer.hpp"
 #include "mods/SoundPlayer.hpp"
+#include "mods/utils/RBuffer.hpp"
 
 #include <algorithm>
 #include <iostream>

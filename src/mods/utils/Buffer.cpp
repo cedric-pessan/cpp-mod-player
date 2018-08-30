@@ -11,5 +11,5 @@ namespace mods
           _deleter(std::move(deleter))
             {
             }
-     }
+     } // namespace utils
 } // namespace mods

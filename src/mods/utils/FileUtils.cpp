@@ -1,7 +1,7 @@
 
-#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/impl/FileUtils.hpp"
 #include "mods/utils/FileUtils.hpp"
-#include "impl/FileUtils.hpp"
+#include "mods/utils/RBuffer.hpp"
 
 #include <fstream>
 #include <vector>
@@ -61,5 +61,5 @@ namespace mods
                   return Buffer::sptr();
                }
           } // namespace FileUtils
-     }
+     } // namespace utils
 } // namespace mods

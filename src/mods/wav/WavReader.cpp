@@ -12,23 +12,43 @@ namespace mods
      {
         namespace
           {
-             const std::string RIFF = "RIFF";
-             const std::string WAVE = "WAVE";
-             const std::string FMT = "fmt ";
-             const std::string FACT = "fact";
-             const std::string DATA = "data";
-          }
+             const std::string& getRIFF() 
+               {
+                  static const std::string RIFF = "RIFF";
+                  return RIFF;
+               }
+             const std::string& getWAVE()
+               {
+                  static const std::string WAVE = "WAVE";
+                  return WAVE;
+               }
+             const std::string& getFMT()
+               {
+                  static const std::string FMT = "fmt ";
+                  return FMT;
+               }
+             const std::string& getFACT()
+               {
+                  static const std::string FACT = "fact";
+                  return FACT;
+               }
+             const std::string& getDATA()
+               {
+                  static const std::string DATA = "data";
+                  return DATA;
+               }
+          } // namespace
         
         WavReader::WavReader(const std::string& filename)
           : _fileBuffer(mods::utils::FileUtils::mapFile(filename)),
           _headerBuffer(_fileBuffer.slice<ChunkHeader>(0, 1))
             {
-               checkInit(_headerBuffer->getChunkID() == RIFF, "Not a RIFF file");
+               checkInit(_headerBuffer->getChunkID() == getRIFF(), "Not a RIFF file");
                checkInit(_fileBuffer.size() >= _headerBuffer->getChunkSize() - sizeof(ChunkHeader), "RIFF chunk not complete");
                
                auto riffHeader = _fileBuffer.slice<RiffHeader>(0, 1);
                
-               checkInit(riffHeader->getFormat() == WAVE, "Not a WAVE file");
+               checkInit(riffHeader->getFormat() == getWAVE(), "Not a WAVE file");
                
                auto riffBuffer = _fileBuffer.slice<u8>(sizeof(RiffHeader), riffHeader->chunk.getChunkSize() - sizeof(RiffHeader) + sizeof(ChunkHeader));
                
@@ -42,17 +62,17 @@ namespace mods
                  {
                     auto chunkHeader = riffBuffer.slice<ChunkHeader>(offset, 1);
                     
-                    if(chunkHeader->getChunkID() == FMT)
+                    if(chunkHeader->getChunkID() == getFMT())
                       {
                          checkInit(!optFmtHeader.has_value(), "Multiple fmt chunks defined");
                          optFmtHeader = readFMT(chunkHeader, riffBuffer, offset);
                       }
-                    else if(chunkHeader->getChunkID() == FACT)
+                    else if(chunkHeader->getChunkID() == getFACT())
                       {
                          checkInit(!optFactHeader.has_value(), "Multiple fact chunks defined");
                          optFactHeader = readFact(chunkHeader, riffBuffer, offset);
                       }
-                    else if(chunkHeader->getChunkID() == DATA)
+                    else if(chunkHeader->getChunkID() == getDATA())
                       {
                          checkInit(!optData.has_value(), "Multiple data chunks defined");
                          optData = readData(chunkHeader, riffBuffer, offset);
@@ -75,10 +95,6 @@ namespace mods
                std::cout << "TODO: WavReader: everything is parsed" << std::endl;
                //_converter = WavConverter::buildConverter(_headerBuffer->bitsPerSample);
             }
-        
-        WavReader::~WavReader()
-          {
-          }
         
         mods::utils::RBuffer<FmtHeader> WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
                                                            const mods::utils::RBuffer<u8>& riffBuffer,
@@ -125,5 +141,5 @@ namespace mods
              return _converter->isFinished();
           }
         
-     }
-}
+     } // namespace wav
+} // namespace mods

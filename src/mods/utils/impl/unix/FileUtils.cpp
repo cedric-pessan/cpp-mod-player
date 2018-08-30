@@ -1,6 +1,6 @@
 
 #include "mods/utils/Buffer.hpp"
-#include "FileUtils.h"
+#include "mods/utils/impl/unix/FileUtils.h"
 
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -65,5 +65,5 @@ namespace mods
                   return std::make_shared<Buffer>(static_cast<u8*>(ptr), length, std::move(deleter));
                }
           } // namespace FileUtils
-     }
+     } // namespace utils
 } // namespace mods
