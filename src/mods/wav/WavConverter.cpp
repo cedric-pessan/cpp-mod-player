@@ -8,9 +8,18 @@ namespace mods
    namespace wav
      {
         // static
-        WavConverter::ptr WavConverter::buildConverter(int bitsPerSample)
+        WavConverter::ptr WavConverter::buildConverter(/*int bitsPerSample*/)
           {
-             std::cout << "TODO: WavConverter:: bitsPerSample: " << bitsPerSample << std::endl;
+             /* pipeline:
+              sampleReader
+              demux
+              upscale or dummy
+              resample or csoimple resple or dummy
+              mix or dummy
+              downscale or dummy
+              mux
+             */
+               
              
              std::cout << "TODO: WavConverter::buildConverter()" << std::endl;
              return nullptr;

@@ -89,11 +89,7 @@ namespace mods
                
                checkInit(optFmtHeader.has_value() && optData.has_value(), "Wav file should have at least a fmt and data chunk");
                
-               /*check data;
-                check data size;*/
-               
-               std::cout << "TODO: WavReader: everything is parsed" << std::endl;
-               //_converter = WavConverter::buildConverter(_headerBuffer->bitsPerSample);
+               _converter = WavConverter::buildConverter(/*_headerBuffer->bitsPerSample*/);
             }
         
         mods::utils::RBuffer<FmtHeader> WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
