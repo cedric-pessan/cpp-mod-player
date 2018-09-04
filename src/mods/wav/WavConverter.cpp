@@ -1,5 +1,6 @@
 
 #include "mods/wav/WavConverter.hpp"
+#include "mods/wav/MultiplexerWavConverter.hpp"
 
 #include <iostream>
 
@@ -14,15 +15,14 @@ namespace mods
               sampleReader
               demux
               upscale or dummy
-              resample or csoimple resple or dummy
+              resample or simple resple or dummy
               mix or dummy
               downscale or dummy
               mux
              */
-               
              
-             std::cout << "TODO: WavConverter::buildConverter()" << std::endl;
-             return nullptr;
+             auto mux = std::make_unique<MultiplexerWavConverter>();
+             return mux;
           }
      } // namespace wav
 } // namespace mods
