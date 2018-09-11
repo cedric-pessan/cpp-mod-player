@@ -7,10 +7,15 @@ namespace mods
 {
    namespace wav
      {
+        MultiplexerWavConverter::MultiplexerWavConverter(WavConverter::ptr&& left, WavConverter::ptr&& right)
+          : _left(std::move(left)),
+          _right(std::move(right))
+            {
+            }
+        
         bool MultiplexerWavConverter::isFinished() const
           {
-             std::cout << "TODO: MultiplexerWavConverter::isFinished() const" << std::endl;
-             return false;
+             return _left->isFinished() && _right->isFinished();
           }
      } // namespace wav
 } // namespace mods

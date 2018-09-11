@@ -68,6 +68,11 @@ namespace mods
                   u16 value = static_cast<u16>(audioFormat);
                   return static_cast<WavAudioFormat>(value);
                }
+             
+             u16 getBitsPerSample() const noexcept
+               {
+                  return static_cast<u16>(bitsPerSample);
+               }
           };
         
         struct FactHeader

@@ -41,6 +41,11 @@ namespace mods
              return _hasValue;
           }
         
+        constexpr const T& operator*() const&
+          {
+             return _value.value;
+          }
+        
         optional(const optional&) = delete;
         optional(const optional&&) = delete;
         optional& operator=(const optional&) = delete;

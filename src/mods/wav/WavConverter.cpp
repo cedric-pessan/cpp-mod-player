@@ -9,7 +9,7 @@ namespace mods
    namespace wav
      {
         // static
-        WavConverter::ptr WavConverter::buildConverter(/*int bitsPerSample*/)
+        WavConverter::ptr WavConverter::buildConverter(int bitsPerSample)
           {
              /* pipeline:
               sampleReader
@@ -21,7 +21,16 @@ namespace mods
               mux
              */
              
-             auto mux = std::make_unique<MultiplexerWavConverter>();
+             ptr downScaledLeft;
+             ptr downScaledRight;
+             
+             switch(bitsPerSample)
+               {
+                default:
+                  std::cout << "unsupported bitsPerSample to downscale:" << bitsPerSample << std::endl;
+               }
+                    
+             auto mux = std::make_unique<MultiplexerWavConverter>(std::move(downScaledLeft), std::move(downScaledRight));
              return mux;
           }
      } // namespace wav
