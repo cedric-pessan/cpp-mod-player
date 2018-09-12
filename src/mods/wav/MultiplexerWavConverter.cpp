@@ -7,7 +7,7 @@ namespace mods
 {
    namespace wav
      {
-        MultiplexerWavConverter::MultiplexerWavConverter(WavConverter::ptr&& left, WavConverter::ptr&& right)
+        MultiplexerWavConverter::MultiplexerWavConverter(WavConverter::ptr left, WavConverter::ptr right)
           : _left(std::move(left)),
           _right(std::move(right))
             {

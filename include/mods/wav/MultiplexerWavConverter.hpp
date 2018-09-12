@@ -10,7 +10,7 @@ namespace mods
         class MultiplexerWavConverter : public WavConverter
           {
            public:
-             MultiplexerWavConverter(WavConverter::ptr&& left, WavConverter::ptr&& right);
+             MultiplexerWavConverter(WavConverter::ptr left, WavConverter::ptr right);
              
              MultiplexerWavConverter() = delete;
              MultiplexerWavConverter(const MultiplexerWavConverter&) = delete;
@@ -19,7 +19,7 @@ namespace mods
              MultiplexerWavConverter& operator=(const MultiplexerWavConverter&&) = delete;
              ~MultiplexerWavConverter() override = default;
              
-             virtual bool isFinished() const;
+             bool isFinished() const override;
              
            private:
              WavConverter::ptr _left;

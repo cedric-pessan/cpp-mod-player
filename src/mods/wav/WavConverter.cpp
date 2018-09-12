@@ -1,4 +1,5 @@
 
+#include "mods/wav/DummyWavConverter.hpp"
 #include "mods/wav/WavConverter.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
 
@@ -21,13 +22,28 @@ namespace mods
               mux
              */
              
-             ptr downScaledLeft;
-             ptr downScaledRight;
+             int upscaledBitsPerSample = bitsPerSample;
              
              switch(bitsPerSample)
                {
+                case 8:
+                  upscaledBitsPerSample = 16;
+                  break;
                 default:
-                  std::cout << "unsupported bitsPerSample to downscale:" << bitsPerSample << std::endl;
+                  std::cout << "unsupported bitsPerSample to upscale:" << bitsPerSample << std::endl;
+               }
+             
+             ptr downScaledLeft;
+             ptr downScaledRight;
+             
+             switch(upscaledBitsPerSample)
+               {
+                case 16:
+                  downScaledLeft = std::make_unique<DummyWavConverter>();
+                  downScaledRight = std::make_unique<DummyWavConverter>();
+                  break;
+                default:
+                  std::cout << "unsupported bitsPerSample to downscale:" << upscaledBitsPerSample << std::endl;
                }
                     
              auto mux = std::make_unique<MultiplexerWavConverter>(std::move(downScaledLeft), std::move(downScaledRight));
