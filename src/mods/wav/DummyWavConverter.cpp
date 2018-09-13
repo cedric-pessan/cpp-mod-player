@@ -7,10 +7,14 @@ namespace mods
 {
    namespace wav
      {
+        DummyWavConverter::DummyWavConverter(WavConverter::ptr src)
+          : _src(std::move(src))
+            {
+            }
+        
         bool DummyWavConverter::isFinished() const
           {
-             std::cout << "TODO: DummyWavConverter::isFinished() const" << std::endl;
-             return false;
+             return _src->isFinished();
           }
      } //namespace wav
 } // namespace mods

@@ -12,7 +12,7 @@ namespace mods
            public:
              using ptr = std::unique_ptr<WavConverter>;
              
-             static ptr buildConverter(int bitsPerSample);
+             static ptr buildConverter(int bitsPerSample, int nbChannels);
              
              WavConverter() = default;
              virtual ~WavConverter() = default;

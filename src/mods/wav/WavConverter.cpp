@@ -10,7 +10,7 @@ namespace mods
    namespace wav
      {
         // static
-        WavConverter::ptr WavConverter::buildConverter(int bitsPerSample)
+        WavConverter::ptr WavConverter::buildConverter(int bitsPerSample, int nbChannels)
           {
              /* pipeline:
               sampleReader
@@ -30,20 +30,31 @@ namespace mods
                   upscaledBitsPerSample = 16;
                   break;
                 default:
-                  std::cout << "unsupported bitsPerSample to upscale:" << bitsPerSample << std::endl;
+                  std::cout << "unsupported bits per sample to upscale:" << bitsPerSample << std::endl;
+               }
+             
+             int resampledBitsPerSample = upscaledBitsPerSample;
+             
+             ptr mixedLeft;
+             ptr mixedRight;
+             
+             switch(nbChannels)
+               {
+                default:
+                  std::cout << "unsupported number of channels:" << nbChannels << std::endl;
                }
              
              ptr downScaledLeft;
              ptr downScaledRight;
              
-             switch(upscaledBitsPerSample)
+             switch(resampledBitsPerSample)
                {
                 case 16:
-                  downScaledLeft = std::make_unique<DummyWavConverter>();
-                  downScaledRight = std::make_unique<DummyWavConverter>();
+                  downScaledLeft = std::make_unique<DummyWavConverter>(std::move(mixedLeft));
+                  downScaledRight = std::make_unique<DummyWavConverter>(std::move(mixedRight));
                   break;
                 default:
-                  std::cout << "unsupported bitsPerSample to downscale:" << upscaledBitsPerSample << std::endl;
+                  std::cout << "unsupported bits per sample to downscale:" << resampledBitsPerSample << std::endl;
                }
                     
              auto mux = std::make_unique<MultiplexerWavConverter>(std::move(downScaledLeft), std::move(downScaledRight));

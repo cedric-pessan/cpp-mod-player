@@ -10,8 +10,9 @@ namespace mods
         class DummyWavConverter : public WavConverter
           {
            public:
-             DummyWavConverter() = default;
+             DummyWavConverter(WavConverter::ptr src);
              
+             DummyWavConverter() = delete;
              DummyWavConverter(const DummyWavConverter&) = delete;
              DummyWavConverter(const DummyWavConverter&&) = delete;
              DummyWavConverter& operator=(const DummyWavConverter&) = delete;
@@ -19,6 +20,9 @@ namespace mods
              ~DummyWavConverter() override = default;
              
              bool isFinished() const override;
+             
+           private:
+             WavConverter::ptr _src;
           };
      } // namespace wav
 } // namespace mods
