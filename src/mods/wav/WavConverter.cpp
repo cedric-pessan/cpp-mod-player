@@ -1,4 +1,5 @@
 
+#include "mods/wav/ChannelCopyWavConverter.hpp"
 #include "mods/wav/DummyWavConverter.hpp"
 #include "mods/wav/WavConverter.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
@@ -30,7 +31,7 @@ namespace mods
                   upscaledBitsPerSample = 16;
                   break;
                 default:
-                  std::cout << "unsupported bits per sample to upscale:" << bitsPerSample << std::endl;
+                  std::cout << "unsupported bits per sample to upscale: " << bitsPerSample << std::endl;
                }
              
              int resampledBitsPerSample = upscaledBitsPerSample;
@@ -40,8 +41,15 @@ namespace mods
              
              switch(nbChannels)
                {
+                case 1:
+                    {
+                       auto duplicator = std::make_unique<ChannelCopyWavConverter>();
+                       mixedRight = duplicator->getCopy();
+                       mixedLeft = std::move(duplicator);
+                    }
+                  break;
                 default:
-                  std::cout << "unsupported number of channels:" << nbChannels << std::endl;
+                  std::cout << "unsupported number of channels: " << nbChannels << std::endl;
                }
              
              ptr downScaledLeft;
@@ -54,7 +62,7 @@ namespace mods
                   downScaledRight = std::make_unique<DummyWavConverter>(std::move(mixedRight));
                   break;
                 default:
-                  std::cout << "unsupported bits per sample to downscale:" << resampledBitsPerSample << std::endl;
+                  std::cout << "unsupported bits per sample to downscale: " << resampledBitsPerSample << std::endl;
                }
                     
              auto mux = std::make_unique<MultiplexerWavConverter>(std::move(downScaledLeft), std::move(downScaledRight));

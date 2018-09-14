@@ -28,6 +28,7 @@ set(SRCS_UNIX src/mods/utils/impl/unix/FileUtils.cpp
 add_executable(modreader src/main.cpp
                          src/mods/ModuleReader.cpp
                          src/mods/SoundPlayer.cpp
+                         src/mods/wav/ChannelCopyWavConverter.cpp
                          src/mods/wav/WavConverter.cpp
                          src/mods/wav/WavReader.cpp
                          src/mods/wav/MultiplexerWavConverter.cpp
