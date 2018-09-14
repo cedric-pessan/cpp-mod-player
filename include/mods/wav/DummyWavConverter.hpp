@@ -10,7 +10,7 @@ namespace mods
         class DummyWavConverter : public WavConverter
           {
            public:
-             DummyWavConverter(WavConverter::ptr src);
+             explicit DummyWavConverter(WavConverter::ptr src);
              
              DummyWavConverter() = delete;
              DummyWavConverter(const DummyWavConverter&) = delete;

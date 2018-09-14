@@ -10,7 +10,8 @@ namespace mods
         class ChannelCopyWavConverter : public WavConverter
           {
            public:
-             ChannelCopyWavConverter() = default;
+             ChannelCopyWavConverter();
+             
              ChannelCopyWavConverter(const ChannelCopyWavConverter&) = delete;
              ChannelCopyWavConverter(const ChannelCopyWavConverter&&) = delete;
              ChannelCopyWavConverter& operator=(const ChannelCopyWavConverter&) = delete;
@@ -20,6 +21,10 @@ namespace mods
              WavConverter::ptr getCopy();
              
              bool isFinished() const override;
+             
+           private:
+             /*WavConverter::sptr _src;*/
+             WavConverter::ptr _copy;
           };
      } // namespace wav
 } // namespace mods
