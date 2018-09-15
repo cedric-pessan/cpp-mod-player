@@ -10,9 +10,10 @@ namespace mods
         class ChannelCopyWavConverterSlave : public WavConverter
           {
            protected:
-             ChannelCopyWavConverterSlave() = default;
+             ChannelCopyWavConverterSlave(const WavConverter::sptr& src);
              
            public:
+             ChannelCopyWavConverterSlave() = delete;
              ChannelCopyWavConverterSlave(const ChannelCopyWavConverterSlave&) = delete;
              ChannelCopyWavConverterSlave(const ChannelCopyWavConverterSlave&&) = delete;
              ChannelCopyWavConverterSlave& operator=(const ChannelCopyWavConverterSlave&) = delete;
@@ -23,6 +24,9 @@ namespace mods
              
            protected:
              WavConverter::ptr buildSlave() const;
+             
+           private:
+             WavConverter::sptr _src;
           };
         
         class ChannelCopyWavConverter : public ChannelCopyWavConverterSlave
@@ -39,7 +43,6 @@ namespace mods
              WavConverter::ptr getCopy();
              
            private:
-             /*WavConverter::sptr _src;*/
              WavConverter::ptr _copy;
           };
      } // namespace wav

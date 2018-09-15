@@ -9,41 +9,56 @@ namespace mods
      {
         namespace
           {
-             /*class InternalSourceConverter : public WavConverter
+             class InternalSourceConverter : public WavConverter
                {
                 public:
-                  InternalSourceConverter();
+                  InternalSourceConverter() = default;
                   InternalSourceConverter(const InternalSourceConverter&) = delete;
                   InternalSourceConverter(const InternalSourceConverter&&) = delete;
                   InternalSourceConverter& operator=(const InternalSourceConverter&) = delete;
                   InternalSourceConverter& operator=(const InternalSourceConverter&&) = delete;
                   ~InternalSourceConverter() override = default;
-               };*/
+                  
+                  bool isFinished() const override
+                    {
+                       std::cout << "TODO: ChannelCopy: InternalSourceConverter::isFinished() const" << std::endl;
+                       return false;
+                    }
+               };
           } // namespace
+        
+        ChannelCopyWavConverterSlave::ChannelCopyWavConverterSlave(const WavConverter::sptr& src)
+          : _src(src)
+            {
+            }
         
         WavConverter::ptr ChannelCopyWavConverterSlave::buildSlave() const
           {
              class make_unique_enabler : public ChannelCopyWavConverterSlave
                {
                 public:
-                  make_unique_enabler() = default;
+                  make_unique_enabler(const WavConverter::sptr& src)
+                    : ChannelCopyWavConverterSlave(src)
+                      {
+                      }
+                  
+                  make_unique_enabler() = delete;
                   make_unique_enabler(const make_unique_enabler&) = delete;
                   make_unique_enabler(const make_unique_enabler&&) = delete;
                   make_unique_enabler& operator=(const make_unique_enabler&) = delete;
                   make_unique_enabler& operator=(const make_unique_enabler&&) = delete;
                   ~make_unique_enabler() override = default;
                };
-             return std::make_unique<make_unique_enabler>();
+             return std::make_unique<make_unique_enabler>(_src);
           }
         
         bool ChannelCopyWavConverterSlave::isFinished() const
           {
-             std::cout << "TODO: ChannelCopyWavConverterSlave::isFinished() const" << std::endl;
-             return false;
+             return _src->isFinished();
           }
         
         ChannelCopyWavConverter::ChannelCopyWavConverter()
-          : /*_src(std::make_shared<InternalSourceConverter>()),*/
+          : ChannelCopyWavConverterSlave(std::make_shared<InternalSourceConverter>()),
           _copy(buildSlave())
             {
             }
