@@ -19,36 +19,34 @@ namespace mods
                   InternalSourceConverter& operator=(const InternalSourceConverter&&) = delete;
                   ~InternalSourceConverter() override = default;
                };*/
-             
-             class InternalCopyWavConverter : public WavConverter
+          } // namespace
+        
+        WavConverter::ptr ChannelCopyWavConverterSlave::buildSlave() const
+          {
+             class make_unique_enabler : public ChannelCopyWavConverterSlave
                {
                 public:
-                  InternalCopyWavConverter() = default;
-                  InternalCopyWavConverter(const InternalCopyWavConverter&) = delete;
-                  InternalCopyWavConverter(const InternalCopyWavConverter&&) = delete;
-                  InternalCopyWavConverter& operator=(const InternalCopyWavConverter&) = delete;
-                  InternalCopyWavConverter& operator=(const InternalCopyWavConverter&&) = delete;
-                  ~InternalCopyWavConverter() override = default;
-                  
-                  bool isFinished() const override
-                    {
-                       std::cout << "TODO: InternalCopyWavConverter::isFinished() const" << std::endl;
-                       return false;
-                    }
+                  make_unique_enabler() = default;
+                  make_unique_enabler(const make_unique_enabler&) = delete;
+                  make_unique_enabler(const make_unique_enabler&&) = delete;
+                  make_unique_enabler& operator=(const make_unique_enabler&) = delete;
+                  make_unique_enabler& operator=(const make_unique_enabler&&) = delete;
+                  ~make_unique_enabler() override = default;
                };
-          } // namespace
+             return std::make_unique<make_unique_enabler>();
+          }
+        
+        bool ChannelCopyWavConverterSlave::isFinished() const
+          {
+             std::cout << "TODO: ChannelCopyWavConverterSlave::isFinished() const" << std::endl;
+             return false;
+          }
         
         ChannelCopyWavConverter::ChannelCopyWavConverter()
           : /*_src(std::make_shared<InternalSourceConverter>()),*/
-          _copy(std::make_unique<InternalCopyWavConverter>())
+          _copy(buildSlave())
             {
             }
-        
-        bool ChannelCopyWavConverter::isFinished() const
-          {
-             std::cout << "TODO: ChannelCopyWavConverter::isFinished() const" << std::endl;
-             return false;
-          }
         
         WavConverter::ptr ChannelCopyWavConverter::getCopy()
           {
