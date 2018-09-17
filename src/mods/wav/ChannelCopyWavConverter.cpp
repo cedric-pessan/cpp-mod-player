@@ -9,14 +9,24 @@ namespace mods
      {
         namespace impl
           {
-             bool InternalSourceConverter::isFinished() const
+             InternalSourceConverter::InternalSourceConverter(WavConverter::ptr src)
+               : _src(std::move(src))
+                 {
+                 }
+             
+             bool InternalSourceConverter::isFinished(CopyDestId id) const
                {
-                  std::cout << "TODO: InternalSourceConverter::isFinished() const" << std::endl;
-                  return false;
+                  auto idxBuffer = toUnderlying(id);
+                  if(!_unconsumedBuffers[idxBuffer].empty())
+                    {
+                       return false;
+                    }
+                  return _src->isFinished();
                }
              
-             ChannelCopyWavConverterSlave::ChannelCopyWavConverterSlave(const InternalSourceConverter::sptr& src)
-               : _src(src)
+             ChannelCopyWavConverterSlave::ChannelCopyWavConverterSlave(const InternalSourceConverter::sptr& src, CopyDestId id)
+               : _src(src),
+               _id(id)
                  {
                  }
         
@@ -26,7 +36,7 @@ namespace mods
                     {
                      public:
                        make_unique_enabler(const InternalSourceConverter::sptr& src)
-                         : ChannelCopyWavConverterSlave(src)
+                         : ChannelCopyWavConverterSlave(src, CopyDestId::SLAVE)
                            {
                            }
                        
@@ -42,12 +52,12 @@ namespace mods
         
              bool ChannelCopyWavConverterSlave::isFinished() const
                {
-                  return _src->isFinished();
+                  return _src->isFinished(_id);
                }
           } // namespace impl
         
-        ChannelCopyWavConverter::ChannelCopyWavConverter()
-          : ChannelCopyWavConverterSlave(std::make_shared<impl::InternalSourceConverter>()),
+        ChannelCopyWavConverter::ChannelCopyWavConverter(WavConverter::ptr src)
+          : ChannelCopyWavConverterSlave(std::make_shared<impl::InternalSourceConverter>(std::move(src)), impl::CopyDestId::MASTER),
           _copy(buildSlave())
             {
             }

@@ -5,13 +5,14 @@
 #include "mods/wav/MultiplexerWavConverter.hpp"
 
 #include <iostream>
+#include <vector>
 
 namespace mods
 {
    namespace wav
      {
         // static
-        WavConverter::ptr WavConverter::buildConverter(int bitsPerSample, int nbChannels)
+        WavConverter::ptr WavConverter::buildConverter(int bitsPerSample, int nbChannels, int frequency)
           {
              /* pipeline:
               sampleReader
@@ -31,10 +32,16 @@ namespace mods
                   upscaledBitsPerSample = 16;
                   break;
                 default:
-                  std::cout << "unsupported bits per sample to upscale: " << bitsPerSample << std::endl;
+                  std::cout << "WavConverter: unsupported bits per sample to upscale: " << bitsPerSample << std::endl;
                }
              
              int resampledBitsPerSample = upscaledBitsPerSample;
+             std::vector<WavConverter::ptr> resampledChannels(nbChannels);
+             switch(frequency)
+               {
+                default:
+                  std::cout << "WavConverter: unsupported frequency: " << frequency << std::endl;
+               }
              
              ptr mixedLeft;
              ptr mixedRight;
@@ -43,13 +50,13 @@ namespace mods
                {
                 case 1:
                     {
-                       auto duplicator = std::make_unique<ChannelCopyWavConverter>();
+                       auto duplicator = std::make_unique<ChannelCopyWavConverter>(std::move(resampledChannels[0]));
                        mixedRight = duplicator->getCopy();
                        mixedLeft = std::move(duplicator);
                     }
                   break;
                 default:
-                  std::cout << "unsupported number of channels: " << nbChannels << std::endl;
+                  std::cout << "WavConverter: unsupported number of channels: " << nbChannels << std::endl;
                }
              
              ptr downScaledLeft;
@@ -62,7 +69,7 @@ namespace mods
                   downScaledRight = std::make_unique<DummyWavConverter>(std::move(mixedRight));
                   break;
                 default:
-                  std::cout << "unsupported bits per sample to downscale: " << resampledBitsPerSample << std::endl;
+                  std::cout << "WavConverter: unsupported bits per sample to downscale: " << resampledBitsPerSample << std::endl;
                }
                     
              auto mux = std::make_unique<MultiplexerWavConverter>(std::move(downScaledLeft), std::move(downScaledRight));

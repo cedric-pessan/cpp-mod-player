@@ -100,4 +100,10 @@ template<>
 using u16le = u16leImpl<NativeEndianness::value>;
 using u32le = u32leImpl<NativeEndianness::value>;
 
+template<typename E>
+  constexpr auto toUnderlying(E e) noexcept
+{
+   return static_cast<std::underlying_type_t<E>>(e);
+}
+
 #endif // MODS_UTILS_TYPES_HPP
