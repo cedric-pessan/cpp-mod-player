@@ -3,6 +3,7 @@
 #include "mods/wav/DummyWavConverter.hpp"
 #include "mods/wav/WavConverter.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
+#include "mods/wav/ResamplePositiveIntegerFactor.hpp"
 
 #include <iostream>
 #include <vector>
@@ -36,9 +37,16 @@ namespace mods
                }
              
              int resampledBitsPerSample = upscaledBitsPerSample;
-             std::vector<WavConverter::ptr> resampledChannels(nbChannels);
+             std::vector<WavConverter::ptr> resampledChannels;
              switch(frequency)
                {
+                case 22050:
+                  for(int i = 0; i < nbChannels; ++i) 
+                    {
+                       resampledChannels.push_back(std::make_unique<ResamplePositiveIntegerFactor>());
+                    }
+                  break;
+                  
                 default:
                   std::cout << "WavConverter: unsupported frequency: " << frequency << std::endl;
                }
