@@ -4,6 +4,7 @@
 #include "mods/wav/WavConverter.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
 #include "mods/wav/ResamplePositiveIntegerFactor.hpp"
+#include "mods/wav/UpscaleWavConverter.hpp"
 
 #include <iostream>
 #include <vector>
@@ -26,11 +27,15 @@ namespace mods
              */
              
              int upscaledBitsPerSample = bitsPerSample;
-             
+             std::vector<WavConverter::ptr> upscaledChannels;
              switch(bitsPerSample)
                {
                 case 8:
                   upscaledBitsPerSample = 16;
+                  for(int i = 0; i < nbChannels; ++i)
+                    {
+                       upscaledChannels.push_back(std::make_unique<UpscaleWavConverter>());
+                    }
                   break;
                 default:
                   std::cout << "WavConverter: unsupported bits per sample to upscale: " << bitsPerSample << std::endl;
@@ -43,7 +48,7 @@ namespace mods
                 case 22050:
                   for(int i = 0; i < nbChannels; ++i) 
                     {
-                       resampledChannels.push_back(std::make_unique<ResamplePositiveIntegerFactor>());
+                       resampledChannels.push_back(std::make_unique<ResamplePositiveIntegerFactor>(std::move(upscaledChannels[i])));
                     }
                   break;
                   

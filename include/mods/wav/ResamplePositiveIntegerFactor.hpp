@@ -10,7 +10,9 @@ namespace mods
         class ResamplePositiveIntegerFactor : public WavConverter
           {
            public:
-             ResamplePositiveIntegerFactor() = default;
+             ResamplePositiveIntegerFactor(WavConverter::ptr src);
+             
+             ResamplePositiveIntegerFactor() = delete;
              ResamplePositiveIntegerFactor(const ResamplePositiveIntegerFactor&) = delete;
              ResamplePositiveIntegerFactor(const ResamplePositiveIntegerFactor&&) = delete;
              ResamplePositiveIntegerFactor& operator=(const ResamplePositiveIntegerFactor&) = delete;
@@ -18,6 +20,9 @@ namespace mods
              ~ResamplePositiveIntegerFactor() override = default;
              
              bool isFinished() const override;
+             
+           private:
+             WavConverter::ptr _src;
           };
      } // namespace wav
 } // namespace mods

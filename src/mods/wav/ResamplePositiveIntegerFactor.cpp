@@ -7,10 +7,14 @@ namespace mods
 {
    namespace wav
      {
+        ResamplePositiveIntegerFactor::ResamplePositiveIntegerFactor(WavConverter::ptr src)
+          : _src(std::move(src))
+            {
+            }
+        
         bool ResamplePositiveIntegerFactor::isFinished() const
           {
-             std::cout << "TODO: ResamplePositiveIntegerFactor::isFinished() const" << std::endl;
-             return false;
+             return _src->isFinished();
           }
      };
 } // namespace mods
