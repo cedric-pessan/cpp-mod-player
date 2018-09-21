@@ -3,6 +3,7 @@
 #include "mods/wav/DummyWavConverter.hpp"
 #include "mods/wav/WavConverter.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
+#include "mods/wav/ReaderWavConverter.hpp"
 #include "mods/wav/ResamplePositiveIntegerFactor.hpp"
 #include "mods/wav/UpscaleWavConverter.hpp"
 
@@ -26,9 +27,15 @@ namespace mods
               mux
              */
              
+             WavConverter::ptr reader = std::make_unique<ReaderWavConverter>();
+             
              std::vector<WavConverter::ptr> channels;
              switch(nbChannels)
                {
+                case 1:
+                  channels.push_back(std::make_unique<DummyWavConverter>(std::move(reader)));
+                  break;
+                  
                 default:
                   std::cout << "WavConverter: unsupported number of channels for demux stage:" << nbChannels << std::endl;
                }
