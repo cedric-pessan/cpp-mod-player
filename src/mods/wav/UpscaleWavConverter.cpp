@@ -7,10 +7,14 @@ namespace mods
 {
    namespace wav
      {
+        UpscaleWavConverter::UpscaleWavConverter(WavConverter::ptr src)
+          : _src(std::move(src))
+            {
+            }
+        
         bool UpscaleWavConverter::isFinished() const
           {
-             std::cout << "TODO: UpscaleWavConverter::isFinished() const" << std::endl;
-             return false;
+             return _src->isFinished();
           }
      } // namespace wav
 } // namespace mods

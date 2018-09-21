@@ -10,7 +10,9 @@ namespace mods
         class UpscaleWavConverter : public WavConverter
           {
            public:
-             UpscaleWavConverter() = default;
+             UpscaleWavConverter(WavConverter::ptr src);
+             
+             UpscaleWavConverter() = delete;
              UpscaleWavConverter(const UpscaleWavConverter&) = delete;
              UpscaleWavConverter(const UpscaleWavConverter&&) = delete;
              UpscaleWavConverter& operator=(const UpscaleWavConverter&) = delete;
@@ -18,6 +20,9 @@ namespace mods
              ~UpscaleWavConverter() override = default;
              
              bool isFinished() const override;
+             
+           private:
+             WavConverter::ptr _src;
           };
      } // namespace wav
 } // namespace mods

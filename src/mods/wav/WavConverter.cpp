@@ -26,6 +26,13 @@ namespace mods
               mux
              */
              
+             std::vector<WavConverter::ptr> channels;
+             switch(nbChannels)
+               {
+                default:
+                  std::cout << "WavConverter: unsupported number of channels for demux stage:" << nbChannels << std::endl;
+               }
+             
              int upscaledBitsPerSample = bitsPerSample;
              std::vector<WavConverter::ptr> upscaledChannels;
              switch(bitsPerSample)
@@ -34,7 +41,7 @@ namespace mods
                   upscaledBitsPerSample = 16;
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       upscaledChannels.push_back(std::make_unique<UpscaleWavConverter>());
+                       upscaledChannels.push_back(std::make_unique<UpscaleWavConverter>(std::move(channels[i])));
                     }
                   break;
                 default:
@@ -69,7 +76,7 @@ namespace mods
                     }
                   break;
                 default:
-                  std::cout << "WavConverter: unsupported number of channels: " << nbChannels << std::endl;
+                  std::cout << "WavConverter: unsupported number of channels for mixing stage: " << nbChannels << std::endl;
                }
              
              ptr downScaledLeft;
