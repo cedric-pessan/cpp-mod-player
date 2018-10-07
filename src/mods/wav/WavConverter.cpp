@@ -15,7 +15,7 @@ namespace mods
    namespace wav
      {
         // static
-        WavConverter::ptr WavConverter::buildConverter(int bitsPerSample, int nbChannels, int frequency)
+        WavConverter::ptr WavConverter::buildConverter(mods::utils::RBuffer<u8> buffer, int bitsPerSample, int nbChannels, int frequency)
           {
              /* pipeline:
               sampleReader
@@ -27,7 +27,7 @@ namespace mods
               mux
              */
              
-             WavConverter::ptr reader = std::make_unique<ReaderWavConverter>();
+             WavConverter::ptr reader = std::make_unique<ReaderWavConverter>(std::move(buffer));
              
              std::vector<WavConverter::ptr> channels;
              switch(nbChannels)

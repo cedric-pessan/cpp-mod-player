@@ -1,6 +1,8 @@
 #ifndef MODS_WAV_WAVCONVERTER_HPP
 #define MODS_WAV_WAVCONVERTER_HPP
 
+#include <mods/utils/RBuffer.hpp>
+
 #include <memory>
 
 namespace mods
@@ -12,7 +14,7 @@ namespace mods
            public:
              using ptr = std::unique_ptr<WavConverter>;
              
-             static ptr buildConverter(int bitsPerSample, int nbChannels, int frequency);
+             static ptr buildConverter(mods::utils::RBuffer<u8> buffer, int bitsPerSample, int nbChannels, int frequency);
              
              WavConverter() = default;
              virtual ~WavConverter() = default;
