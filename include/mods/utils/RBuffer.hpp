@@ -1,7 +1,7 @@
 #ifndef MODS_UTILS_RBUFFER_HPP
 #define MODS_UTILS_RBUFFER_HPP
 
-#include "Buffer.hpp"
+#include "BufferBackend.hpp"
 
 #include <iostream>
 
@@ -16,10 +16,10 @@ namespace mods
              using size_type = size_t;
              using const_reference = const T&;
              
-             explicit RBuffer(Buffer::sptr backend)
+             explicit RBuffer(BufferBackend::sptr backend)
                : _backend(std::move(backend)),
-               _rbuf(static_cast<T*>(static_cast<void*>(Buffer::Attorney::getBuffer(*_backend)))),
-               _len(Buffer::Attorney::getLength(*_backend) / sizeof(T))
+               _buf(static_cast<T*>(static_cast<void*>(BufferBackend::Attorney::getBuffer(*_backend)))),
+               _len(BufferBackend::Attorney::getLength(*_backend) / sizeof(T))
                  {
                  }
              
@@ -33,13 +33,13 @@ namespace mods
              
              T* operator->() const
                {
-                  return _rbuf;
+                  return _buf;
                }
              
              template<typename T2>
-               RBuffer<T2> slice(size_t offset, size_t len) const
+               const RBuffer<T2> slice(size_t offset, size_t len) const
                {
-                  size_t currentOffset = static_cast<u8*>(_rbuf) - static_cast<u8*>(Buffer::Attorney::getBuffer(*_backend));
+                  size_t currentOffset = static_cast<u8*>(_buf) - static_cast<u8*>(BufferBackend::Attorney::getBuffer(*_backend));
                   check(offset * sizeof(T) + len * sizeof(T2) <= _len * sizeof(T), "invalid slice limits");
                   return RBuffer<T2>(_backend, currentOffset + offset * sizeof(T), len);
                }
@@ -51,24 +51,25 @@ namespace mods
              
              const_reference operator[](size_type pos) const
                {
-                  return *(_rbuf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                  return *(_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                }
              
              class const_iterator
                {
                 private:
-                  const_iterator(size_type pos)
-                    : _pos(pos)
+                  const_iterator(const RBuffer<T>& rbuf, size_type pos)
+                    : _pos(pos),
+                    _rbuf(rbuf)
                       {
                       }
                   friend class RBuffer; // only RBuffer can create these
                   
                 public:
                   const_iterator(const_iterator&&) = default;
+                  const_iterator(const const_iterator&) = default;
                   ~const_iterator() = default;
                   
                   const_iterator() = delete;
-                  const_iterator(const const_iterator&) = delete;
                   const_iterator& operator=(const const_iterator&) = delete;
                   const_iterator& operator=(const const_iterator&&) = delete;
                   
@@ -77,24 +78,41 @@ namespace mods
                        return _pos == obj._pos;
                     }
                   
+                  bool operator!=(const const_iterator& obj) const
+                    {
+                       return !(*this == obj);
+                    }
+                  
+                  const_reference operator*() const
+                    {
+                       return _rbuf[_pos];
+                    }
+                  
+                  const_iterator operator++()
+                    {
+                       ++_pos;
+                       return *this;
+                    }
+                  
                 private:
                   size_type _pos;
+                  const RBuffer<T>& _rbuf;
                };
              
              const_iterator begin() const noexcept
                {
-                  return const_iterator(0);
+                  return const_iterator(*this, 0);
                }
              
              const_iterator end() const noexcept
                {
-                  return const_iterator(size());
+                  return const_iterator(*this, size());
                }
              
            private:
-             RBuffer(Buffer::sptr backend, size_t offset, size_t len)
+             RBuffer(BufferBackend::sptr backend, size_t offset, size_t len)
                : _backend(std::move(backend)),
-               _rbuf(static_cast<T*>(static_cast<void*>(Buffer::Attorney::getBuffer(*_backend) + offset))), // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+               _buf(static_cast<T*>(static_cast<void*>(BufferBackend::Attorney::getBuffer(*_backend) + offset))), // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                _len(len)
                  {
                  }
@@ -110,8 +128,10 @@ namespace mods
                     }
                }
              
-             Buffer::sptr _backend;
-             T* _rbuf;
+             BufferBackend::sptr _backend;
+             
+           protected:
+             T* _buf;
              size_t _len;
           };
      } // namespace utils

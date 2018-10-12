@@ -12,10 +12,10 @@ namespace mods
    
    extern "C"
      {
-        void SoundPlayer::s_ccallback(void* udata, Uint8* /*stream*/, int /*len*/)
+        void SoundPlayer::s_ccallback(void* udata, Uint8* stream, int len)
           {
              auto sp = static_cast<SoundPlayer*>(udata);
-             sp->callback();
+             sp->callback(stream, len);
           }
      }
    
@@ -77,15 +77,18 @@ namespace mods
         entry.second->lock();
      }
    
-   void SoundPlayer::callback()
+   void SoundPlayer::callback(u8* buf, int len)
      {
         std::lock_guard<std::mutex> lock(_playListMutex);
+        auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
+        auto bufferBackend = std::make_shared<mods::utils::BufferBackend>(buf, len, std::move(deleter));
+        mods::utils::RWBuffer<u8> rwbuf(bufferBackend);
         for(auto& entry : _playList) 
           {
              auto& reader = entry.first;
              if(!reader->isFinished())
                {
-                  std::cout << "TODO: SoundPlayer::callback() something to fill" << std::endl;
+                  reader->read(rwbuf, len);
                   
                   if(reader->isFinished())
                     {

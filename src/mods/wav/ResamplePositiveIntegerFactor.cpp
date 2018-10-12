@@ -16,5 +16,11 @@ namespace mods
           {
              return _src->isFinished();
           }
+        
+        void ResamplePositiveIntegerFactor::read(mods::utils::RWBuffer<u8>& buf, int len)
+          {
+             _src->read(buf, len);
+             std::cout << "TODO: ResamplePositiveIntegerFactor::read(...)" << std::endl;
+          }
      };
 } // namespace mods

@@ -108,6 +108,7 @@ namespace mods
              WavReader& operator=(const WavReader&&) = delete;
              
              bool isFinished() const override;
+             void read(mods::utils::RWBuffer<u8>& buf, int len) override;
              
            private:
              mods::utils::RBuffer<FmtHeader> readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
@@ -122,8 +123,8 @@ namespace mods
              
              
              WavConverter::ptr _converter;
-             mods::utils::RBuffer<u8> _fileBuffer;
-             mods::utils::RBuffer<ChunkHeader> _headerBuffer;
+             const mods::utils::RBuffer<u8> _fileBuffer;
+             const mods::utils::RBuffer<ChunkHeader> _headerBuffer;
           };
      } // namespace wav
 } // namespace mods

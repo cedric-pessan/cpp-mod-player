@@ -17,5 +17,11 @@ namespace mods
           {
              return _left->isFinished() && _right->isFinished();
           }
+        
+        void MultiplexerWavConverter::read(mods::utils::RWBuffer<u8>& buf, int len)
+          {
+             _left->read(buf, len);
+             std::cout << "TODO: MultiplexerWavConverter::read(...)" << std::endl;
+          }
      } // namespace wav
 } // namespace mods

@@ -12,7 +12,7 @@ namespace mods
      {
         namespace
           {
-             const std::string& getRIFF() 
+             const std::string& getRIFF()
                {
                   static const std::string RIFF = "RIFF";
                   return RIFF;
@@ -139,5 +139,9 @@ namespace mods
              return _converter->isFinished();
           }
         
+        void WavReader::read(mods::utils::RWBuffer<u8>& buf, int len)
+          {
+             _converter->read(buf, len);
+          }
      } // namespace wav
 } // namespace mods

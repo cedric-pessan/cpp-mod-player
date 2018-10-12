@@ -36,7 +36,7 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/ReaderWavConverter.cpp
                          src/mods/wav/ResamplePositiveIntegerFactor.cpp
                          src/mods/wav/UpscaleWavConverter.cpp
-                         src/mods/utils/Buffer.cpp
+                         src/mods/utils/BufferBackend.cpp
                          src/mods/utils/FileUtils.cpp
                          ${SRCS_UNIX})
 

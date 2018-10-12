@@ -36,7 +36,7 @@ namespace mods
         void waitUntilFinished(const SynchronizedReader& entry);
         
         static void s_ccallback(void* udata, Uint8* stream, int len);
-        void callback();
+        void callback(u8* buf, int len);
         
         class SoundPlayerInitException : public std::exception
           {

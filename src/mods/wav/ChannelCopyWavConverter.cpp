@@ -24,6 +24,12 @@ namespace mods
                   return _src->isFinished();
                }
              
+             void InternalSourceConverter::read(mods::utils::RWBuffer<u8>& buf, int len)
+               {
+                  _src->read(buf, len);
+                  std::cout << "TODO: InternalSourceConverter::read()" << std::endl;
+               }
+             
              ChannelCopyWavConverterSlave::ChannelCopyWavConverterSlave(const InternalSourceConverter::sptr& src, CopyDestId id)
                : _src(src),
                _id(id)
@@ -53,6 +59,12 @@ namespace mods
              bool ChannelCopyWavConverterSlave::isFinished() const
                {
                   return _src->isFinished(_id);
+               }
+             
+             void ChannelCopyWavConverterSlave::read(mods::utils::RWBuffer<u8>& buf, int len)
+               {
+                  _src->read(buf, len);
+                  std::cout << "TODO: ChannelCopyWavConverterSlave::read()" << std::endl;
                }
           } // namespace impl
         

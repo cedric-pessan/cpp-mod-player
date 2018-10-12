@@ -15,7 +15,7 @@ namespace mods
    namespace wav
      {
         // static
-        WavConverter::ptr WavConverter::buildConverter(mods::utils::RBuffer<u8> buffer, int bitsPerSample, int nbChannels, int frequency)
+        WavConverter::ptr WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int nbChannels, int frequency)
           {
              /* pipeline:
               sampleReader

@@ -32,6 +32,7 @@ namespace mods
                   ~InternalSourceConverter() = default;
                   
                   bool isFinished(CopyDestId id) const;
+                  void read(mods::utils::RWBuffer<u8>& buf, int len);
                   
                 private:
                   using UnconsumedBuffer = std::deque<u8>;
@@ -54,6 +55,7 @@ namespace mods
                   ~ChannelCopyWavConverterSlave() override = default;
                   
                   bool isFinished() const override;
+                  void read(mods::utils::RWBuffer<u8>& buf, int len) override;
                   
                 protected:
                   WavConverter::ptr buildSlave() const;

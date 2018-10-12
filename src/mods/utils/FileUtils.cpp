@@ -12,7 +12,7 @@ namespace mods
      {
         namespace FileUtils
           {
-             RBuffer<u8> mapFile(const std::string& filename)
+             const RBuffer<u8> mapFile(const std::string& filename)
                {
                   auto buffer = mapFileToBuffer(filename);
                   if(!buffer)
@@ -24,7 +24,7 @@ namespace mods
              
              namespace
                {
-                  class FileReaderDeleter : public Buffer::Deleter
+                  class FileReaderDeleter : public BufferBackend::Deleter
                     {
                      public:
                        explicit FileReaderDeleter(std::vector<u8>&& v)
@@ -44,21 +44,21 @@ namespace mods
                     };
                } // namespace
              
-             Buffer::sptr readFileToBuffer(const std::string& filename)
+             BufferBackend::sptr readFileToBuffer(const std::string& filename)
                {
                   std::ifstream file(filename, std::ios::binary | std::ios::ate);
                   std::streamsize size = file.tellg();
                   file.seekg(0, std::ios::beg);
                   
-             std::vector<u8> v(size);
+                  std::vector<u8> v(size);
                   if(file.read(static_cast<char*>(static_cast<void*>(v.data())), size))
                     {
                        u8* ptr = v.data();
                        size_t length = v.size();
                        auto deleter = std::make_unique<FileReaderDeleter>(std::move(v));
-                       return std::make_shared<Buffer>(ptr, length, std::move(deleter));
+                       return std::make_shared<BufferBackend>(ptr, length, std::move(deleter));
                     }
-                  return Buffer::sptr();
+                  return BufferBackend::sptr();
                }
           } // namespace FileUtils
      } // namespace utils

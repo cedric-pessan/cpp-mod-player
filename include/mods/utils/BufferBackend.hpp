@@ -1,5 +1,5 @@
-#ifndef MODS_UTILS_BUFFER_HPP
-#define MODS_UTILS_BUFFER_HPP
+#ifndef MODS_UTILS_BUFFERBACKEND_HPP
+#define MODS_UTILS_BUFFERBACKEND_HPP
 
 #include "types.hpp"
 
@@ -12,10 +12,10 @@ namespace mods
      {
         template<typename T> class RBuffer;
         
-        class Buffer
+        class BufferBackend
           {
            public:
-             using sptr = std::shared_ptr<Buffer>;
+             using sptr = std::shared_ptr<BufferBackend>;
              class Deleter
                {
                 public:
@@ -30,14 +30,26 @@ namespace mods
                   Deleter& operator=(const Deleter&&) = delete;
                };
              
-             Buffer(u8* buf, size_t length, Deleter::ptr deleter);
-             ~Buffer() = default;
+             class EmptyDeleter : public Deleter
+               {
+                public:
+                  EmptyDeleter() = default;
+                  ~EmptyDeleter() override = default;
+                  
+                  EmptyDeleter(const EmptyDeleter&) = delete;
+                  EmptyDeleter(const EmptyDeleter&&) = delete;
+                  EmptyDeleter& operator=(const EmptyDeleter&) = delete;
+                  EmptyDeleter& operator=(const EmptyDeleter&&) = delete;
+               };
              
-             Buffer() = delete;
-             Buffer(const Buffer&) = delete;
-             Buffer(const Buffer&&) = delete;
-             Buffer& operator=(const Buffer&) = delete;
-             Buffer& operator=(const Buffer&&) = delete;
+             BufferBackend(u8* buf, size_t length, Deleter::ptr deleter);
+             ~BufferBackend() = default;
+             
+             BufferBackend() = delete;
+             BufferBackend(const BufferBackend&) = delete;
+             BufferBackend(const BufferBackend&&) = delete;
+             BufferBackend& operator=(const BufferBackend&) = delete;
+             BufferBackend& operator=(const BufferBackend&&) = delete;
              
            private:
              u8* _buf;
@@ -56,12 +68,12 @@ namespace mods
                   ~Attorney() = delete;
                   
                 private:
-                  static u8* getBuffer(const Buffer& buffer)
+                  static u8* getBuffer(const BufferBackend& buffer)
                     {
                        return buffer._buf;
                     }
                   
-                  static size_t getLength(const Buffer& buffer)
+                  static size_t getLength(const BufferBackend& buffer)
                     {
                        return buffer._length;
                     }
@@ -73,4 +85,4 @@ namespace mods
      } // namespace utils
 } // namespace mods
 
-#endif // MODS_UTILS_BUFFER_HPP
+#endif // MODS_UTILS_BUFFERBACKEND_HPP

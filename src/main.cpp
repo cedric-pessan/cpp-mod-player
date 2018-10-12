@@ -8,21 +8,6 @@
 #include <memory>
 #include <vector>
 
-namespace
-{
-   class EmptyDeleter : public mods::utils::Buffer::Deleter
-     {
-      public:
-        EmptyDeleter() = default;
-        ~EmptyDeleter() override = default;
-        
-        EmptyDeleter(const EmptyDeleter&) = delete;
-        EmptyDeleter(const EmptyDeleter&&) = delete;
-        EmptyDeleter& operator=(const EmptyDeleter&) = delete;
-        EmptyDeleter& operator=(const EmptyDeleter&&) = delete;
-     };
-} // namespace
-
 int main(int argc, char** argv)
 {
    if(argc < 2)
@@ -31,10 +16,10 @@ int main(int argc, char** argv)
         return 0;
      }
    
-   auto deleter = std::make_unique<EmptyDeleter>();
+   auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
    auto argvp = static_cast<u8*>(static_cast<void*>(argv));
-   auto argBuffer = std::make_shared<mods::utils::Buffer>(argvp, argc * sizeof(char*), std::move(deleter));
-   mods::utils::RBuffer<char*> args(argBuffer);
+   auto argBuffer = std::make_shared<mods::utils::BufferBackend>(argvp, argc * sizeof(char*), std::move(deleter));
+   const mods::utils::RBuffer<char*> args(argBuffer);
    
    std::string filename = args[1];
    auto dotIdx = filename.find_last_of('.');

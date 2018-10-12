@@ -20,6 +20,7 @@ namespace mods
              ~ResamplePositiveIntegerFactor() override = default;
              
              bool isFinished() const override;
+             void read(mods::utils::RWBuffer<u8>& buf, int len) override;
              
            private:
              WavConverter::ptr _src;

@@ -1,11 +1,11 @@
 
-#include "mods/utils/Buffer.hpp"
+#include "mods/utils/BufferBackend.hpp"
 
 namespace mods
 {
    namespace utils
      {
-        Buffer::Buffer(u8* buf, size_t length, Deleter::ptr deleter)
+        BufferBackend::BufferBackend(u8* buf, size_t length, Deleter::ptr deleter)
           : _buf(buf),
           _length(length),
           _deleter(std::move(deleter))
