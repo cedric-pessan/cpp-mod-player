@@ -5,6 +5,7 @@
 #include "mods/wav/MultiplexerWavConverter.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
 #include "mods/wav/ResamplePositiveIntegerFactor.hpp"
+#include "mods/wav/UnsignedToSignedWavConverter.hpp"
 #include "mods/wav/UpscaleWavConverter.hpp"
 
 #include <iostream>
@@ -48,7 +49,8 @@ namespace mods
                   upscaledBitsPerSample = 16;
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       upscaledChannels.push_back(std::make_unique<UpscaleWavConverter>(std::move(channels[i])));
+                       auto signedChannel = std::make_unique<UnsignedToSignedWavConverter>(std::move(channels[i]));
+                       upscaledChannels.push_back(std::make_unique<UpscaleWavConverter>(std::move(signedChannel)));
                     }
                   break;
                 default:

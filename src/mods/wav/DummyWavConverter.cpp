@@ -20,7 +20,6 @@ namespace mods
         void DummyWavConverter::read(mods::utils::RWBuffer<u8>& buf, int len)
           {
              _src->read(buf, len);
-             std::cout << "TODO: DummyWavConverter::read(...)" << std::endl;
           }
      } //namespace wav
 } // namespace mods
