@@ -7,10 +7,11 @@ namespace mods
 {
    namespace wav
      {
-        ReaderWavConverter::ReaderWavConverter(const mods::utils::RBuffer<u8>& buffer)
+        ReaderWavConverter::ReaderWavConverter(const mods::utils::RBuffer<u8>& buffer, u8 defaultValue)
           : _buffer(std::move(buffer)),
           _it(_buffer.begin()),
-          _end(_buffer.end())
+          _end(_buffer.end()),
+          _defaultValue(defaultValue)
             {
             }
         
@@ -30,7 +31,7 @@ namespace mods
                     }
                   else
                     {
-                       buf[i] = 0;
+                       buf[i] = _defaultValue;
                     }
                }
           }

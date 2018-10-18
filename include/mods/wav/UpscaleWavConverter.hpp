@@ -7,7 +7,8 @@ namespace mods
 {
    namespace wav
      {
-        class UpscaleWavConverter : public WavConverter
+        template<typename TOut, typename TIn>
+          class UpscaleWavConverter : public WavConverter
           {
            public:
              UpscaleWavConverter(WavConverter::ptr src);
@@ -23,6 +24,21 @@ namespace mods
              void read(mods::utils::RWBuffer<u8>& buf, int len) override;
              
            private:
+             constexpr int shiftLeftValue()
+               {
+                  return sizeof(TOut)*8 - sizeof(TIn)*8;
+               }
+             
+             constexpr int shiftRightValue()
+               {
+                  return sizeof(TIn)*8 - shiftLeftValue();
+               }
+             
+             constexpr int maskValue()
+               {
+                  return (1 << shiftLeftValue()) - 1;
+               }
+             
              WavConverter::ptr _src;
           };
      } // namespace wav

@@ -7,7 +7,8 @@ namespace mods
 {
    namespace wav
      {
-        class UnsignedToSignedWavConverter : public WavConverter
+        template<typename T>
+          class UnsignedToSignedWavConverter : public WavConverter
           {
            public:
              UnsignedToSignedWavConverter(WavConverter::ptr src);
@@ -23,6 +24,11 @@ namespace mods
              void read(mods::utils::RWBuffer<u8>& buf, int len) override;
              
            private:
+             constexpr int getOffset()
+               {
+                  return (1 << (sizeof(T) * 8)) / 2;
+               }
+             
              WavConverter::ptr _src;
           };
      } // namespace wav

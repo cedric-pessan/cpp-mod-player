@@ -39,9 +39,8 @@ namespace mods
              template<typename T2>
                const RBuffer<T2> slice(size_t offset, size_t len) const
                {
-                  size_t currentOffset = static_cast<u8*>(_buf) - static_cast<u8*>(BufferBackend::Attorney::getBuffer(*_backend));
-                  check(offset * sizeof(T) + len * sizeof(T2) <= _len * sizeof(T), "invalid slice limits");
-                  return RBuffer<T2>(_backend, currentOffset + offset * sizeof(T), len);
+                  using TBuf = RBuffer<T2>;
+                  return buildSlice<TBuf, T2>(offset, len);
                }
              
              size_type size() const noexcept
@@ -110,16 +109,6 @@ namespace mods
                }
              
            private:
-             RBuffer(BufferBackend::sptr backend, size_t offset, size_t len)
-               : _backend(std::move(backend)),
-               _buf(static_cast<T*>(static_cast<void*>(BufferBackend::Attorney::getBuffer(*_backend) + offset))), // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-               _len(len)
-                 {
-                 }
-             
-             template<typename T2>
-               friend class RBuffer;
-             
              void check(bool condition, const std::string& description) const
                {
                   if(!condition)
@@ -131,6 +120,24 @@ namespace mods
              BufferBackend::sptr _backend;
              
            protected:
+             RBuffer(BufferBackend::sptr backend, size_t offset, size_t len)
+               : _backend(std::move(backend)),
+               _buf(static_cast<T*>(static_cast<void*>(BufferBackend::Attorney::getBuffer(*_backend) + offset))), // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+               _len(len)
+                 {
+                 }
+             
+             template<typename T2>
+               friend class RBuffer;
+             
+             template<typename Buf, typename T2>
+               const Buf buildSlice(size_t offset, size_t len) const
+               {
+                  size_t currentOffset = static_cast<u8*>(_buf) - static_cast<u8*>(BufferBackend::Attorney::getBuffer(*_backend));
+                  check(offset * sizeof(T) + len * sizeof(T2) <= _len * sizeof(T), "invalid slice limits");
+                  return Buf(_backend, currentOffset + offset * sizeof(T), len);
+               }
+             
              T* _buf;
              size_t _len;
           };

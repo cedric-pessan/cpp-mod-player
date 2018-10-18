@@ -28,7 +28,13 @@ namespace mods
               mux
              */
              
-             WavConverter::ptr reader = std::make_unique<ReaderWavConverter>(std::move(buffer));
+             u8 defaultValue = 0;
+             switch(bitsPerSample)
+               {
+                default:
+                  std::cout << "WavConverter: unknown default value for " << bitsPerSample << " bits per sample" << std::endl;
+               }
+             WavConverter::ptr reader = std::make_unique<ReaderWavConverter>(std::move(buffer), defaultValue);
              
              std::vector<WavConverter::ptr> channels;
              switch(nbChannels)
@@ -49,8 +55,8 @@ namespace mods
                   upscaledBitsPerSample = 16;
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       auto signedChannel = std::make_unique<UnsignedToSignedWavConverter>(std::move(channels[i]));
-                       upscaledChannels.push_back(std::make_unique<UpscaleWavConverter>(std::move(signedChannel)));
+                       auto signedChannel = std::make_unique<UnsignedToSignedWavConverter<u8>>(std::move(channels[i]));
+                       upscaledChannels.push_back(std::make_unique<UpscaleWavConverter<s16, s8>>(std::move(signedChannel)));
                     }
                   break;
                 default:
