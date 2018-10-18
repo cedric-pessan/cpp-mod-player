@@ -39,7 +39,7 @@ namespace mods
                  {
                     TOut value = inView[i];
                     value = (value << shiftLeftValue()) | ((value >> shiftRightValue()) & maskValue());
-                    outView[i] = inView[i];
+                    outView[i] = value;
                  }
             }
         

@@ -31,6 +31,9 @@ namespace mods
              u8 defaultValue = 0;
              switch(bitsPerSample)
                {
+                case 8:
+                  defaultValue = 128;
+                  break;
                 default:
                   std::cout << "WavConverter: unknown default value for " << bitsPerSample << " bits per sample" << std::endl;
                }
