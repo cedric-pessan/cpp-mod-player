@@ -73,7 +73,7 @@ namespace mods
                 case 22050:
                   for(int i = 0; i < nbChannels; ++i) 
                     {
-                       resampledChannels.push_back(std::make_unique<ResamplePositiveIntegerFactor>(std::move(upscaledChannels[i])));
+                       resampledChannels.push_back(buildResamplePositiveIntegerFactor<2>(resampledBitsPerSample, std::move(upscaledChannels[i])));
                     }
                   break;
                   
@@ -113,5 +113,19 @@ namespace mods
              auto mux = std::make_unique<MultiplexerWavConverter>(std::move(downScaledLeft), std::move(downScaledRight));
              return mux;
           }
+        
+        // static
+        template<int FACTOR>
+          WavConverter::ptr WavConverter::buildResamplePositiveIntegerFactor(int bitsPerSample, WavConverter::ptr src)
+            {
+               switch(bitsPerSample)
+                 {
+                  case 16:
+                    return std::make_unique<ResamplePositiveIntegerFactor<s16, FACTOR>>(std::move(src));
+                  default:
+                    std::cout << "WavConverter: unsupported bits per sample for resampling with positive integer factor: " << bitsPerSample << std::endl;
+                    return nullptr;
+                 }
+            }
      } // namespace wav
 } // namespace mods

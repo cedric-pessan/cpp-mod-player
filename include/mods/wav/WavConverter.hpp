@@ -27,6 +27,10 @@ namespace mods
              WavConverter(const WavConverter&&) = delete;
              WavConverter& operator=(const WavConverter&) = delete;
              WavConverter& operator=(const WavConverter&&) = delete;
+             
+           private:
+             template<int FACTOR>
+               static ptr buildResamplePositiveIntegerFactor(int bitsPerSample, ptr src);
           };
      } // namespace wav
 } // namespace mods

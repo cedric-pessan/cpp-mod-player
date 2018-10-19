@@ -7,7 +7,8 @@ namespace mods
 {
    namespace wav
      {
-        class ResamplePositiveIntegerFactor : public WavConverter
+        template<typename T, int FACTOR>
+          class ResamplePositiveIntegerFactor : public WavConverter
           {
            public:
              ResamplePositiveIntegerFactor(WavConverter::ptr src);
