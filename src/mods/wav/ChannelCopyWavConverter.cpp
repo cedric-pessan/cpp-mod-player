@@ -24,10 +24,25 @@ namespace mods
                   return _src->isFinished();
                }
              
-             void InternalSourceConverter::read(mods::utils::RWBuffer<u8>& buf, int len)
+             void InternalSourceConverter::read(mods::utils::RWBuffer<u8>& buf, int len, CopyDestId id)
                {
-                  _src->read(buf, len);
-                  std::cout << "TODO: InternalSourceConverter::read()" << std::endl;
+                  int read = 0;
+                  auto idxBuffer = toUnderlying(id);
+                  while(!_unconsumedBuffers[idxBuffer].empty() && read < len)
+                    {
+                       u8 value = _unconsumedBuffers[idxBuffer].front();
+                       buf[read++] = value;
+                       _unconsumedBuffers[idxBuffer].pop_front();
+                    }
+                  if(read < len)
+                    {
+                       auto remainingBuffer = buf.slice<u8>(read, len-read);
+                       _src->read(remainingBuffer, len - read);
+                       for(int i=0; i < len-read; ++i)
+                         {
+                            _unconsumedBuffers[1-idxBuffer].push_back(remainingBuffer[i]);
+                         }
+                    }
                }
              
              ChannelCopyWavConverterSlave::ChannelCopyWavConverterSlave(const InternalSourceConverter::sptr& src, CopyDestId id)
@@ -63,7 +78,7 @@ namespace mods
              
              void ChannelCopyWavConverterSlave::read(mods::utils::RWBuffer<u8>& buf, int len)
                {
-                  _src->read(buf, len);
+                  _src->read(buf, len, _id);
                   std::cout << "TODO: ChannelCopyWavConverterSlave::read()" << std::endl;
                }
           } // namespace impl

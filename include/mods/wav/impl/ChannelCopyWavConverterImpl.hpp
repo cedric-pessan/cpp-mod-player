@@ -32,7 +32,7 @@ namespace mods
                   ~InternalSourceConverter() = default;
                   
                   bool isFinished(CopyDestId id) const;
-                  void read(mods::utils::RWBuffer<u8>& buf, int len);
+                  void read(mods::utils::RWBuffer<u8>& buf, int len, CopyDestId id);
                   
                 private:
                   using UnconsumedBuffer = std::deque<u8>;
