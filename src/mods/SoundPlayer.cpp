@@ -69,7 +69,8 @@ namespace mods
    
    void SoundPlayer::removeOldestReaderFromPlayList()
      {
-        std::cout << "TODO: SoundPlyaer::removeOldestReaderFromPlayList()" << std::endl;
+        std::lock_guard<std::mutex> lock(_playListMutex);
+        _playList.pop_front();
      }
    
    void SoundPlayer::waitUntilFinished(const SynchronizedReader& entry)
@@ -92,7 +93,7 @@ namespace mods
                   
                   if(reader->isFinished())
                     {
-                       std::cout << "TODO: SoundPlayer::callback() everything was played we should unlock caller" << std::endl;
+                       entry.second->unlock();
                     }
                   
                   return;
