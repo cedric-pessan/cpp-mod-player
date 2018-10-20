@@ -79,7 +79,6 @@ namespace mods
              void ChannelCopyWavConverterSlave::read(mods::utils::RWBuffer<u8>& buf, int len)
                {
                   _src->read(buf, len, _id);
-                  std::cout << "TODO: ChannelCopyWavConverterSlave::read()" << std::endl;
                }
           } // namespace impl
         

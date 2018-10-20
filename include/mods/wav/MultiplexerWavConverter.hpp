@@ -3,6 +3,8 @@
 
 #include "mods/wav/WavConverter.hpp"
 
+#include <vector>
+
 namespace mods
 {
    namespace wav
@@ -23,8 +25,13 @@ namespace mods
              void read(mods::utils::RWBuffer<u8>& buf, int len) override;
              
            private:
+             mods::utils::RWBuffer<u8> allocateTempBuffer(int len);
+             
              WavConverter::ptr _left;
              WavConverter::ptr _right;
+             
+             std::vector<u8> _tempVec;
+             mods::utils::RWBuffer<u8> _temp;
           };
      } // namespace wav
 } // namespace mods

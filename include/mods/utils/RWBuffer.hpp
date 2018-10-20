@@ -23,7 +23,7 @@ namespace mods
              RWBuffer(const RWBuffer&) = default;
              RWBuffer(RWBuffer&&) = default;
              RWBuffer& operator=(const RWBuffer&) = delete;
-             RWBuffer& operator=(const RWBuffer&&) = delete;
+             RWBuffer& operator=(RWBuffer&&) = default;
              ~RWBuffer() = default;
              
              template<typename T2>
