@@ -11,7 +11,7 @@ namespace mods
         class ChannelCopyWavConverter : public impl::ChannelCopyWavConverterSlave
           {
            public:
-             ChannelCopyWavConverter(WavConverter::ptr src);
+             explicit ChannelCopyWavConverter(WavConverter::ptr src);
              
              ChannelCopyWavConverter() = delete;
              ChannelCopyWavConverter(const ChannelCopyWavConverter&) = delete;

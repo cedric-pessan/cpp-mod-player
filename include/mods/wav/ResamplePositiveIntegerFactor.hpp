@@ -11,17 +11,17 @@ namespace mods
           class ResamplePositiveIntegerFactor : public WavConverter
           {
            public:
-             ResamplePositiveIntegerFactor(WavConverter::ptr src);
+             explicit ResamplePositiveIntegerFactor(WavConverter::ptr src);
              
              ResamplePositiveIntegerFactor() = delete;
              ResamplePositiveIntegerFactor(const ResamplePositiveIntegerFactor&) = delete;
              ResamplePositiveIntegerFactor(const ResamplePositiveIntegerFactor&&) = delete;
              ResamplePositiveIntegerFactor& operator=(const ResamplePositiveIntegerFactor&) = delete;
-             ResamplePositiveIntegerFactor& operator==(const ResamplePositiveIntegerFactor&&) = delete;
+             ResamplePositiveIntegerFactor& operator=(const ResamplePositiveIntegerFactor&&) = delete;
              ~ResamplePositiveIntegerFactor() override = default;
              
              bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>& buf, int len) override;
+             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
            private:
              WavConverter::ptr _src;

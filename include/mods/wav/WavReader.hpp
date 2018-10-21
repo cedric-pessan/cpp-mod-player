@@ -108,7 +108,7 @@ namespace mods
              WavReader& operator=(const WavReader&&) = delete;
              
              bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>& buf, int len) override;
+             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
            private:
              mods::utils::RBuffer<FmtHeader> readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,

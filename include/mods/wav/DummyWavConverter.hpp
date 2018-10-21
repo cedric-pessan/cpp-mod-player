@@ -1,5 +1,5 @@
-#ifndef MODS_WAV_DUMMYCONVERTER_HPP
-#define MODS_WAV_DUMMYCONVERTER_HPP
+#ifndef MODS_WAV_DUMMYWAVCONVERTER_HPP
+#define MODS_WAV_DUMMYWAVCONVERTER_HPP
 
 #include "mods/wav/WavConverter.hpp"
 
@@ -20,7 +20,7 @@ namespace mods
              ~DummyWavConverter() override = default;
              
              bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>& buf, int len) override;
+             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
            private:
              WavConverter::ptr _src;
@@ -28,4 +28,4 @@ namespace mods
      } // namespace wav
 } // namespace mods
 
-#endif // MODS_WAV_DUMMYCONVERTER_HPP
+#endif // MODS_WAV_DUMMYWAVCONVERTER_HPP

@@ -11,7 +11,7 @@ namespace mods
           class UnsignedToSignedWavConverter : public WavConverter
           {
            public:
-             UnsignedToSignedWavConverter(WavConverter::ptr src);
+             explicit UnsignedToSignedWavConverter(WavConverter::ptr src);
              
              UnsignedToSignedWavConverter() = delete;
              UnsignedToSignedWavConverter(const UnsignedToSignedWavConverter&) = delete;
@@ -21,12 +21,12 @@ namespace mods
              ~UnsignedToSignedWavConverter() override = default;
              
              bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>& buf, int len) override;
+             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
            private:
              constexpr int getOffset()
                {
-                  return (1 << (sizeof(T) * 8)) / 2;
+                  return (1U << (sizeof(T) * 8)) / 2;
                }
              
              WavConverter::ptr _src;

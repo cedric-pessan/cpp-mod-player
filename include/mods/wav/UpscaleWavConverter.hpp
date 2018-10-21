@@ -11,7 +11,7 @@ namespace mods
           class UpscaleWavConverter : public WavConverter
           {
            public:
-             UpscaleWavConverter(WavConverter::ptr src);
+             explicit UpscaleWavConverter(WavConverter::ptr src);
              
              UpscaleWavConverter() = delete;
              UpscaleWavConverter(const UpscaleWavConverter&) = delete;
@@ -21,22 +21,22 @@ namespace mods
              ~UpscaleWavConverter() override = default;
              
              bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>& buf, int len) override;
+             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
            private:
-             constexpr int shiftLeftValue()
+             constexpr u32 shiftLeftValue()
                {
                   return sizeof(TOut)*8 - sizeof(TIn)*8;
                }
              
-             constexpr int shiftRightValue()
+             constexpr u32 shiftRightValue()
                {
                   return sizeof(TIn)*8 - shiftLeftValue();
                }
              
-             constexpr int maskValue()
+             constexpr u32 maskValue()
                {
-                  return (1 << shiftLeftValue()) - 1;
+                  return (1U << shiftLeftValue()) - 1;
                }
              
              WavConverter::ptr _src;

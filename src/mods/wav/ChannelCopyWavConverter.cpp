@@ -17,36 +17,37 @@ namespace mods
              bool InternalSourceConverter::isFinished(CopyDestId id) const
                {
                   auto idxBuffer = toUnderlying(id);
-                  if(!_unconsumedBuffers[idxBuffer].empty())
+                  if(!_unconsumedBuffers.at(idxBuffer).empty())
                     {
                        return false;
                     }
                   return _src->isFinished();
                }
              
-             void InternalSourceConverter::read(mods::utils::RWBuffer<u8>& buf, int len, CopyDestId id)
+             void InternalSourceConverter::read(mods::utils::RWBuffer<u8>* buf, int len, CopyDestId id)
                {
                   int read = 0;
                   auto idxBuffer = toUnderlying(id);
-                  while(!_unconsumedBuffers[idxBuffer].empty() && read < len)
+                  auto& out = *buf;
+                  while(!_unconsumedBuffers.at(idxBuffer).empty() && read < len)
                     {
-                       u8 value = _unconsumedBuffers[idxBuffer].front();
-                       buf[read++] = value;
-                       _unconsumedBuffers[idxBuffer].pop_front();
+                       u8 value = _unconsumedBuffers.at(idxBuffer).front();
+                       out[read++] = value;
+                       _unconsumedBuffers.at(idxBuffer).pop_front();
                     }
                   if(read < len)
                     {
-                       auto remainingBuffer = buf.slice<u8>(read, len-read);
-                       _src->read(remainingBuffer, len - read);
+                       auto remainingBuffer = buf->slice<u8>(read, len-read);
+                       _src->read(&remainingBuffer, len - read);
                        for(int i=0; i < len-read; ++i)
                          {
-                            _unconsumedBuffers[1-idxBuffer].push_back(remainingBuffer[i]);
+                            _unconsumedBuffers.at(1-idxBuffer).push_back(remainingBuffer[i]);
                          }
                     }
                }
              
-             ChannelCopyWavConverterSlave::ChannelCopyWavConverterSlave(const InternalSourceConverter::sptr& src, CopyDestId id)
-               : _src(src),
+             ChannelCopyWavConverterSlave::ChannelCopyWavConverterSlave(InternalSourceConverter::sptr src, CopyDestId id)
+               : _src(std::move(src)),
                _id(id)
                  {
                  }
@@ -56,7 +57,7 @@ namespace mods
                   class make_unique_enabler : public ChannelCopyWavConverterSlave
                     {
                      public:
-                       make_unique_enabler(const InternalSourceConverter::sptr& src)
+                       explicit make_unique_enabler(const InternalSourceConverter::sptr& src)
                          : ChannelCopyWavConverterSlave(src, CopyDestId::SLAVE)
                            {
                            }
@@ -76,7 +77,7 @@ namespace mods
                   return _src->isFinished(_id);
                }
              
-             void ChannelCopyWavConverterSlave::read(mods::utils::RWBuffer<u8>& buf, int len)
+             void ChannelCopyWavConverterSlave::read(mods::utils::RWBuffer<u8>* buf, int len)
                {
                   _src->read(buf, len, _id);
                }

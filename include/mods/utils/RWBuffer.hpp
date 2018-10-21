@@ -21,9 +21,9 @@ namespace mods
              
              RWBuffer() = delete;
              RWBuffer(const RWBuffer&) = default;
-             RWBuffer(RWBuffer&&) = default;
+             RWBuffer(RWBuffer&&) noexcept = default;
              RWBuffer& operator=(const RWBuffer&) = delete;
-             RWBuffer& operator=(RWBuffer&&) = default;
+             RWBuffer& operator=(RWBuffer&&) noexcept = default;
              ~RWBuffer() = default;
              
              template<typename T2>
@@ -35,7 +35,7 @@ namespace mods
              
              reference operator[](size_type pos)
                {
-                  return *(RBuffer<T>::_buf + pos);
+                  return *(RBuffer<T>::_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                }
              
              class iterator
@@ -51,7 +51,7 @@ namespace mods
                 public:
                   iterator() = delete;
                   iterator(const iterator&) = default;
-                  iterator(iterator&&) = default;
+                  iterator(iterator&&) noexcept = default;
                   iterator& operator=(const iterator&) = delete;
                   iterator& operator=(const iterator&&) = delete;
                   ~iterator() = default;
@@ -101,7 +101,7 @@ namespace mods
              template<typename T2>
                friend class RBuffer;
           };
-     }
-}
+     } // namespace utils
+} // namespace mods
 
 #endif // MODS_UTILS_RWBUFFER_HPP

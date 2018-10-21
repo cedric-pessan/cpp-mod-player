@@ -21,7 +21,7 @@ namespace mods
              virtual ~WavConverter() = default;
              
              virtual bool isFinished() const = 0;
-             virtual void read(mods::utils::RWBuffer<u8>& buf, int len) = 0;
+             virtual void read(mods::utils::RWBuffer<u8>* buf, int len) = 0;
              
              WavConverter(const WavConverter&) = delete;
              WavConverter(const WavConverter&&) = delete;

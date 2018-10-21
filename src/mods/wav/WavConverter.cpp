@@ -1,12 +1,12 @@
 
 #include "mods/wav/ChannelCopyWavConverter.hpp"
 #include "mods/wav/DummyWavConverter.hpp"
-#include "mods/wav/WavConverter.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
 #include "mods/wav/ResamplePositiveIntegerFactor.hpp"
 #include "mods/wav/UnsignedToSignedWavConverter.hpp"
 #include "mods/wav/UpscaleWavConverter.hpp"
+#include "mods/wav/WavConverter.hpp"
 
 #include <iostream>
 #include <vector>
@@ -37,7 +37,7 @@ namespace mods
                 default:
                   std::cout << "WavConverter: unknown default value for " << bitsPerSample << " bits per sample" << std::endl;
                }
-             WavConverter::ptr reader = std::make_unique<ReaderWavConverter>(std::move(buffer), defaultValue);
+             WavConverter::ptr reader = std::make_unique<ReaderWavConverter>(buffer, defaultValue);
              
              std::vector<WavConverter::ptr> channels;
              switch(nbChannels)

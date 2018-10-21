@@ -17,7 +17,7 @@ namespace mods
              return _src->isFinished();
           }
         
-        void DummyWavConverter::read(mods::utils::RWBuffer<u8>& buf, int len)
+        void DummyWavConverter::read(mods::utils::RWBuffer<u8>* buf, int len)
           {
              _src->read(buf, len);
           }

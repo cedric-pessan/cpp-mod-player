@@ -91,7 +91,7 @@ namespace mods
                
                auto& fmtHeader = *optFmtHeader;
                auto& data = *optData;
-               _converter = WavConverter::buildConverter(std::move(data), fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate());
+               _converter = WavConverter::buildConverter(data, fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate());
             }
         
         mods::utils::RBuffer<FmtHeader> WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
@@ -139,7 +139,7 @@ namespace mods
              return _converter->isFinished();
           }
         
-        void WavReader::read(mods::utils::RWBuffer<u8>& buf, int len)
+        void WavReader::read(mods::utils::RWBuffer<u8>* buf, int len)
           {
              _converter->read(buf, len);
           }

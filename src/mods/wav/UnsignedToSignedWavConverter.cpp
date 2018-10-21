@@ -18,14 +18,16 @@ namespace mods
           }
         
         template<typename T>
-          void UnsignedToSignedWavConverter<T>::read(mods::utils::RWBuffer<u8>& buf, int len)
+          void UnsignedToSignedWavConverter<T>::read(mods::utils::RWBuffer<u8>* buf, int len)
             {
                if((len % sizeof(T)) != 0)
-                 std::cout << "TODO: wrong buffer length in UnsignedToSignedWavConverter" << std::endl;
+                 {
+                    std::cout << "TODO: wrong buffer length in UnsignedToSignedWavConverter" << std::endl;
+                 }
                
                _src->read(buf, len);
                
-               auto bufview = buf.slice<T>(0, len/sizeof(T));
+               auto bufview = buf->slice<T>(0, len/sizeof(T));
                
                for(T& v : bufview)
                  {

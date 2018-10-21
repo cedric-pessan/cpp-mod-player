@@ -43,7 +43,7 @@ namespace mods
         
         constexpr const T& operator*() const&
           {
-             return _value.value;
+             return _value.value; // NOLINT(cppcoreguidelines-pro-type-union-access)
           }
         
         optional(const optional&) = delete;

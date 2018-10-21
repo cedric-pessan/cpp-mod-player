@@ -64,7 +64,7 @@ namespace mods
                   friend class RBuffer; // only RBuffer can create these
                   
                 public:
-                  const_iterator(const_iterator&&) = default;
+                  const_iterator(const_iterator&&) noexcept = default;
                   const_iterator(const const_iterator&) = default;
                   ~const_iterator() = default;
                   

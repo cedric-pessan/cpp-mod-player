@@ -12,7 +12,7 @@ namespace mods
         class ReaderWavConverter : public WavConverter
           {
            public:
-             ReaderWavConverter(const mods::utils::RBuffer<u8>& buffer, u8 defaultValue);
+             ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue);
              
              ReaderWavConverter() = delete;
              ReaderWavConverter(const ReaderWavConverter&) = delete;
@@ -22,7 +22,7 @@ namespace mods
              ~ReaderWavConverter() override = default;
              
              bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>& buf, int len) override;
+             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
            private:
              const mods::utils::RBuffer<u8> _buffer;

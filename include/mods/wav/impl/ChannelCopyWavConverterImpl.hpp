@@ -22,7 +22,7 @@ namespace mods
                 public:
                   using sptr = std::shared_ptr<InternalSourceConverter>;
                   
-                  InternalSourceConverter(WavConverter::ptr src);
+                  explicit InternalSourceConverter(WavConverter::ptr src);
                   
                   InternalSourceConverter() = delete;
                   InternalSourceConverter(const InternalSourceConverter&) = delete;
@@ -32,7 +32,7 @@ namespace mods
                   ~InternalSourceConverter() = default;
                   
                   bool isFinished(CopyDestId id) const;
-                  void read(mods::utils::RWBuffer<u8>& buf, int len, CopyDestId id);
+                  void read(mods::utils::RWBuffer<u8>* buf, int len, CopyDestId id);
                   
                 private:
                   using UnconsumedBuffer = std::deque<u8>;
@@ -44,7 +44,7 @@ namespace mods
              class ChannelCopyWavConverterSlave : public WavConverter
                {
                 protected:
-                  ChannelCopyWavConverterSlave(const InternalSourceConverter::sptr& src, CopyDestId id);
+                  ChannelCopyWavConverterSlave(InternalSourceConverter::sptr src, CopyDestId id);
                   
                 public:
                   ChannelCopyWavConverterSlave() = delete;
@@ -55,7 +55,7 @@ namespace mods
                   ~ChannelCopyWavConverterSlave() override = default;
                   
                   bool isFinished() const override;
-                  void read(mods::utils::RWBuffer<u8>& buf, int len) override;
+                  void read(mods::utils::RWBuffer<u8>* buf, int len) override;
                   
                 protected:
                   WavConverter::ptr buildSlave() const;

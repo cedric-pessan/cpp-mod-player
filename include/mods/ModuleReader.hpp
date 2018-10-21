@@ -2,8 +2,8 @@
 #ifndef MODS_MODULEREADER_HPP
 #define MODS_MODULEREADER_HPP
 
-#include "mods/utils/types.hpp"
 #include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
 
 #include <memory>
 #include <string>
@@ -28,7 +28,7 @@ namespace mods
         virtual ~ModuleReader() = default;
         
         virtual bool isFinished() const = 0;
-        virtual void read(mods::utils::RWBuffer<u8>& buf, int len) = 0;
+        virtual void read(mods::utils::RWBuffer<u8>* buf, int len) = 0;
         
         static ModuleFormat parseFormat(const std::string& format);
         static ModuleReader::ptr buildReader(ModuleFormat format, const std::string& filename);

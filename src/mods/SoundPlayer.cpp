@@ -89,7 +89,7 @@ namespace mods
              auto& reader = entry.first;
              if(!reader->isFinished())
                {
-                  reader->read(rwbuf, len);
+                  reader->read(&rwbuf, len);
                   
                   if(reader->isFinished())
                     {
