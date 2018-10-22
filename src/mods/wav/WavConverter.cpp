@@ -37,13 +37,17 @@ namespace mods
                 default:
                   std::cout << "WavConverter: unknown default value for " << bitsPerSample << " bits per sample" << std::endl;
                }
-             WavConverter::ptr reader = std::make_unique<ReaderWavConverter>(buffer, defaultValue);
              
              std::vector<WavConverter::ptr> channels;
              switch(nbChannels)
                {
                 case 1:
-                  channels.push_back(std::make_unique<DummyWavConverter>(std::move(reader)));
+                  channels.push_back(std::make_unique<ReaderWavConverter<0,1>>(buffer, defaultValue));
+                  break;
+                  
+                case 2:
+                  channels.push_back(std::make_unique<ReaderWavConverter<0,2>>(buffer, defaultValue));
+                  channels.push_back(std::make_unique<ReaderWavConverter<1,2>>(buffer, defaultValue));
                   break;
                   
                 default:

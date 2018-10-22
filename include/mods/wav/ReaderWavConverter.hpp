@@ -9,7 +9,8 @@ namespace mods
 {
    namespace wav
      {
-        class ReaderWavConverter : public WavConverter
+        template<int CH, int NBCHANNELS>
+          class ReaderWavConverter : public WavConverter
           {
            public:
              ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue);

@@ -93,6 +93,12 @@ namespace mods
                        return *this;
                     }
                   
+                  const_iterator operator+=(int n)
+                    {
+                       _pos += n;
+                       return *this;
+                    }
+                  
                 private:
                   size_type _pos;
                   const RBuffer<T>& _rbuf;
