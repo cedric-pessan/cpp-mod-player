@@ -34,24 +34,20 @@ namespace mods
                 case 8:
                   defaultValue = 128;
                   break;
+                  
                 default:
                   std::cout << "WavConverter: unknown default value for " << bitsPerSample << " bits per sample" << std::endl;
                }
              
              std::vector<WavConverter::ptr> channels;
-             switch(nbChannels)
+             switch(bitsPerSample)
                {
-                case 1:
-                  channels.push_back(std::make_unique<ReaderWavConverter<0,1>>(buffer, defaultValue));
-                  break;
-                  
-                case 2:
-                  channels.push_back(std::make_unique<ReaderWavConverter<0,2>>(buffer, defaultValue));
-                  channels.push_back(std::make_unique<ReaderWavConverter<1,2>>(buffer, defaultValue));
+                case 8:
+                  buildDemuxStage<8>(&channels, nbChannels, defaultValue, buffer);
                   break;
                   
                 default:
-                  std::cout << "WavConverter: unsupported number of channels for demux stage:" << nbChannels << std::endl;
+                  std::cout << "WavConverter: unsupported " << bitsPerSample << " bits per sample for demux stage" << std::endl;
                }
              
              int upscaledBitsPerSample = bitsPerSample;
@@ -97,6 +93,12 @@ namespace mods
                        mixedLeft = std::move(duplicator);
                     }
                   break;
+                  
+                case 2:
+                  mixedLeft = std::make_unique<DummyWavConverter>(std::move(resampledChannels[0]));
+                  mixedRight = std::make_unique<DummyWavConverter>(std::move(resampledChannels[1]));
+                  break;
+                  
                 default:
                   std::cout << "WavConverter: unsupported number of channels for mixing stage: " << nbChannels << std::endl;
                }
@@ -131,5 +133,26 @@ namespace mods
                     return nullptr;
                  }
             }
+        
+        // static
+        template<int BITSPERSAMPLE>
+          void WavConverter::buildDemuxStage(std::vector<WavConverter::ptr>* channels, int nbChannels, u8 defaultValue, const mods::utils::RBuffer<u8>& buffer)
+            {
+               switch(nbChannels)
+                 {
+                  case 1:
+                    channels->push_back(std::make_unique<ReaderWavConverter<0,1,BITSPERSAMPLE>>(buffer, defaultValue));
+                    break;
+                    
+                  case 2:
+                    channels->push_back(std::make_unique<ReaderWavConverter<0,2,BITSPERSAMPLE>>(buffer, defaultValue));
+                    channels->push_back(std::make_unique<ReaderWavConverter<1,2,BITSPERSAMPLE>>(buffer, defaultValue));
+                    break;
+                    
+                  default:
+                    std::cout << "WavConverter: unsupported number of channels for demux stage:" << nbChannels << std::endl;
+                 }
+            }
+        
      } // namespace wav
 } // namespace mods

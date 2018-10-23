@@ -9,7 +9,7 @@ namespace mods
 {
    namespace wav
      {
-        template<int CH, int NBCHANNELS>
+        template<int CH, int NBCHANNELS, int BITSPERSAMPLE>
           class ReaderWavConverter : public WavConverter
           {
            public:

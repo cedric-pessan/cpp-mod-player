@@ -82,6 +82,16 @@ namespace mods
                        return !(*this == obj);
                     }
                   
+                  bool operator<(const const_iterator& obj) const
+                    {
+                       return _pos < obj._pos;
+                    }
+                  
+                  bool operator>=(const const_iterator& obj) const
+                    {
+                       return _pos >= obj._pos;
+                    }
+                  
                   const_reference operator*() const
                     {
                        return _rbuf[_pos];

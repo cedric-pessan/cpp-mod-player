@@ -5,6 +5,7 @@
 #include <mods/utils/RWBuffer.hpp>
 
 #include <memory>
+#include <vector>
 
 namespace mods
 {
@@ -31,6 +32,9 @@ namespace mods
            private:
              template<int FACTOR>
                static ptr buildResamplePositiveIntegerFactor(int bitsPerSample, ptr src);
+             
+             template<int BITSPERSAMPLE>
+               static void buildDemuxStage(std::vector<WavConverter::ptr>* channels, int nbChannels, u8 defaultValue, const mods::utils::RBuffer<u8>& buffer);
           };
      } // namespace wav
 } // namespace mods
