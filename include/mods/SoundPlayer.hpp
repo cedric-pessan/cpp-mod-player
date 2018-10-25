@@ -15,9 +15,13 @@ namespace mods
    class SoundPlayer
      {
       public:
-        SoundPlayer();
+        using ModuleInfoCallback = std::function<void(const std::string&)>;
+        using ModuleProgressCallback = std::function<void(const std::string&)>;
+        
+        SoundPlayer(ModuleInfoCallback moduleInfoCb, ModuleProgressCallback moduleCallbackCb);
         ~SoundPlayer();
         
+        SoundPlayer() = delete;
         SoundPlayer(const SoundPlayer&) = delete;
         SoundPlayer(const SoundPlayer&&) = delete;
         SoundPlayer& operator=(const SoundPlayer&) = delete;
@@ -29,11 +33,16 @@ namespace mods
         using SynchronizedReader = std::pair<ModuleReader::ptr, std::shared_ptr<std::mutex>>;
         std::mutex _playListMutex;
         std::deque<SynchronizedReader> _playList;
+        ModuleInfoCallback _moduleInfoCb;
+        ModuleProgressCallback _moduleProgressCb;
         
         void checkInit(bool condition, const std::string& description) const;
         const SynchronizedReader& addReaderToPlayList(ModuleReader::ptr reader);
         void removeOldestReaderFromPlayList();
         void waitUntilFinished(const SynchronizedReader& entry);
+        
+        void sendModuleInfo(const ModuleReader& module);
+        void sendProgress(const ModuleReader& module);
         
         static void s_ccallback(void* udata, Uint8* stream, int len);
         void callback(u8* buf, int len);

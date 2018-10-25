@@ -143,5 +143,17 @@ namespace mods
           {
              _converter->read(buf, len);
           }
+        
+        std::string WavReader::getInfo() const
+          {
+             std::cout << "TODO: WavReader::getInfo() const" << std::endl;
+             return "info";
+          }
+        
+        std::string WavReader::getProgressInfo() const
+          {
+             std::cout << "TODO: WavReader::getProgressInfo() const" << std::endl;
+             return "prrogress";
+          }
      } // namespace wav
 } // namespace mods

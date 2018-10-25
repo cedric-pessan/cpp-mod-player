@@ -19,21 +19,23 @@ namespace mods
           }
      }
    
-   SoundPlayer::SoundPlayer()
-     {
-        int res = SDL_Init(SDL_INIT_AUDIO);
-        checkInit(res == 0, "sdl audio subsystem could not be initialized");
-        SDL_AudioSpec spec;
-        spec.freq = 44100;
-        spec.format = AUDIO_S16;
-        spec.channels = 2;
-        spec.samples = 1024;
-        spec.callback = s_ccallback;
-        spec.userdata = this;
-        
-        res = SDL_OpenAudio(&spec, nullptr);
-        checkInit(res >= 0, "audio device could not be opened");
-     }
+   SoundPlayer::SoundPlayer(ModuleInfoCallback moduleInfoCb, ModuleProgressCallback moduleProgressCb)
+     : _moduleInfoCb(moduleInfoCb),
+     _moduleProgressCb(moduleProgressCb)
+       {
+          int res = SDL_Init(SDL_INIT_AUDIO);
+          checkInit(res == 0, "sdl audio subsystem could not be initialized");
+          SDL_AudioSpec spec;
+          spec.freq = 44100;
+          spec.format = AUDIO_S16;
+          spec.channels = 2;
+          spec.samples = 1024;
+          spec.callback = s_ccallback;
+          spec.userdata = this;
+          
+          res = SDL_OpenAudio(&spec, nullptr);
+          checkInit(res >= 0, "audio device could not be opened");
+       }
    
    SoundPlayer::~SoundPlayer()
      {
@@ -51,6 +53,7 @@ namespace mods
    
    void SoundPlayer::play(ModuleReader::ptr reader)
      {
+        sendModuleInfo(*reader);
         auto& entry = addReaderToPlayList(std::move(reader));
         SDL_PauseAudio(0);
         waitUntilFinished(entry);
@@ -90,6 +93,7 @@ namespace mods
              if(!reader->isFinished())
                {
                   reader->read(&rwbuf, len);
+                  sendProgress(*reader);
                   
                   if(reader->isFinished())
                     {
@@ -100,6 +104,18 @@ namespace mods
                }
           }
         std::cout << "TODO: SoundPlayer::callback() nothing to play, we should 0 volume" << std::endl;
+     }
+   
+   void SoundPlayer::sendModuleInfo(const ModuleReader& module)
+     {
+        std::string info = module.getInfo();
+        _moduleInfoCb(info);
+     }
+   
+   void SoundPlayer::sendProgress(const ModuleReader& module)
+     {
+        std::string progress = module.getProgressInfo();
+        _moduleProgressCb(progress);
      }
    
    SoundPlayer::SoundPlayerInitException::SoundPlayerInitException(std::string reason)

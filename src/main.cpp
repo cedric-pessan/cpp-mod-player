@@ -8,6 +8,26 @@
 #include <memory>
 #include <vector>
 
+namespace
+{
+   void printModuleInfo(const std::string& info)
+     {
+        std::cout << info << std::endl;
+     }
+   
+   std::string lastLine;
+   
+   void printModuleProgress(std::string progress)
+     {
+        for(u32 i=progress.length(); i<lastLine.length(); ++i)
+          {
+             progress += ' ';
+          }
+        std::cout << '\r' << progress << std::flush;
+        lastLine = progress;
+     }
+}
+
 int main(int argc, char** argv)
 {
    if(argc < 2)
@@ -45,8 +65,11 @@ int main(int argc, char** argv)
         return 0;
      }
    
-   mods::SoundPlayer player;
+   mods::SoundPlayer player([](const std::string& info){ printModuleInfo(info); },
+                            [](const std::string& progress){ printModuleProgress(progress); });
    player.play(std::move(reader));
+   
+   std::cout << std::endl;
    
    return 0;
 }

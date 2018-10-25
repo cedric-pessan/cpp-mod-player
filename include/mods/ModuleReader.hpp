@@ -29,6 +29,8 @@ namespace mods
         
         virtual bool isFinished() const = 0;
         virtual void read(mods::utils::RWBuffer<u8>* buf, int len) = 0;
+        virtual std::string getInfo() const = 0;
+        virtual std::string getProgressInfo() const = 0;
         
         static ModuleFormat parseFormat(const std::string& format);
         static ModuleReader::ptr buildReader(ModuleFormat format, const std::string& filename);

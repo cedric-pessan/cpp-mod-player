@@ -109,6 +109,8 @@ namespace mods
              
              bool isFinished() const override;
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             std::string getInfo() const override;
+             std::string getProgressInfo() const override;
              
            private:
              mods::utils::RBuffer<FmtHeader> readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
