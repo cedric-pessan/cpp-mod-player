@@ -92,6 +92,8 @@ namespace mods
                auto& fmtHeader = *optFmtHeader;
                auto& data = *optData;
                _converter = WavConverter::buildConverter(data, fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate());
+               
+               buildInfo(fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate());
             }
         
         mods::utils::RBuffer<FmtHeader> WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
@@ -134,6 +136,15 @@ namespace mods
              return data;
           }
         
+        void WavReader::buildInfo(int bitsPerSample, int nbChannels, int frequency)
+          {
+             std::stringstream ss;
+             ss << "bits per sample:" << bitsPerSample << std::endl;
+             ss << "number of channels:" << nbChannels << std::endl;
+             ss << "frequency:" << frequency;
+             _info = ss.str();
+          }
+        
         bool WavReader::isFinished() const
           {
              return _converter->isFinished();
@@ -146,8 +157,7 @@ namespace mods
         
         std::string WavReader::getInfo() const
           {
-             std::cout << "TODO: WavReader::getInfo() const" << std::endl;
-             return "info";
+             return _info;
           }
         
         std::string WavReader::getProgressInfo() const
