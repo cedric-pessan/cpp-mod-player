@@ -31,6 +31,8 @@ namespace mods
              mods::utils::RBuffer<u8>::const_iterator _end;
              
              u8 _defaultValue;
+             
+             constexpr static int BYTESPERSAMPLE = BITSPERSAMPLE/8;
           };
      } // namespace wav
 } // namespace mods

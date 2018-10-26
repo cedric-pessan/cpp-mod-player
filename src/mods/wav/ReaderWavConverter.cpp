@@ -14,7 +14,7 @@ namespace mods
           _end(_buffer.end()),
           _defaultValue(defaultValue)
             {
-               _it += CH * BITSPERSAMPLE/8;
+               _it += CH * BYTESPERSAMPLE;
             }
         
         template<int CH, int NBCHANNELS, int BITSPERSAMPLE>
@@ -27,12 +27,23 @@ namespace mods
           void ReaderWavConverter<CH, NBCHANNELS, BITSPERSAMPLE>::read(mods::utils::RWBuffer<u8>* buf, int len)
             {
                auto& out = *buf;
-               for(int i=0; i<len; ++i)
+               for(int i=0; i<len; i+=BYTESPERSAMPLE)
                  {
                     if(_it < _end) 
                       {
-                         out[i] = *_it;
-                         _it += NBCHANNELS * BITSPERSAMPLE/8;
+                         for(int b=0; b<BYTESPERSAMPLE; ++b)
+                           {
+                              if(_it < _end)
+                                {
+                                   out[i+b] = *_it;
+                                   ++_it;
+                                }
+                              else
+                                {
+                                   out[i+b] = _defaultValue;
+                                }
+                           }
+                         _it += (NBCHANNELS-1) * BYTESPERSAMPLE;
                       }
                     else
                       {
