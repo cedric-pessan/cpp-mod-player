@@ -127,7 +127,6 @@ namespace mods
              
              WavConverter::ptr _converter;
              const mods::utils::RBuffer<u8> _fileBuffer;
-             const mods::utils::RBuffer<ChunkHeader> _headerBuffer;
              std::string _info;
              StatCollector::sptr _statCollector;
              size_t _length;

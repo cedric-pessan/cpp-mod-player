@@ -40,11 +40,12 @@ namespace mods
           } // namespace
         
         WavReader::WavReader(const std::string& filename)
-          : _fileBuffer(mods::utils::FileUtils::mapFile(filename)),
-          _headerBuffer(_fileBuffer.slice<ChunkHeader>(0, 1))
+          : _fileBuffer(mods::utils::FileUtils::mapFile(filename))
             {
-               checkInit(_headerBuffer->getChunkID() == getRIFF(), "Not a RIFF file");
-               checkInit(_fileBuffer.size() >= _headerBuffer->getChunkSize() - sizeof(ChunkHeader), "RIFF chunk not complete");
+               auto headerBuffer = _fileBuffer.slice<ChunkHeader>(0, 1);
+               
+               checkInit(headerBuffer->getChunkID() == getRIFF(), "Not a RIFF file");
+               checkInit(_fileBuffer.size() >= headerBuffer->getChunkSize() - sizeof(ChunkHeader), "RIFF chunk not complete");
                
                auto riffHeader = _fileBuffer.slice<RiffHeader>(0, 1);
                
