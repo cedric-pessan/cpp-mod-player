@@ -1,8 +1,9 @@
 #ifndef MODS_WAV_WAVCONVERTER_HPP
 #define MODS_WAV_WAVCONVERTER_HPP
 
-#include <mods/utils/RBuffer.hpp>
-#include <mods/utils/RWBuffer.hpp>
+#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/wav/StatCollector.hpp"
 
 #include <memory>
 #include <vector>
@@ -16,7 +17,7 @@ namespace mods
            public:
              using ptr = std::unique_ptr<WavConverter>;
              
-             static ptr buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int nbChannels, int frequency);
+             static ptr buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int nbChannels, int frequency, StatCollector::sptr statCollector);
              
              WavConverter() = default;
              virtual ~WavConverter() = default;
@@ -34,7 +35,7 @@ namespace mods
                static ptr buildResamplePositiveIntegerFactor(int bitsPerSample, ptr src);
              
              template<int BITSPERSAMPLE>
-               static void buildDemuxStage(std::vector<WavConverter::ptr>* channels, int nbChannels, u8 defaultValue, const mods::utils::RBuffer<u8>& buffer);
+               static void buildDemuxStage(std::vector<WavConverter::ptr>* channels, int nbChannels, u8 defaultValue, const mods::utils::RBuffer<u8>& buffer, StatCollector::sptr statCollector);
           };
      } // namespace wav
 } // namespace mods

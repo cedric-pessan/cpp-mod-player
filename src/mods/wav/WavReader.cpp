@@ -91,7 +91,9 @@ namespace mods
                
                auto& fmtHeader = *optFmtHeader;
                auto& data = *optData;
-               _converter = WavConverter::buildConverter(data, fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate());
+               _statCollector = std::make_shared<StatCollector>();
+               _converter = WavConverter::buildConverter(data, fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), _statCollector);
+               _length = data.size();
                
                buildInfo(fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate());
             }
@@ -162,8 +164,11 @@ namespace mods
         
         std::string WavReader::getProgressInfo() const
           {
-             std::cout << "TODO: WavReader::getProgressInfo() const" << std::endl;
-             return "prrogress";
+             size_t read = _statCollector->getBytesRead();
+             size_t percentage = read * 100 / _length;
+             std::stringstream ss;
+             ss << "Reading..." << percentage << "%";
+             return ss.str();
           }
      } // namespace wav
 } // namespace mods

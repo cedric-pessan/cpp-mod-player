@@ -16,7 +16,7 @@ namespace mods
    namespace wav
      {
         // static
-        WavConverter::ptr WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int nbChannels, int frequency)
+        WavConverter::ptr WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int nbChannels, int frequency, StatCollector::sptr statCollector)
           {
              /* pipeline:
               sampleReader
@@ -43,7 +43,7 @@ namespace mods
              switch(bitsPerSample)
                {
                 case 8:
-                  buildDemuxStage<8>(&channels, nbChannels, defaultValue, buffer);
+                  buildDemuxStage<8>(&channels, nbChannels, defaultValue, buffer, statCollector);
                   break;
                   
                 default:
@@ -136,17 +136,17 @@ namespace mods
         
         // static
         template<int BITSPERSAMPLE>
-          void WavConverter::buildDemuxStage(std::vector<WavConverter::ptr>* channels, int nbChannels, u8 defaultValue, const mods::utils::RBuffer<u8>& buffer)
+          void WavConverter::buildDemuxStage(std::vector<WavConverter::ptr>* channels, int nbChannels, u8 defaultValue, const mods::utils::RBuffer<u8>& buffer, StatCollector::sptr statCollector)
             {
                switch(nbChannels)
                  {
                   case 1:
-                    channels->push_back(std::make_unique<ReaderWavConverter<0,1,BITSPERSAMPLE>>(buffer, defaultValue));
+                    channels->push_back(std::make_unique<ReaderWavConverter<0,1,BITSPERSAMPLE>>(buffer, defaultValue, statCollector));
                     break;
                     
                   case 2:
-                    channels->push_back(std::make_unique<ReaderWavConverter<0,2,BITSPERSAMPLE>>(buffer, defaultValue));
-                    channels->push_back(std::make_unique<ReaderWavConverter<1,2,BITSPERSAMPLE>>(buffer, defaultValue));
+                    channels->push_back(std::make_unique<ReaderWavConverter<0,2,BITSPERSAMPLE>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<1,2,BITSPERSAMPLE>>(buffer, defaultValue, statCollector));
                     break;
                     
                   default:

@@ -8,11 +8,12 @@ namespace mods
    namespace wav
      {
         template<int CH, int NBCHANNELS, int BITSPERSAMPLE>
-          ReaderWavConverter<CH, NBCHANNELS, BITSPERSAMPLE>::ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue)
+          ReaderWavConverter<CH, NBCHANNELS, BITSPERSAMPLE>::ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector::sptr statCollector)
             : _buffer(std::move(buffer)),
           _it(_buffer.begin()),
           _end(_buffer.end()),
-          _defaultValue(defaultValue)
+          _defaultValue(defaultValue),
+          _statCollector(statCollector)
             {
                _it += CH * BYTESPERSAMPLE;
             }
@@ -26,6 +27,7 @@ namespace mods
         template<int CH, int NBCHANNELS, int BITSPERSAMPLE>
           void ReaderWavConverter<CH, NBCHANNELS, BITSPERSAMPLE>::read(mods::utils::RWBuffer<u8>* buf, int len)
             {
+               size_t bytesRead = 0;
                auto& out = *buf;
                for(int i=0; i<len; i+=BYTESPERSAMPLE)
                  {
@@ -37,6 +39,7 @@ namespace mods
                                 {
                                    out[i+b] = *_it;
                                    ++_it;
+                                   ++bytesRead;
                                 }
                               else
                                 {
@@ -50,6 +53,7 @@ namespace mods
                          out[i] = _defaultValue;
                       }
                  }
+               _statCollector->inc(bytesRead);
             }
         
         template class ReaderWavConverter<0,1,8>;
