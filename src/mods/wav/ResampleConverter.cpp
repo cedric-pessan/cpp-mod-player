@@ -12,8 +12,7 @@ namespace mods
         
         bool ResampleConverter::isFinished() const
           {
-             std::cout << "TODO: ResampleConverter::isFinished() const" << std::endl;
-             return false;
+             return _src->isFinished();
           }
         
         void ResampleConverter::read(mods::utils::RWBuffer<u8>* buf, int len)

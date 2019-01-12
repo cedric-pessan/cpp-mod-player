@@ -12,8 +12,7 @@ namespace mods
         
         bool ToDoubleConverter::isFinished() const
           {
-             std::cout << "TODO: ToDoubleConverter::isFinished() const" << std::endl;
-             return false;
+             return _src->isFinished();
           }
         
         void ToDoubleConverter::read(mods::utils::RWBuffer<u8>* buf, int len)
