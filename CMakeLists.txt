@@ -30,10 +30,13 @@ add_executable(modreader src/main.cpp
                          src/mods/SoundPlayer.cpp
                          src/mods/wav/ChannelCopyWavConverter.cpp
                          src/mods/wav/DummyWavConverter.cpp
+                         src/mods/wav/FromDoubleConverter.cpp
                          src/mods/wav/MultiplexerWavConverter.cpp
                          src/mods/wav/ReaderWavConverter.cpp
+                         src/mods/wav/ResampleConverter.cpp
                          src/mods/wav/ResamplePositiveIntegerFactor.cpp
                          src/mods/wav/StatCollector.cpp
+                         src/mods/wav/ToDoubleConverter.cpp
                          src/mods/wav/UnsignedToSignedWavConverter.cpp
                          src/mods/wav/UpscaleWavConverter.cpp
                          src/mods/wav/WavConverter.cpp
