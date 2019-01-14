@@ -23,6 +23,8 @@ namespace mods
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
            private:
+             double getNextDecimatedSample();
+             
              WavConverter::ptr _src;
           };
      } // namespace wav

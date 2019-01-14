@@ -7,7 +7,8 @@ namespace mods
 {
    namespace wav
      {
-        class ToDoubleConverter : public WavConverter
+        template<typename T>
+          class ToDoubleConverter : public WavConverter
           {
            public:
              ToDoubleConverter(WavConverter::ptr src);

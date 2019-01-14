@@ -72,7 +72,8 @@ namespace mods
                        upscaledBitsPerSample = -1;
                        for(int i = 0; i < nbChannels; ++i)
                          {
-                            upscaledChannels.push_back(std::make_unique<ToDoubleConverter>(std::move(channels[i])));
+                            auto signedChannel = std::make_unique<UnsignedToSignedWavConverter<u8>>(std::move(channels[i]));
+                            upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s8>>(std::move(signedChannel)));
                          }
                     }
                   break;
