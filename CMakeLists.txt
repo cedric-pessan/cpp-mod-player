@@ -22,6 +22,15 @@ include_directories(${SDL_INCLUDE_DIR}
 
 configure_file(include/mods/utils/nativeEndian.hpp.in include/mods/utils/nativeEndian.hpp)
 
+add_executable(filter_generator src/mods/utils/Band.cpp
+                                src/mods/utils/FilterGeneratorTool.cpp
+                                src/mods/utils/FirFilterDesigner.cpp)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp
+                   COMMAND filter_generator ${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp
+                   DEPENDS filter_generator
+                   COMMENT "Generate filters")
+
 set(SRCS_UNIX src/mods/utils/impl/unix/FileUtils.cpp
               src/mods/utils/impl/unix/FileUtils.c)
 
@@ -43,7 +52,8 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/WavReader.cpp
                          src/mods/utils/BufferBackend.cpp
                          src/mods/utils/FileUtils.cpp
-                         ${SRCS_UNIX})
+                         ${SRCS_UNIX}
+                         ${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp)
 
 target_link_libraries(modreader ${SDL_LIBRARY})
 

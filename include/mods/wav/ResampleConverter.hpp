@@ -1,13 +1,16 @@
 #ifndef MODS_WAV_RESAMPLECONVERTER_HPP
 #define MODS_WAV_RESAMPLECONVERTER_HPP
 
+#include "mods/utils/ConstFraction.hpp"
+#include "mods/utils/Filters.hpp"
 #include "mods/wav/WavConverter.hpp"
 
 namespace mods
 {
    namespace wav
      {
-        class ResampleConverter : public WavConverter
+        template<int InFrequency, int OutFrequency>
+          class ResampleConverter : public WavConverter
           {
            public:
              explicit ResampleConverter(WavConverter::ptr src);
@@ -24,8 +27,54 @@ namespace mods
              
            private:
              double getNextDecimatedSample();
+             void updateHistory();
+             void removeFromHistory();
+             void addToHistory();
+             double calculateInterpolatedSample() const;
+             //double getNextSample() const;
              
              WavConverter::ptr _src;
+             int _zerosToNextInterpolatedSample = 0;
+             
+             constexpr static mods::utils::ConstFraction _resampleFraction = mods::utils::ConstFraction(InFrequency, OutFrequency).reduce();
+             constexpr static int _decimationFactor = _resampleFraction.getNumerator();
+             constexpr static int _interpolationFactor = _resampleFraction.getDenominator();
+             constexpr static int _numTaps = mods::utils::LowPassFilter<std::min(InFrequency, OutFrequency), 2, InFrequency * _interpolationFactor>::taps.size();
+             
+             struct SampleWithZeros
+               {
+                  SampleWithZeros(/*double sample,*/ int zeros);
+                  
+                  SampleWithZeros() = default;
+                  SampleWithZeros(const SampleWithZeros&) = delete;
+                  SampleWithZeros(SampleWithZeros&&) = delete;
+                  SampleWithZeros& operator=(const SampleWithZeros&) = default;
+                  SampleWithZeros& operator=(SampleWithZeros&&) = delete;
+                  ~SampleWithZeros() = default;
+                  
+                  int numberOfZeros;
+               };
+             
+             class History
+               {
+                public:
+                  History() = default;
+                  History(const History&) = delete;
+                  History(History&&) = delete;
+                  History& operator=(const History&) = delete;
+                  History& operator=(History&&) = delete;
+                  ~History() = default;
+                  
+                  void push_back(const SampleWithZeros& sampleWithZeros);
+                  SampleWithZeros& front();
+                  void pop_front();
+                  bool isEmpty() const;
+                  
+                private:
+                  std::array<SampleWithZeros, _numTaps> _array;
+                  size_t _begin = 0;
+                  size_t _end = 0;
+               } _history;
           };
      } // namespace wav
 } // namespace mods

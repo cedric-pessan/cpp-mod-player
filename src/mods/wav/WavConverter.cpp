@@ -88,7 +88,7 @@ namespace mods
                 case 22000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       resampledChannels.push_back(std::make_unique<ResampleConverter>(std::move(upscaledChannels[i])));
+                       resampledChannels.push_back(std::make_unique<ResampleConverter<22000, 44100>>(std::move(upscaledChannels[i])));
                     }
                   break;
                   
