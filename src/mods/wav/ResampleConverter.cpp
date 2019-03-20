@@ -45,8 +45,6 @@ namespace mods
                  {
                     outView[i] = getNextDecimatedSample();
                  }
-             
-               std::cout << "TODO: ResampleConverter::read(mods::utils::RWBuffer<u8>*, int)" << std::endl;
             }
         
         template<int InFrequency, int OutFrequency>

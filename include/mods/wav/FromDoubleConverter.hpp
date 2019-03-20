@@ -3,11 +3,14 @@
 
 #include "mods/wav/WavConverter.hpp"
 
+#include <limits>
+
 namespace mods
 {
    namespace wav
      {
-        class FromDoubleConverter : public WavConverter
+        template<typename T>
+          class FromDoubleConverter : public WavConverter
           {
            public:
              FromDoubleConverter(WavConverter::ptr src);
@@ -23,7 +26,12 @@ namespace mods
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
            private:
+             mods::utils::RWBuffer<u8> allocateTempBuffer(size_t len);
+             
              WavConverter::ptr _src;
+             
+             std::vector<u8> _tempVec;
+             mods::utils::RWBuffer<u8> _temp;
           };
      } // namespace wav
 } // namespace mods

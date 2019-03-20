@@ -135,8 +135,8 @@ namespace mods
                   downScaledRight = std::make_unique<DummyWavConverter>(std::move(mixedRight));
                   break;
                 case -1:
-                  downScaledLeft = std::make_unique<FromDoubleConverter>(std::move(mixedLeft));
-                  downScaledRight = std::make_unique<FromDoubleConverter>(std::move(mixedRight));
+                  downScaledLeft = std::make_unique<FromDoubleConverter<s16>>(std::move(mixedLeft));
+                  downScaledRight = std::make_unique<FromDoubleConverter<s16>>(std::move(mixedRight));
                   break;
                 default:
                   std::cout << "WavConverter: unsupported bits per sample to downscale: " << resampledBitsPerSample << std::endl;
