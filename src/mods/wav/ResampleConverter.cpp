@@ -7,10 +7,21 @@ namespace mods
      {
         template<int InFrequency, int OutFrequency>
           ResampleConverter<InFrequency, OutFrequency>::ResampleConverter(WavConverter::ptr src)
-            : _src(std::move(src))
-              {
-                 _history.push_back(SampleWithZeros(/*0.0,*/_numTaps-1));
-              }
+            : _src(std::move(src)),
+          _inputBuffer(initBuffer()),
+          _inputBufferAsDouble(_inputBuffer.slice<double>(0, _numTaps))
+            {
+               _history.push_back(SampleWithZeros(0.0,_numTaps-1));
+            }
+        
+        template<int InFrequency, int OutFrequency>
+          mods::utils::RWBuffer<u8> ResampleConverter<InFrequency, OutFrequency>::initBuffer()
+          {
+             u8* ptr = _inputArray.data();
+             auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
+             auto buffer = std::make_shared<mods::utils::BufferBackend>(ptr, _numTaps * sizeof(double), std::move(deleter));
+             return mods::utils::RWBuffer<u8>(buffer);
+          }
         
         template<int InFrequency, int OutFrequency>
           bool ResampleConverter<InFrequency, OutFrequency>::isFinished() const
@@ -25,8 +36,6 @@ namespace mods
                  {
                     std::cout << "TODO: wrong buffer length in ResampleConverter" << std::endl;
                  }
-               
-               //_src->read(buf, len);
                
                int nbElems = len / sizeof(double);
                
@@ -91,14 +100,14 @@ namespace mods
                  {
                     if(toAdd < _zerosToNextInterpolatedSample)
                       {
-                         _history.push_back(SampleWithZeros(/*0.0,*/ toAdd));
+                         _history.push_back(SampleWithZeros(0.0, toAdd));
                          _zerosToNextInterpolatedSample -= toAdd;
                          toAdd = 0;
                       }
                     else
                       {
-                         //double sample = getNextSample();
-                         _history.push_back(SampleWithZeros(/*sample,*/ _zerosToNextInterpolatedSample));
+                         double sample = getNextSample();
+                         _history.push_back(SampleWithZeros(sample, _zerosToNextInterpolatedSample));
                          toAdd -= (_zerosToNextInterpolatedSample + 1);
                          _zerosToNextInterpolatedSample = _interpolationFactor - 1;
                       }
@@ -108,15 +117,37 @@ namespace mods
         template<int InFrequency, int OutFrequency>
           double ResampleConverter<InFrequency, OutFrequency>::calculateInterpolatedSample() const
           {
-             std::cout << "TODO: ResampleConverter::calculateInterpolatedSample() const" << std::endl;
-             return 0.0;
+             double sample = 0.0;
+             int idxSampleWithZeros = 0;
+             for(int i = 0; i < _numTaps; ++i) 
+               {
+                  auto& sampleWithZeros = _history.getSample(idxSampleWithZeros++);
+                  i += sampleWithZeros.numberOfZeros;
+                  if(i < _numTaps) 
+                    {
+                       sample += sampleWithZeros.sample * FilterType::taps[i];
+                    }
+               }
+             return sample;
           }
         
         template<int InFrequency, int OutFrequency>
-          ResampleConverter<InFrequency, OutFrequency>::ResampleConverter::SampleWithZeros::SampleWithZeros(/*double sample,*/ int zeros)
-            : numberOfZeros(zeros)
-              {
-              }
+          double ResampleConverter<InFrequency, OutFrequency>::getNextSample()
+          {
+             if(_currentSample >= _inputBufferAsDouble.size())
+               {
+                  _src->read(&_inputBuffer, _inputArray.size());
+                  _currentSample = 0;
+               }
+             return _inputBufferAsDouble[_currentSample++];
+          }
+        
+        template<int InFrequency, int OutFrequency>
+          ResampleConverter<InFrequency, OutFrequency>::ResampleConverter::SampleWithZeros::SampleWithZeros(double sample, int zeros)
+            : numberOfZeros(zeros),
+          sample(sample)
+            {
+            }
         
         template<int InFrequency, int OutFrequency>
           typename ResampleConverter<InFrequency, OutFrequency>::SampleWithZeros& ResampleConverter<InFrequency, OutFrequency>::History::front()
@@ -152,6 +183,17 @@ namespace mods
           bool ResampleConverter<InFrequency, OutFrequency>::History::isEmpty() const
           {
              return _begin == _end;
+          }
+        
+        template<int InFrequency, int OutFrequency>
+          const typename ResampleConverter<InFrequency, OutFrequency>::SampleWithZeros& ResampleConverter<InFrequency, OutFrequency>::History::getSample(size_t i) const
+          {
+             size_t idx = _begin + i;
+             if(idx >= _array.size())
+               {
+                  idx -= _array.size();
+               }
+             return _array[idx];
           }
         
         template class ResampleConverter<22000, 44100>;

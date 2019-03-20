@@ -26,8 +26,12 @@ add_executable(filter_generator src/mods/utils/Band.cpp
                                 src/mods/utils/FilterGeneratorTool.cpp
                                 src/mods/utils/FirFilterDesigner.cpp)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp
-                   COMMAND filter_generator ${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/mods/utils")
+
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp"
+                          "${CMAKE_CURRENT_BINARY_DIR}/src/mods/utils/Filters.cpp"
+                   COMMAND filter_generator "${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp" 
+                                            "${CMAKE_CURRENT_BINARY_DIR}/src/mods/utils/Filters.cpp"
                    DEPENDS filter_generator
                    COMMENT "Generate filters")
 
@@ -53,7 +57,8 @@ add_executable(modreader src/main.cpp
                          src/mods/utils/BufferBackend.cpp
                          src/mods/utils/FileUtils.cpp
                          ${SRCS_UNIX}
-                         ${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp)
+                         ${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp
+                         ${CMAKE_CURRENT_BINARY_DIR}/src/mods/utils/Filters.cpp)
 
 target_link_libraries(modreader ${SDL_LIBRARY})
 

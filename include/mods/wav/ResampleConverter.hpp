@@ -31,7 +31,8 @@ namespace mods
              void removeFromHistory();
              void addToHistory();
              double calculateInterpolatedSample() const;
-             //double getNextSample() const;
+             double getNextSample();
+             mods::utils::RWBuffer<u8> initBuffer();
              
              WavConverter::ptr _src;
              int _zerosToNextInterpolatedSample = 0;
@@ -39,11 +40,17 @@ namespace mods
              constexpr static mods::utils::ConstFraction _resampleFraction = mods::utils::ConstFraction(InFrequency, OutFrequency).reduce();
              constexpr static int _decimationFactor = _resampleFraction.getNumerator();
              constexpr static int _interpolationFactor = _resampleFraction.getDenominator();
-             constexpr static int _numTaps = mods::utils::LowPassFilter<std::min(InFrequency, OutFrequency), 2, InFrequency * _interpolationFactor>::taps.size();
+             using FilterType = mods::utils::LowPassFilter<std::min(InFrequency, OutFrequency), 2, InFrequency * _interpolationFactor>;
+             constexpr static int _numTaps = FilterType::taps.size();
+             
+             std::array<u8, _numTaps * sizeof(double)> _inputArray;
+             mods::utils::RWBuffer<u8> _inputBuffer;
+             mods::utils::RWBuffer<double> _inputBufferAsDouble;
+             size_t _currentSample = _numTaps;
              
              struct SampleWithZeros
                {
-                  SampleWithZeros(/*double sample,*/ int zeros);
+                  SampleWithZeros(double sample, int zeros);
                   
                   SampleWithZeros() = default;
                   SampleWithZeros(const SampleWithZeros&) = delete;
@@ -53,6 +60,7 @@ namespace mods
                   ~SampleWithZeros() = default;
                   
                   int numberOfZeros;
+                  double sample;
                };
              
              class History
@@ -69,6 +77,7 @@ namespace mods
                   SampleWithZeros& front();
                   void pop_front();
                   bool isEmpty() const;
+                  const SampleWithZeros& getSample(size_t i) const;
                   
                 private:
                   std::array<SampleWithZeros, _numTaps> _array;
