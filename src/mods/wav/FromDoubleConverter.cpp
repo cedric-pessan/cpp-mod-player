@@ -43,7 +43,6 @@ namespace mods
                for(int i = 0; i<nbElems; ++i)
                  {
                     double value = inView[i];
-                    std::cout << "input value:" << value << std::endl;
                     if(value >= 1.0) value = 1.0;
                     if(value <= -1.0) value = -1.0;
                     if(value >= 0.0) value *= static_cast<double>(std::numeric_limits<T>::max());
