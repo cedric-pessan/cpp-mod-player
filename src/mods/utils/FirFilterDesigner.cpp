@@ -15,7 +15,7 @@ namespace mods
             {
             }
         
-        void FirFilterDesigner::optimizeFilter()
+        void FirFilterDesigner::optimizeFilter(int desiredTaps)
           {
              _numTaps = 21;
              
@@ -38,12 +38,27 @@ namespace mods
                 return std::abs(getOnlyDelta()) > deltaLimit;
              }) + 2;
              
-             opt = binarySearch(1, opt, [this](int c) -> bool {
-                _numTaps = c;
-                designFilter();
-                return !_requirementsMet || _noConvergence;
-             });
-             _numTaps = opt + 2;
+             if(desiredTaps != -1)
+               {
+                  if(opt <= desiredTaps)
+                    {
+                       throw std::runtime_error("Precision exceeded");
+                    }
+               }
+             
+             if(desiredTaps == -1)
+               {
+                  opt = binarySearch(1, opt, [this](int c) -> bool {
+                     _numTaps = c;
+                     designFilter();
+                     return !_requirementsMet || _noConvergence;
+                  });
+                  _numTaps = opt + 2;
+               }
+             else
+               {
+                  _numTaps = desiredTaps + 2;
+               }
              
              designFilter();
              buildTaps();
@@ -160,7 +175,7 @@ namespace mods
                   if(_numTaps % 2 == 0)
                     c = std::cos(M_PI * i / static_cast<double>(_numTaps));
                   else
-                    c = 1.0l;
+                    c = 1.0;
                   taps.push_back(getActualGain(i * 2.0 / _numTaps) * c);
                }
              
@@ -169,7 +184,6 @@ namespace mods
                   std::cout << "taps: ";
                   for(double d : taps)
                     {
-                       
                        std::cout << d << ',';
                     }
                   
@@ -180,22 +194,22 @@ namespace mods
              
              if(_numTaps % 2 == 0)
                {
-                  for(int i=0; i<_numTaps; ++i)
+                  for(int i=1; i<_numTaps-1; ++i)
                     {
                        double val = taps[0];
-                       double x = M_PI * 2.0 * (i-M)/_numTaps;
+                       double x = M_PI * 2.0 * (double(i)-M)/_numTaps;
                        for(int k=1; k<=_numTaps/2 - 1; ++k)
                          val += 2.0 * taps[k] * std::cos(x*k);
                        
                        h.push_back(val / _numTaps);
-                    }  
+                    }
                }
              else
                {
-                  for(int i=0; i<_numTaps; ++i)
+                  for(int i=1; i<_numTaps-1; ++i)
                     {
                        double val = taps[0];
-                       double x = M_PI * 2.0 * (i-M)/_numTaps;
+                       double x = M_PI * 2.0 * (double(i)-M)/_numTaps;
                        for(int k=1; k<=M; ++k)
                          val += 2.0 * taps[k] * std::cos(x*k);
                        
@@ -231,7 +245,6 @@ namespace mods
                          {
                             _di[i] *= (_x[j] - _x[i]);
                          }
-                       
                     }
                   _dn.push_back(1.0/_di[i]);
                }

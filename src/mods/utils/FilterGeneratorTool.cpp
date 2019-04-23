@@ -15,11 +15,12 @@ namespace mods
              int cutoffFrequency;
              int cutoffFrequencyDivider;
              int sampleFrequency;
+             int numTaps;
           };
         
         std::vector<LowPassParam> lowPassParams
           {
-               { 22000, 2, 22000 * ConstFraction(22000,44100).reduce().getDenominator() } // 22kHz -> 44100Hz
+               { 22000, 2, 22000 * ConstFraction(22000,44100).reduce().getDenominator(), 1545 } // 22kHz -> 44100Hz
           };
         
         std::string generateModuleName(const std::string& filename)
@@ -70,7 +71,7 @@ namespace mods
              bands.emplace_back(cutoffFrequency + 50, param.sampleFrequency/2, 0.0, -40.0, param.sampleFrequency);
              FirFilterDesigner fir(bands);
              fir.displayProgress();
-             fir.optimizeFilter();
+             fir.optimizeFilter(param.numTaps);
              auto& taps = fir.getTaps();
              
              out << "    template<>" << std::endl;

@@ -48,8 +48,7 @@ namespace mods
                     if(value <= -1.0) value = -1.0;
                     if(value >= 0.0) value *= static_cast<double>(std::numeric_limits<T>::max());
                     else value *= -static_cast<double>(std::numeric_limits<T>::min());
-                    T intValue = static_cast<T>(value * 10000000000.0);
-                    std::cout << "output value:" << intValue << std::endl;
+                    T intValue = static_cast<T>(value);
                     outView[i] = intValue;
                }
             }

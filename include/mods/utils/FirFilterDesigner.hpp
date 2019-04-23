@@ -23,7 +23,7 @@ namespace mods
              FirFilterDesigner& operator=(FirFilterDesigner&&) = delete;
              ~FirFilterDesigner() = default;
              
-             void optimizeFilter();
+             void optimizeFilter(int desiredTaps);
              void displayProgress();
              
              const std::vector<double>& getTaps() const;

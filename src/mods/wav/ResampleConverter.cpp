@@ -96,9 +96,9 @@ namespace mods
                int toAdd = _decimationFactor;
                while(toAdd > 0)
                  {
-                    if(toAdd < _zerosToNextInterpolatedSample)
+                    if(toAdd <= _zerosToNextInterpolatedSample)
                       {
-                         _history.push_back(SampleWithZeros(0.0, toAdd));
+                         _history.push_back(SampleWithZeros(0.0, toAdd-1));
                          _zerosToNextInterpolatedSample -= toAdd;
                          toAdd = 0;
                       }
@@ -123,7 +123,7 @@ namespace mods
                   i += sampleWithZeros.numberOfZeros;
                   if(i < _numTaps) 
                     {
-                       sample += sampleWithZeros.sample * FilterType::taps[i];
+                       sample += sampleWithZeros.sample * _interpolationFactor * (FilterType::taps[i]);
                     }
                }
              return sample;
