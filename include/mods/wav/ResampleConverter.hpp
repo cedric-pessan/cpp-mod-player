@@ -32,6 +32,7 @@ namespace mods
              void addToHistory();
              double calculateInterpolatedSample() const;
              double getNextSample();
+             bool nextSampleExists();
              mods::utils::RWBuffer<u8> initBuffer();
              
              WavConverter::ptr _src;

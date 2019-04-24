@@ -104,10 +104,15 @@ namespace mods
                       }
                     else
                       {
-                         double sample = getNextSample();
-                         _history.push_back(SampleWithZeros(sample, _zerosToNextInterpolatedSample));
-                         toAdd -= (_zerosToNextInterpolatedSample + 1);
-                         _zerosToNextInterpolatedSample = _interpolationFactor - 1;
+                         if(nextSampleExists())
+                           {
+                              double sample = getNextSample();
+                              _history.push_back(SampleWithZeros(sample, _zerosToNextInterpolatedSample));
+                              toAdd -= (_zerosToNextInterpolatedSample + 1);
+                              _zerosToNextInterpolatedSample = _interpolationFactor - 1;
+                           } else {
+                              toAdd = 0;
+                           }
                       }
                  }
             }
@@ -141,6 +146,12 @@ namespace mods
           }
         
         template<int InFrequency, int OutFrequency>
+          bool ResampleConverter<InFrequency, OutFrequency>::nextSampleExists()
+            {
+               return _currentSample < _inputBufferAsDouble.size() || !_src->isFinished();
+            }
+        
+        template<int InFrequency, int OutFrequency>
           ResampleConverter<InFrequency, OutFrequency>::ResampleConverter::SampleWithZeros::SampleWithZeros(double sample, int zeros)
             : numberOfZeros(zeros),
           sample(sample)
@@ -152,7 +163,8 @@ namespace mods
           {
              if(_begin == _end)
                {
-                  std::cout << "TODO: ResampleConverter front() nothing on stack" << std::endl;
+                  static SampleWithZeros zero(0.0, 0);
+                  return zero;
                }
              
              return _array[_begin];
@@ -163,7 +175,7 @@ namespace mods
           {
              if(_begin == _end)
                {
-                  std::cout << "TODO: ResampleConverter::pop_front() nothing on stack" << std::endl;
+                  return;
                }
              ++_begin;
              if(_begin == _array.size()) _begin = 0;
