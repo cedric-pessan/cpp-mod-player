@@ -122,7 +122,7 @@ namespace mods
              mods::utils::RBuffer<u8> readData(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
                                                const mods::utils::RBuffer<u8>& riffBuffer,
                                                size_t offset) const;
-             void buildInfo(int bitsPerSample, int nbChannels, int frequency);
+             void buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description);
              
              
              WavConverter::ptr _converter;

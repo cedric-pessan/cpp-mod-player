@@ -37,11 +37,18 @@ namespace mods
                   static const std::string DATA = "data";
                   return DATA;
                }
+             const std::string& getDISP()
+               {
+                  static const std::string DISP = "DISP";
+                  return DISP;
+               }
           } // namespace
         
         WavReader::WavReader(const std::string& filename)
           : _fileBuffer(mods::utils::FileUtils::mapFile(filename))
             {
+               std::string description;
+               
                auto headerBuffer = _fileBuffer.slice<ChunkHeader>(0, 1);
                
                checkInit(headerBuffer->getChunkID() == getRIFF(), "Not a RIFF file");
@@ -78,6 +85,10 @@ namespace mods
                          checkInit(!optData.has_value(), "Multiple data chunks defined");
                          optData = readData(chunkHeader, riffBuffer, offset);
                       }
+                    else if(chunkHeader->getChunkID() == getDISP())
+                      {
+                         std::cout << "TODO: parse disp" << std::endl;
+                      }
                     else
                       {
                          std::stringstream ss;
@@ -96,7 +107,7 @@ namespace mods
                _converter = WavConverter::buildConverter(data, fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), _statCollector);
                _length = data.size();
                
-               buildInfo(fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate());
+               buildInfo(fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), description);
             }
         
         mods::utils::RBuffer<FmtHeader> WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
@@ -139,12 +150,16 @@ namespace mods
              return data;
           }
         
-        void WavReader::buildInfo(int bitsPerSample, int nbChannels, int frequency)
+        void WavReader::buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description)
           {
              std::stringstream ss;
-             ss << "bits per sample:" << bitsPerSample << std::endl;
-             ss << "number of channels:" << nbChannels << std::endl;
-             ss << "frequency:" << frequency;
+             if(description.length() > 0)
+               {
+                  ss << "description: " << description << std::endl;
+               }
+             ss << "bits per sample: " << bitsPerSample << std::endl;
+             ss << "number of channels: " << nbChannels << std::endl;
+             ss << "frequency: " << frequency;
              _info = ss.str();
           }
         
