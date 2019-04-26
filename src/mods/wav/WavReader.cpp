@@ -96,7 +96,9 @@ namespace mods
                          checkInit(false, ss.str());
                       }
                     
-                    offset += chunkHeader->getChunkSize() + sizeof(ChunkHeader);
+                    auto chunkSize = chunkHeader->getChunkSize();
+                    if(chunkSize & 1) ++chunkSize;
+                    offset += chunkSize + sizeof(ChunkHeader);
                  }
                
                checkInit(optFmtHeader.has_value() && optData.has_value(), "Wav file should have at least a fmt and data chunk");
