@@ -15,6 +15,11 @@ namespace mods
              PCM = 0x0001
           };
         
+        enum struct DispType : u32
+          {
+             TEXT = 1
+          };
+        
 #pragma pack(push, 1)
         struct ChunkHeader
           {
@@ -93,6 +98,22 @@ namespace mods
            private:
              u32le sampleLength;
           };
+        
+        struct DispHeader
+          {
+           public:
+             ChunkHeader chunk;
+             
+           private:
+             u32le type;
+             
+           public:
+             DispType getType() const noexcept
+               {
+                  u32 value = static_cast<u32>(type);
+                  return static_cast<DispType>(value);
+               }
+          };
 #pragma pack(pop)
         
         class WavReader : public ModuleReader
@@ -122,6 +143,12 @@ namespace mods
              mods::utils::RBuffer<u8> readData(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
                                                const mods::utils::RBuffer<u8>& riffBuffer,
                                                size_t offset) const;
+             
+             void readDisp(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                           const mods::utils::RBuffer<u8>& riffBuffer,
+                           size_t offset,
+                           std::stringstream& description) const;
+             
              void buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description);
              
              

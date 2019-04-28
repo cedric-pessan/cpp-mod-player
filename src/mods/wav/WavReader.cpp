@@ -47,7 +47,7 @@ namespace mods
         WavReader::WavReader(const std::string& filename)
           : _fileBuffer(mods::utils::FileUtils::mapFile(filename))
             {
-               std::string description;
+               std::stringstream description;
                
                auto headerBuffer = _fileBuffer.slice<ChunkHeader>(0, 1);
                
@@ -87,7 +87,7 @@ namespace mods
                       }
                     else if(chunkHeader->getChunkID() == getDISP())
                       {
-                         std::cout << "TODO: parse disp" << std::endl;
+                         readDisp(chunkHeader, riffBuffer, offset, description);
                       }
                     else
                       {
@@ -112,7 +112,7 @@ namespace mods
                _converter = WavConverter::buildConverter(data, fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), _statCollector);
                _length = data.size();
                
-               buildInfo(fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), description);
+               buildInfo(fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), description.str());
             }
         
         mods::utils::RBuffer<FmtHeader> WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
@@ -148,11 +148,41 @@ namespace mods
                                                      size_t offset) const
           {
              checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader),
-                       "Incomplete Fact chunk");
+                       "Incomplete Data chunk");
              
              auto data = riffBuffer.slice<u8>(offset + sizeof(ChunkHeader), chunkHeader->getChunkSize());
              
              return data;
+          }
+        
+        void WavReader::readDisp(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                 const mods::utils::RBuffer<u8>& riffBuffer,
+                                 size_t offset,
+                                 std::stringstream& description) const
+          {
+             checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
+                       chunkHeader->getChunkSize() >= sizeof(DispHeader), "Incomplete Disp chunk");
+             
+             auto disp = riffBuffer.slice<DispHeader>(offset, 1);
+             
+             if(disp->getType() == DispType::TEXT)
+               {
+                  auto payload = riffBuffer.slice<u8>(offset + sizeof(DispHeader), chunkHeader->getChunkSize() - (sizeof(DispHeader) - sizeof(ChunkHeader)));
+                  
+                  if(description.str().length() > 0)
+                    {
+                       description << std::endl;
+                    }
+                  
+                  for(auto byte : payload)
+                    {
+                       if(byte == '\0')
+                         {
+                            break;
+                         }
+                       description << byte;
+                    }
+               }
           }
         
         void WavReader::buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description)
