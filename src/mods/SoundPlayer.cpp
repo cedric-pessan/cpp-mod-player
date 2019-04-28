@@ -20,8 +20,8 @@ namespace mods
      }
    
    SoundPlayer::SoundPlayer(ModuleInfoCallback moduleInfoCb, ModuleProgressCallback moduleProgressCb)
-     : _moduleInfoCb(moduleInfoCb),
-     _moduleProgressCb(moduleProgressCb)
+     : _moduleInfoCb(std::move(moduleInfoCb)),
+     _moduleProgressCb(std::move(moduleProgressCb))
        {
           int res = SDL_Init(SDL_INIT_AUDIO);
           checkInit(res == 0, "sdl audio subsystem could not be initialized");

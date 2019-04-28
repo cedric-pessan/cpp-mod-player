@@ -13,7 +13,7 @@ namespace mods
           class FromDoubleConverter : public WavConverter
           {
            public:
-             FromDoubleConverter(WavConverter::ptr src);
+             explicit FromDoubleConverter(WavConverter::ptr src);
              
              FromDoubleConverter() = delete;
              FromDoubleConverter(const FromDoubleConverter&) = delete;

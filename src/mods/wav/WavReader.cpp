@@ -97,7 +97,10 @@ namespace mods
                       }
                     
                     auto chunkSize = chunkHeader->getChunkSize();
-                    if(chunkSize & 1) ++chunkSize;
+                    if((chunkSize & 1u) != 0) // padding
+                      {
+                         ++chunkSize;
+                      }
                     offset += chunkSize + sizeof(ChunkHeader);
                  }
                

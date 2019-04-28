@@ -64,7 +64,7 @@ namespace mods
         template<int InFrequency, int OutFrequency>
           void ResampleConverter<InFrequency, OutFrequency>::removeFromHistory()
             {
-               int toRemove = _decimationFactor;
+               int toRemove = getDecimationFactor();
                while(toRemove > 0)
                  {
                     auto& oldestElement = _history.front();
@@ -93,7 +93,7 @@ namespace mods
         template<int InFrequency, int OutFrequency>
           void ResampleConverter<InFrequency, OutFrequency>::addToHistory()
             {
-               int toAdd = _decimationFactor;
+               int toAdd = getDecimationFactor();
                while(toAdd > 0)
                  {
                     if(toAdd <= _zerosToNextInterpolatedSample)
@@ -109,7 +109,7 @@ namespace mods
                               double sample = getNextSample();
                               _history.push_back(SampleWithZeros(sample, _zerosToNextInterpolatedSample));
                               toAdd -= (_zerosToNextInterpolatedSample + 1);
-                              _zerosToNextInterpolatedSample = _interpolationFactor - 1;
+                              _zerosToNextInterpolatedSample = getInterpolationFactor() - 1;
                            } else {
                               toAdd = 0;
                            }
@@ -128,7 +128,7 @@ namespace mods
                   i += sampleWithZeros.numberOfZeros;
                   if(i < _numTaps) 
                     {
-                       sample += sampleWithZeros.sample * _interpolationFactor * (FilterType::taps[i]);
+                       sample += sampleWithZeros.sample * getInterpolationFactor() * (FilterType::taps.at(i));
                     }
                }
              return sample;
@@ -167,7 +167,7 @@ namespace mods
                   return zero;
                }
              
-             return _array[_begin];
+             return _array.at(_begin);
           }
         
         template<int InFrequency, int OutFrequency>
@@ -178,15 +178,21 @@ namespace mods
                   return;
                }
              ++_begin;
-             if(_begin == _array.size()) _begin = 0;
+             if(_begin == _array.size())
+               {
+                  _begin = 0;
+               }
           }
         
         template<int InFrequency, int OutFrequency>
           void ResampleConverter<InFrequency, OutFrequency>::History::push_back(const SampleWithZeros& sampleWithZeros)
             {
-               _array[_end] = sampleWithZeros;
+               _array.at(_end) = sampleWithZeros;
                ++_end;
-               if(_end == _array.size()) _end = 0;
+               if(_end == _array.size())
+                 {
+                    _end = 0;
+                 }
             }
         
         template<int InFrequency, int OutFrequency>
@@ -203,7 +209,7 @@ namespace mods
                {
                   idx -= _array.size();
                }
-             return _array[idx];
+             return _array.at(idx);
           }
         
         template class ResampleConverter<22000, 44100>;

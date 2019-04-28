@@ -1,10 +1,12 @@
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <memory>
 #include <vector>
 
 #include "mods/utils/ConstFraction.hpp"
 #include "mods/utils/FirFilterDesigner.hpp"
+#include "mods/utils/RBuffer.hpp"
 
 namespace mods
 {
@@ -18,10 +20,14 @@ namespace mods
              int numTaps;
           };
         
-        std::vector<LowPassParam> lowPassParams
+        std::vector<LowPassParam> getLowPassParams()
           {
-               { 22000, 2, 22000 * ConstFraction(22000,44100).reduce().getDenominator(), 1545 } // 22kHz -> 44100Hz
-          };
+             static std::vector<LowPassParam> lowPassParams
+               {
+                    { 22000, 2, 22000 * ConstFraction(22000,44100).reduce().getDenominator(), 1545 } // 22kHz -> 44100Hz
+               };
+             return lowPassParams;
+          }
         
         std::string generateModuleName(const std::string& filename)
           {
@@ -92,7 +98,9 @@ namespace mods
              outcpp << "    std::array<double," << taps.size() << "> LowPassFilter<" << param.cutoffFrequency << "," << param.cutoffFrequencyDivider << "," << param.sampleFrequency << ">::taps {" << std::endl;
              for(size_t i=0; i < taps.size(); ++i)
                {
-                  if(i != 0) outcpp << ',' << std::endl;
+                  if(i != 0) {
+                     outcpp << ',' << std::endl;
+                  }
                   outcpp << "     " << taps[i];
                }
              outcpp << std::endl;
@@ -130,7 +138,7 @@ namespace mods
              
              openCpp(outcpp);
              
-             for(auto lowPassParam : lowPassParams)
+             for(auto lowPassParam : getLowPassParams())
                {
                   generateLowPassFilter(lowPassParam, out, outcpp);
                }
@@ -143,7 +151,7 @@ namespace mods
              out << "} // namespace mods" << std::endl;
              out << std::endl;
              
-             out << "#endif //" << moduleName << std::endl;
+             out << "#endif // " << moduleName << std::endl;
              out.close();
           }
      } // namespace utils
@@ -151,6 +159,16 @@ namespace mods
 
 int main(int argc, char** argv)
 {
-   mods::utils::generateFilters(argv[1], argv[2]);
+   if(argc < 3)
+     {
+        return -1;
+     }
+   
+   auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
+   auto argvp = static_cast<u8*>(static_cast<void*>(argv));
+   auto argBuffer = std::make_shared<mods::utils::BufferBackend>(argvp, argc * sizeof(char*), std::move(deleter));
+   const mods::utils::RBuffer<char*> args(argBuffer);
+   
+   mods::utils::generateFilters(args[1], args[2]);
    return 0;
 }

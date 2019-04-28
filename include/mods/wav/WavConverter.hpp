@@ -37,7 +37,7 @@ namespace mods
              template<int BITSPERSAMPLE>
                static void buildDemuxStage(std::vector<WavConverter::ptr>* channels, int nbChannels, u8 defaultValue, const mods::utils::RBuffer<u8>& buffer, StatCollector::sptr statCollector);
              
-             static bool isResamplableByPositiveIntegerFactor(int frequncy);
+             static bool isResamplableByPositiveIntegerFactor(int frequency);
           };
      } // namespace wav
 } // namespace mods

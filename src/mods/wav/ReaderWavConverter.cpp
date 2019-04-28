@@ -13,7 +13,7 @@ namespace mods
           _it(_buffer.begin()),
           _end(_buffer.end()),
           _defaultValue(defaultValue),
-          _statCollector(statCollector)
+          _statCollector(std::move(statCollector))
             {
                _it += CH * BYTESPERSAMPLE;
             }

@@ -6,10 +6,10 @@
 #include <SDL.h>
 #include <deque>
 #include <exception>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
-#include <functional>
 
 namespace mods
 {
@@ -19,7 +19,7 @@ namespace mods
         using ModuleInfoCallback = std::function<void(const std::string&)>;
         using ModuleProgressCallback = std::function<void(const std::string&)>;
         
-        SoundPlayer(ModuleInfoCallback moduleInfoCb, ModuleProgressCallback moduleCallbackCb);
+        SoundPlayer(ModuleInfoCallback moduleInfoCb, ModuleProgressCallback moduleProgressCb);
         ~SoundPlayer();
         
         SoundPlayer() = delete;

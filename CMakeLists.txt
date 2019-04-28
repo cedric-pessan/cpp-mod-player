@@ -23,6 +23,7 @@ include_directories(${SDL_INCLUDE_DIR}
 configure_file(include/mods/utils/nativeEndian.hpp.in include/mods/utils/nativeEndian.hpp)
 
 add_executable(filter_generator src/mods/utils/Band.cpp
+                                src/mods/utils/BufferBackend.cpp
                                 src/mods/utils/FilterGeneratorTool.cpp
                                 src/mods/utils/FirFilterDesigner.cpp)
 
@@ -62,4 +63,5 @@ add_executable(modreader src/main.cpp
 
 target_link_libraries(modreader ${SDL_LIBRARY})
 
+set_property(TARGET filter_generator PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 set_property(TARGET modreader PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)

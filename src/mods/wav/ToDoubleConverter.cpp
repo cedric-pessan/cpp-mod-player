@@ -42,8 +42,14 @@ namespace mods
                for(int i = nbElems-1; i>=0; --i)
                  {
                     double value = inView[i];
-                    if(value >= 0) value /= static_cast<double>(std::numeric_limits<T>::max());
-                    else value /= -static_cast<double>(std::numeric_limits<T>::min());
+                    if(value >= 0)
+                      {
+                         value /= static_cast<double>(std::numeric_limits<T>::max());
+                      }
+                    else
+                      {
+                         value /= -static_cast<double>(std::numeric_limits<T>::min());
+                      }
                     outView[i] = value;
                  }
             }

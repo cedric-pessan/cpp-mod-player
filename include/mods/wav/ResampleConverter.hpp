@@ -38,10 +38,19 @@ namespace mods
              WavConverter::ptr _src;
              int _zerosToNextInterpolatedSample = 0;
              
-             constexpr static mods::utils::ConstFraction _resampleFraction = mods::utils::ConstFraction(InFrequency, OutFrequency).reduce();
-             constexpr static int _decimationFactor = _resampleFraction.getNumerator();
-             constexpr static int _interpolationFactor = _resampleFraction.getDenominator();
-             using FilterType = mods::utils::LowPassFilter<std::min(InFrequency, OutFrequency), 2, InFrequency * _interpolationFactor>;
+             constexpr static mods::utils::ConstFraction getResampleFraction()
+               {
+                  return mods::utils::ConstFraction(InFrequency, OutFrequency).reduce();
+               }
+             constexpr static int getDecimationFactor()
+               {
+                  return getResampleFraction().getNumerator();
+               }
+             constexpr static int getInterpolationFactor()
+               {
+                  return getResampleFraction().getDenominator();
+               }
+             using FilterType = mods::utils::LowPassFilter<std::min(InFrequency, OutFrequency), 2, InFrequency * getInterpolationFactor()>;
              constexpr static int _numTaps = FilterType::taps.size();
              
              std::array<u8, _numTaps * sizeof(double)> _inputArray;
@@ -81,7 +90,7 @@ namespace mods
                   const SampleWithZeros& getSample(size_t i) const;
                   
                 private:
-                  std::array<SampleWithZeros, _numTaps> _array;
+                  std::array<SampleWithZeros, _numTaps> _array = {};
                   size_t _begin = 0;
                   size_t _end = 0;
                } _history;

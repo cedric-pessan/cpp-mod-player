@@ -1,10 +1,10 @@
 
 #include "mods/utils/FirFilterDesigner.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <iostream>
-#include <algorithm>
 
 namespace mods
 {
@@ -25,12 +25,16 @@ namespace mods
                {
                   double delta = std::abs(getOnlyDelta());
                   if(delta < deltaLimit && delta > 0.0)
-                    break;
-                  else
-                    _numTaps = _numTaps + _numTaps / 2;
+                    {
+                       break;
+                    }
+                  
+                  _numTaps = _numTaps + _numTaps / 2;
                   
                   if(_numTaps > 2000)
-                    break;
+                    {
+                       break;
+                    }
                }
              
              int opt = binarySearch(1, _numTaps, [this,deltaLimit](int c) -> bool {
@@ -79,9 +83,11 @@ namespace mods
              for(auto b : _bands)
                {
                   if(w < b.getStop() - b.getStart())
-                    return b.getStart() + w;
-                  else
-                    w -= b.getStop() - b.getStart();
+                    {
+                       return b.getStart() + w;
+                    }
+                  
+                  w -= b.getStop() - b.getStart();
                }
              return 0.0;
           }
@@ -100,7 +106,9 @@ namespace mods
              double step = _sumBands / (_r+2);
              
              for(int i=0; i<_r+1; ++i)
-               _frequencies.push_back(getLinearFreq(step*(i+1)));
+               {
+                  _frequencies.push_back(getLinearFreq(step*(i+1)));
+               }
           }
         
         double FirFilterDesigner::getDesiredGain(double w) const
@@ -108,7 +116,9 @@ namespace mods
              for(auto b : _bands)
                {
                   if(w >= b.getStart() && w <= b.getStop())
-                    return (_numTaps % 2 != 0) ? b.getGain() : b.getGain() / std::cos(w * M_PI / 2.0);
+                    {
+                       return (_numTaps % 2 != 0) ? b.getGain() : b.getGain() / std::cos(w * M_PI / 2.0);
+                    }
                }
              return 0.0;
           }
@@ -122,9 +132,11 @@ namespace mods
                        double gain = std::abs(getActualGain(w));
                        
                        if(b.getGain() != 0.0)
-                         return gain >= b.getLower() && gain <= b.getUpper();
-                       else
-                         return gain <= b.getUpper();
+                         {
+                            return gain >= b.getLower() && gain <= b.getUpper();
+                         }
+                       
+                       return gain <= b.getUpper();
                     }
                }
              
@@ -136,7 +148,9 @@ namespace mods
              for(auto& b : _bands)
                {
                   if(w >= b.getStart() && w <= b.getStop())
-                    return (_numTaps % 2 != 0) ? b.getWeight() : b.getWeight() * std::cos(w * M_PI / 2.0);
+                    {
+                       return (_numTaps % 2 != 0) ? b.getWeight() : b.getWeight() * std::cos(w * M_PI / 2.0);
+                    }
                }
              return 0.0;
           }
@@ -173,9 +187,13 @@ namespace mods
                {
                   double c;
                   if(_numTaps % 2 == 0)
-                    c = std::cos(M_PI * i / static_cast<double>(_numTaps));
+                    {
+                       c = std::cos(M_PI * i / static_cast<double>(_numTaps));
+                    }
                   else
-                    c = 1.0;
+                    {
+                       c = 1.0;
+                    }
                   taps.push_back(getActualGain(i * 2.0 / _numTaps) * c);
                }
              
@@ -199,7 +217,9 @@ namespace mods
                        double val = taps[0];
                        double x = M_PI * 2.0 * (double(i)-M)/_numTaps;
                        for(int k=1; k<=_numTaps/2 - 1; ++k)
-                         val += 2.0 * taps[k] * std::cos(x*k);
+                         {
+                            val += 2.0 * taps[k] * std::cos(x*k);
+                         }
                        
                        h.push_back(val / _numTaps);
                     }
@@ -211,7 +231,9 @@ namespace mods
                        double val = taps[0];
                        double x = M_PI * 2.0 * (double(i)-M)/_numTaps;
                        for(int k=1; k<=M; ++k)
-                         val += 2.0 * taps[k] * std::cos(x*k);
+                         {
+                            val += 2.0 * taps[k] * std::cos(x*k);
+                         }
                        
                        h.push_back(val / _numTaps);
                     }
@@ -234,7 +256,9 @@ namespace mods
              double denominator = 0.0;
              
              for(auto freq : _frequencies)
-               _x.push_back(std::cos(freq * M_PI));
+               {
+                  _x.push_back(std::cos(freq * M_PI));
+               }
              
              for(size_t i=0; i < _x.size(); ++i)
                {
@@ -278,9 +302,13 @@ namespace mods
         double FirFilterDesigner::getOnlyDelta()
           {
              if((_numTaps % 2) == 0)
-               _r = _numTaps / 2;
+               {
+                  _r = _numTaps / 2;
+               }
              else
-               _r = (_numTaps + 1) / 2;
+               {
+                  _r = (_numTaps + 1) / 2;
+               }
              
              initFrequencies();
              calcDelta();
@@ -318,22 +346,30 @@ namespace mods
              
              if((E[0] > 0.0 && E[0] > E[1]) ||
                 (E[0] < 0.0 && E[0] < E[1]))
-               candidates.push_back(Extremum(F[0], E[0]));
+               {
+                  candidates.emplace_back(Extremum(F[0], E[0]));
+               }
              
              int j = resolution - 1;
              if((E[j] > 0.0 && E[j] > E[j-1]) ||
                 (E[j] < 0.0 && E[j] < E[j-1]))
-               candidates.push_back(Extremum(F[j], E[j]));
+               {
+                  candidates.emplace_back(Extremum(F[j], E[j]));
+               }
              
              for(int i=1; i<resolution-1; ++i)
-               if((E[i] >= E[i-1] && E[i] > E[i+1] && E[i] > 0.0) ||
-                  (E[i] <= E[i-1] && E[i] < E[i+1] && E[i] < 0.0))
-                 candidates.push_back(Extremum(F[i], E[i]));
+               {
+                  if((E[i] >= E[i-1] && E[i] > E[i+1] && E[i] > 0.0) ||
+                     (E[i] <= E[i-1] && E[i] < E[i+1] && E[i] < 0.0))
+                    {
+                       candidates.emplace_back(Extremum(F[i], E[i]));
+                    }
+               }
              
              for(auto& b : _bands)
                {
-                  candidates.push_back(Extremum(b.getStart(), getError(b.getStart())));
-                  candidates.push_back(Extremum(b.getStop(), getError(b.getStop())));
+                  candidates.emplace_back(Extremum(b.getStart(), getError(b.getStart())));
+                  candidates.emplace_back(Extremum(b.getStop(), getError(b.getStop())));
                }
              
              std::sort(candidates.begin(), candidates.end(), [](const Extremum& a, const Extremum& b) {
@@ -355,9 +391,13 @@ namespace mods
              double firstDownError = makeAlternating(-1.0, &firstDown);
              
              if(firstUpError > firstDownError)
-               _extrema = firstUp;
+               {
+                  _extrema = firstUp;
+               }
              else
-               _extrema = firstDown;
+               {
+                  _extrema = firstDown;
+               }
              
              _maxError = calcMaxError(&_allExtrema);
              
@@ -374,8 +414,10 @@ namespace mods
              for(auto& extremum : e)
                {
                   _frequencies.push_back(extremum.getFreq());
-                  if(_frequencies.size() == static_cast<size_t>(_r+1))
-                    break;
+                  if(_frequencies.size() == static_cast<size_t>(_r)+1)
+                    {
+                       break;
+                    }
                }
              std::sort(_frequencies.begin(), _frequencies.end(), [](double a, double b) {
                 return std::abs(a) < std::abs(b);
@@ -384,8 +426,10 @@ namespace mods
         
         double FirFilterDesigner::makeAlternating(double firstOneSign, std::list<Extremum>* candidates) const
           {
-             while(candidates->size() > 0 && candidates->begin()->getError() * firstOneSign < 0.0)
-               candidates->erase(candidates->begin());
+             while(!candidates->empty() && candidates->begin()->getError() * firstOneSign < 0.0)
+               {
+                  candidates->erase(candidates->begin());
+               }
              
              size_t req_length = _r+1;
              while( candidates->size() > req_length)
@@ -408,9 +452,13 @@ namespace mods
                   if(candidates->size() == req_length+1)
                     {
                        if(std::abs(candidates->front().getError()) > std::abs(candidates->back().getError()))
-                         candidates->pop_back();
+                         {
+                            candidates->pop_back();
+                         }
                        else
-                         candidates->pop_front();
+                         {
+                            candidates->pop_front();
+                         }
                     }
                   else if(candidates->size() > req_length)
                     {
@@ -418,14 +466,18 @@ namespace mods
                        for(auto it = candidates->begin(); it != candidates->end(); ++it)
                          {
                             if(std::abs(it->getError()) < std::abs(min->getError()))
-                              min = it;
+                              {
+                                 min = it;
+                              }
                          }
                        candidates->erase(min);
                     }
                }
              
              if(candidates->size() < req_length)
-               return -1.0;
+               {
+                  return -1.0;
+               }
              
              return calcMaxError(candidates);
           }
@@ -438,7 +490,9 @@ namespace mods
              while(num_extrema < _r+1)
                {
                   if(resolution > 200000)
-                    return false;
+                    {
+                       return false;
+                    }
                   
                   num_extrema = getExtrema(resolution);
                   if(_displayProgress)
@@ -456,9 +510,13 @@ namespace mods
              _requirementsMet = false;
              
              if(_numTaps % 2 == 0)
-               _r = _numTaps / 2;
+               {
+                  _r = _numTaps / 2;
+               }
              else
-               _r = (_numTaps + 1) / 2;
+               {
+                  _r = (_numTaps + 1) / 2;
+               }
              
              initFrequencies();
              
@@ -483,7 +541,9 @@ namespace mods
                        std::cout << std::endl;
                     }
                   if(errorChange >= 0.0 && errorChange < lastError * 0.001 && errorChange < 1E-10)
-                    break;
+                    {
+                       break;
+                    }
                   
                   updateFrequencies();
                   lastError = _maxError;
@@ -500,24 +560,34 @@ namespace mods
                }
              
              if(!_requirementsMet && iter == maxIter)
-               _noConvergence = true;
+               {
+                  _noConvergence = true;
+               }
           }
         
-        int FirFilterDesigner::binarySearch(int min, int max, std::function<bool(int)> isGood) const
+        int FirFilterDesigner::binarySearch(int min, int max, const std::function<bool(int)>& isGood) const
           {
-             while(1)
+             while(true)
                {
                   int c = (max + min) / 2;
                   if(c % 2 == 0)
-                    c++;
+                    {
+                       c++;
+                    }
                   
                   if(isGood(c))
-                    min = c;
+                    {
+                       min = c;
+                    }
                   else
-                    max = c;
+                    {
+                       max = c;
+                    }
                   
                   if(max - min < 3)
-                    return min;
+                    {
+                       return min;
+                    }
                }
           }
         

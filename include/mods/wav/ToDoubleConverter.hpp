@@ -11,7 +11,7 @@ namespace mods
           class ToDoubleConverter : public WavConverter
           {
            public:
-             ToDoubleConverter(WavConverter::ptr src);
+             explicit ToDoubleConverter(WavConverter::ptr src);
              
              ToDoubleConverter() = delete;
              ToDoubleConverter(const ToDoubleConverter&) = delete;

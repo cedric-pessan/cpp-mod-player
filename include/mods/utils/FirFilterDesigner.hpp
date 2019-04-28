@@ -1,9 +1,9 @@
 #ifndef MODS_UTILS_FIRFILTERDESIGNER_HPP
 #define MODS_UTILS_FIRFILTERDESIGNER_HPP
 
-#include <vector>
 #include <functional>
 #include <list>
+#include <vector>
 
 #include "mods/utils/Band.hpp"
 
@@ -14,7 +14,7 @@ namespace mods
         class FirFilterDesigner
           {
            public:
-             FirFilterDesigner(std::vector<Band> bands);
+             explicit FirFilterDesigner(std::vector<Band> bands);
              
              FirFilterDesigner() = delete;
              FirFilterDesigner(const FirFilterDesigner&) = delete;
@@ -44,7 +44,7 @@ namespace mods
              void designFilter();
              void buildTaps();
              
-             int binarySearch(int min, int max, std::function<bool(int)> isGood) const;
+             int binarySearch(int min, int max, const std::function<bool(int)>& isGood) const;
              
              int _numTaps = 0;
              int _r = 0;

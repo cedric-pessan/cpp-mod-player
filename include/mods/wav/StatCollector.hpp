@@ -12,7 +12,7 @@ namespace mods
            public:
              using sptr = std::shared_ptr<StatCollector>;
              
-             StatCollector();
+             StatCollector() = default;
              
              StatCollector(const StatCollector&) = delete;
              StatCollector(const StatCollector&&) = delete;
@@ -25,7 +25,7 @@ namespace mods
              void inc(size_t i);
              
            private:
-             size_t _value;
+             size_t _value = 0;
           };
      } // namespace wav
 } // namespace mods

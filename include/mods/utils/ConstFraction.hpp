@@ -26,8 +26,8 @@ namespace mods
              constexpr ConstFraction reduce() const
                {
                   int factor = gcd(_numerator, _denominator);
-                  return ConstFraction(_numerator / factor, 
-                                       _denominator / factor);
+                  return {_numerator / factor, 
+                          _denominator / factor};
                }
              
              constexpr int getDenominator() const
@@ -44,7 +44,7 @@ namespace mods
              int _numerator;
              int _denominator;
           };
-     } // namespace utils;
+     } // namespace utils
 } // namespace mods
 
 #endif // MODS_UTILS_CONSTFRACTION_HPP

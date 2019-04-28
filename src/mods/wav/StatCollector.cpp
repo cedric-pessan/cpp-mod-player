@@ -5,11 +5,6 @@ namespace mods
 {
    namespace wav
      {
-        StatCollector::StatCollector()
-          : _value(0)
-            {
-            }
-        
         void StatCollector::inc(size_t i)
           {
              _value += i;

@@ -15,10 +15,9 @@ namespace
         std::cout << info << std::endl;
      }
    
-   std::string lastLine;
-   
    void printModuleProgress(std::string progress)
      {
+        static std::string lastLine;
         for(u32 i=progress.length(); i<lastLine.length(); ++i)
           {
              progress += ' ';
@@ -26,7 +25,7 @@ namespace
         std::cout << '\r' << progress << std::flush;
         lastLine = progress;
      }
-}
+} // namespace
 
 int main(int argc, char** argv)
 {

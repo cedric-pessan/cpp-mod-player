@@ -46,7 +46,7 @@ namespace mods
              switch(bitsPerSample)
                {
                 case 8:
-                  buildDemuxStage<8>(&channels, nbChannels, defaultValue, buffer, statCollector);
+                  buildDemuxStage<8>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
                   break;
                   
                 default:
