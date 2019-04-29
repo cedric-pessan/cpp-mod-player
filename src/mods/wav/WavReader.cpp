@@ -42,6 +42,11 @@ namespace mods
                   static const std::string DISP = "DISP";
                   return DISP;
                }
+             const std::string& getLIST()
+               {
+                  static const std::string LIST = "LIST";
+                  return LIST;
+               }
           } // namespace
         
         WavReader::WavReader(const std::string& filename)
@@ -88,6 +93,22 @@ namespace mods
                     else if(chunkHeader->getChunkID() == getDISP())
                       {
                          readDisp(chunkHeader, riffBuffer, offset, description);
+                      }
+                    else if(chunkHeader->getChunkID() == getLIST())
+                      {
+                         checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader),
+                                   "Incomplete LIST chunk");
+                         
+                         auto listBuffer = riffBuffer.slice<u8>(offset + sizeof(ChunkHeader), chunkHeader->getChunkSize());
+                         size_t listOffset = 0;
+                         while(listOffset < listBuffer.size())
+                           {
+                              auto listChunkHeader = listBuffer.slice<ChunkHeader>(listOffset, 1);
+                              
+                              std::stringstream ss;
+                              ss << "Unknown LIST chunk: " << listChunkHeader->getChunkID();
+                              checkInit(false, ss.str());
+                           }
                       }
                     else
                       {
