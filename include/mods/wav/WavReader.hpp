@@ -114,6 +114,21 @@ namespace mods
                   return static_cast<DispType>(value);
                }
           };
+        
+        struct ListHeader
+          {
+           public:
+             ChunkHeader chunk;
+             
+           private:
+             char listTypeID[4];
+             
+           public:
+             std::string getListTypeID() const noexcept
+               {
+                  return std::string(static_cast<const char*>(listTypeID), sizeof(listTypeID));
+               }
+          };
 #pragma pack(pop)
         
         class WavReader : public ModuleReader
@@ -148,6 +163,10 @@ namespace mods
                            const mods::utils::RBuffer<u8>& riffBuffer,
                            size_t offset,
                            std::stringstream& description) const;
+             
+             void parseInfoList(const mods::utils::RBuffer<ListHeader>& listHeader,
+                                const mods::utils::RBuffer<u8>& riffBuffer,
+                                size_t offset) const;
              
              void buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description);
              

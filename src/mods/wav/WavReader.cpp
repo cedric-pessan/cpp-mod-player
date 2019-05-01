@@ -47,6 +47,11 @@ namespace mods
                   static const std::string LIST = "LIST";
                   return LIST;
                }
+             const std::string& getINFO()
+               {
+                  static const std::string INFO = "INFO";
+                  return INFO;
+               }
           } // namespace
         
         WavReader::WavReader(const std::string& filename)
@@ -96,17 +101,19 @@ namespace mods
                       }
                     else if(chunkHeader->getChunkID() == getLIST())
                       {
-                         checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader),
-                                   "Incomplete LIST chunk");
+                         checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
+                                   chunkHeader->getChunkSize() >= sizeof(ListHeader) - sizeof(ChunkHeader) , "Incomplete LIST chunk");
                          
-                         auto listBuffer = riffBuffer.slice<u8>(offset + sizeof(ChunkHeader), chunkHeader->getChunkSize());
-                         size_t listOffset = 0;
-                         while(listOffset < listBuffer.size())
+                         auto listHeader = riffBuffer.slice<ListHeader>(offset, 1);
+                         
+                         if(listHeader->getListTypeID() == getINFO())
                            {
-                              auto listChunkHeader = listBuffer.slice<ChunkHeader>(listOffset, 1);
-                              
+                              parseInfoList(listHeader, riffBuffer, offset);
+                           }
+                         else
+                           {
                               std::stringstream ss;
-                              ss << "Unknown LIST chunk: " << listChunkHeader->getChunkID();
+                              ss << "Unknown LIST chunk: " << listHeader->getListTypeID();
                               checkInit(false, ss.str());
                            }
                       }
@@ -203,6 +210,31 @@ namespace mods
                          }
                        description << byte;
                     }
+               }
+          }
+        
+        void WavReader::parseInfoList(const mods::utils::RBuffer<ListHeader>& listHeader,
+                                      const mods::utils::RBuffer<u8>& riffBuffer,
+                                      size_t offset) const
+          {
+             auto listBuffer = riffBuffer.slice<u8>(offset + sizeof(ListHeader), listHeader->chunk.getChunkSize() - (sizeof(ListHeader) - sizeof(ChunkHeader)));
+             size_t listOffset = 0;
+             while(listOffset < listBuffer.size())
+               {
+                  auto chunkHeader = listBuffer.slice<ChunkHeader>(listOffset, 1);
+                  
+                    {
+                       std::stringstream ss;
+                       ss << "Unknown Info chunk: " << chunkHeader->getChunkID();
+                       checkInit(false, ss.str());
+                    }
+                  
+                  auto chunkSize = chunkHeader->getChunkSize();
+                  if((chunkSize & 1u) != 0) // padding
+                    {
+                       ++chunkSize;
+                    }
+                  listOffset += chunkSize + sizeof(ChunkHeader);
                }
           }
         
