@@ -52,6 +52,11 @@ namespace mods
                   static const std::string INFO = "INFO";
                   return INFO;
                }
+             const std::string& getICOP()
+               {
+                  static const std::string ICOP = "ICOP";
+                  return ICOP;
+               }
           } // namespace
         
         WavReader::WavReader(const std::string& filename)
@@ -223,6 +228,14 @@ namespace mods
                {
                   auto chunkHeader = listBuffer.slice<ChunkHeader>(listOffset, 1);
                   
+                  if(chunkHeader->getChunkID() == getICOP())
+                    {
+                       auto stringBuffer = listBuffer.slice<char>(listOffset + sizeof(ChunkHeader), chunkHeader->getChunkSize());
+                       std::string s(stringBuffer.begin(), stringBuffer.end());
+                       
+                       std::cout << "TODO: parse ICOP:" << s << std::endl;
+                    }
+                  else
                     {
                        std::stringstream ss;
                        ss << "Unknown Info chunk: " << chunkHeader->getChunkID();

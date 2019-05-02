@@ -55,6 +55,14 @@ namespace mods
              
              class const_iterator
                {
+                public:
+                  using iterator_category = std::input_iterator_tag;
+                  using self_type = const_iterator;
+                  using value_type = T;
+                  using reference = T&;
+                  using pointer = T*;
+                  using difference_type = int;
+                  
                 private:
                   const_iterator(const RBuffer<T>& rbuf, size_type pos)
                     : _pos(pos),
