@@ -235,7 +235,7 @@ namespace mods
                   auto chunkHeader = listBuffer.slice<ChunkHeader>(listOffset, 1);
                   auto stringBuffer = listBuffer.slice<char>(listOffset + sizeof(ChunkHeader), chunkHeader->getChunkSize());
                   std::string info = std::string(stringBuffer.begin(), stringBuffer.end());
-                  if(description.str().size() > 0)
+                  if(!description.str().empty())
                     {
                        description << std::endl;
                     }

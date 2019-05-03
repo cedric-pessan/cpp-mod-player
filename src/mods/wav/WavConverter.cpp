@@ -96,7 +96,9 @@ namespace mods
                          }
                     }
                   else
-                    std::cout << "WavConverter: unsupported resample for 16 bits per sample upscale" << std::endl;
+                    {
+                       std::cout << "WavConverter: unsupported resample for 16 bits per sample upscale" << std::endl;
+                    }
                   break;
                   
                 default:
