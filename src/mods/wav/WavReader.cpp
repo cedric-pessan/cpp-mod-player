@@ -57,6 +57,11 @@ namespace mods
                   static const std::string ICOP = "ICOP";
                   return ICOP;
                }
+             const std::string& getISBJ()
+               {
+                  static const std::string ISBJ = "ISBJ";
+                  return ISBJ;
+               }
           } // namespace
         
         WavReader::WavReader(const std::string& filename)
@@ -113,7 +118,7 @@ namespace mods
                          
                          if(listHeader->getListTypeID() == getINFO())
                            {
-                              parseInfoList(listHeader, riffBuffer, offset);
+                              parseInfoList(listHeader, riffBuffer, offset, description);
                            }
                          else
                            {
@@ -220,20 +225,28 @@ namespace mods
         
         void WavReader::parseInfoList(const mods::utils::RBuffer<ListHeader>& listHeader,
                                       const mods::utils::RBuffer<u8>& riffBuffer,
-                                      size_t offset) const
+                                      size_t offset,
+                                      std::stringstream& description) const
           {
              auto listBuffer = riffBuffer.slice<u8>(offset + sizeof(ListHeader), listHeader->chunk.getChunkSize() - (sizeof(ListHeader) - sizeof(ChunkHeader)));
              size_t listOffset = 0;
              while(listOffset < listBuffer.size())
                {
                   auto chunkHeader = listBuffer.slice<ChunkHeader>(listOffset, 1);
+                  auto stringBuffer = listBuffer.slice<char>(listOffset + sizeof(ChunkHeader), chunkHeader->getChunkSize());
+                  std::string info = std::string(stringBuffer.begin(), stringBuffer.end());
+                  if(description.str().size() > 0)
+                    {
+                       description << std::endl;
+                    }
                   
                   if(chunkHeader->getChunkID() == getICOP())
                     {
-                       auto stringBuffer = listBuffer.slice<char>(listOffset + sizeof(ChunkHeader), chunkHeader->getChunkSize());
-                       std::string s(stringBuffer.begin(), stringBuffer.end());
-                       
-                       std::cout << "TODO: parse ICOP:" << s << std::endl;
+                       description << "copyright:";
+                    }
+                  else if(chunkHeader->getChunkID() == getISBJ())
+                    {
+                       description << "subject:";
                     }
                   else
                     {
@@ -241,6 +254,7 @@ namespace mods
                        ss << "Unknown Info chunk: " << chunkHeader->getChunkID();
                        checkInit(false, ss.str());
                     }
+                  description << info;
                   
                   auto chunkSize = chunkHeader->getChunkSize();
                   if((chunkSize & 1u) != 0) // padding

@@ -166,7 +166,8 @@ namespace mods
              
              void parseInfoList(const mods::utils::RBuffer<ListHeader>& listHeader,
                                 const mods::utils::RBuffer<u8>& riffBuffer,
-                                size_t offset) const;
+                                size_t offset,
+                                std::stringstream& description) const;
              
              void buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description);
              
