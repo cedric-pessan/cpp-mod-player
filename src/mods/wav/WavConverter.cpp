@@ -38,6 +38,10 @@ namespace mods
                   defaultValue = 128;
                   break;
                   
+                case 16:
+                  defaultValue = 0;
+                  break;
+                  
                 default:
                   std::cout << "WavConverter: unknown default value for " << bitsPerSample << " bits per sample" << std::endl;
                }
@@ -47,6 +51,10 @@ namespace mods
                {
                 case 8:
                   buildDemuxStage<8>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
+                  break;
+                  
+                case 16:
+                  buildDemuxStage<16>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
                   break;
                   
                 default:
@@ -77,6 +85,20 @@ namespace mods
                          }
                     }
                   break;
+                  
+                case 16:
+                  if(isResamplableByPositiveIntegerFactor(frequency))
+                    {
+                       upscaledBitsPerSample = 16;
+                       for(int i = 0; i < nbChannels; ++i)
+                         {
+                            upscaledChannels.push_back(std::make_unique<DummyWavConverter>(std::move(channels[i])));
+                         }
+                    }
+                  else
+                    std::cout << "WavConverter: unsupported resample for 16 bits per sample upscale" << std::endl;
+                  break;
+                  
                 default:
                   std::cout << "WavConverter: unsupported bits per sample to upscale: " << bitsPerSample << std::endl;
                }
