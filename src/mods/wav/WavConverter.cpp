@@ -1,4 +1,5 @@
 
+#include "mods/wav/BytesSkipConverter.hpp"
 #include "mods/wav/ChannelCopyWavConverter.hpp"
 #include "mods/wav/DummyWavConverter.hpp"
 #include "mods/wav/FromDoubleConverter.hpp"
@@ -42,6 +43,10 @@ namespace mods
                   defaultValue = 0;
                   break;
                   
+                case 24:
+                  defaultValue = 0;
+                  break;
+                  
                 default:
                   std::cout << "WavConverter: unknown default value for " << bitsPerSample << " bits per sample" << std::endl;
                }
@@ -55,6 +60,10 @@ namespace mods
                   
                 case 16:
                   buildDemuxStage<16>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
+                  break;
+                  
+                case 24:
+                  buildDemuxStage<24>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
                   break;
                   
                 default:
@@ -101,6 +110,21 @@ namespace mods
                     }
                   break;
                   
+                case 24:
+                  if(isResamplableByPositiveIntegerFactor(frequency))
+                    {
+                       upscaledBitsPerSample = 24;
+                       for(int i = 0; i < nbChannels; ++i)
+                         {
+                            upscaledChannels.push_back(std::make_unique<DummyWavConverter>(std::move(channels[i])));
+                         }
+                    }
+                  else
+                    {
+                       std::cout << "WavConverter: unsupported resample for 24 bits per sample upscale" << std::endl;
+                    }
+                  break;
+                  
                 default:
                   std::cout << "WavConverter: unsupported bits per sample to upscale: " << bitsPerSample << std::endl;
                }
@@ -120,6 +144,13 @@ namespace mods
                   for(int i = 0; i < nbChannels; ++i) 
                     {
                        resampledChannels.push_back(buildResamplePositiveIntegerFactor<2>(resampledBitsPerSample, std::move(upscaledChannels[i])));
+                    }
+                  break;
+                  
+                case 44100:
+                  for(int i = 0; i < nbChannels; ++i)
+                    {
+                       resampledChannels.push_back(std::make_unique<DummyWavConverter>(std::move(upscaledChannels[i])));
                     }
                   break;
                   
@@ -158,10 +189,17 @@ namespace mods
                   downScaledLeft = std::make_unique<DummyWavConverter>(std::move(mixedLeft));
                   downScaledRight = std::make_unique<DummyWavConverter>(std::move(mixedRight));
                   break;
+                  
+                case 24:
+                  downScaledLeft = std::make_unique<BytesSkipConverter<2,1>>(std::move(mixedLeft));
+                  downScaledRight = std::make_unique<BytesSkipConverter<2,1>>(std::move(mixedRight));
+                  break;
+                  
                 case -1:
                   downScaledLeft = std::make_unique<FromDoubleConverter<s16>>(std::move(mixedLeft));
                   downScaledRight = std::make_unique<FromDoubleConverter<s16>>(std::move(mixedRight));
                   break;
+                  
                 default:
                   std::cout << "WavConverter: unsupported bits per sample to downscale: " << resampledBitsPerSample << std::endl;
                }
