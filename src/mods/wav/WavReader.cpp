@@ -62,6 +62,16 @@ namespace mods
                   static const std::string ISBJ = "ISBJ";
                   return ISBJ;
                }
+             const std::string& getICRD()
+               {
+                  static const std::string ICRD = "ICRD";
+                  return ICRD;
+               }
+             const std::string& getISFT()
+               {
+                  static const std::string ISFT = "ISFT";
+                  return ISFT;
+               }
           } // namespace
         
         WavReader::WavReader(const std::string& filename)
@@ -247,6 +257,14 @@ namespace mods
                   else if(chunkHeader->getChunkID() == getISBJ())
                     {
                        description << "subject:";
+                    }
+                  else if(chunkHeader->getChunkID() == getICRD())
+                    {
+                       description << "creation date:";
+                    }
+                  else if(chunkHeader->getChunkID() == getISFT())
+                    {
+                       description << "software:";
                     }
                   else
                     {
