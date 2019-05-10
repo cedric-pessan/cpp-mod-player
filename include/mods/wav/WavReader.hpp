@@ -12,7 +12,8 @@ namespace mods
      {
         enum struct WavAudioFormat : u16
           {
-             PCM = 0x0001
+             PCM = 0x0001,
+               A_LAW = 0x0006
           };
         
         enum struct DispType : u32
@@ -74,6 +75,11 @@ namespace mods
                   return static_cast<WavAudioFormat>(value);
                }
              
+             u16 getAudioFormatAsNumber() const noexcept
+               {
+                  return static_cast<u16>(audioFormat);
+               }
+             
              u16 getNumChannels() const noexcept
                {
                   return static_cast<u16>(numChannels);
@@ -90,6 +96,21 @@ namespace mods
                }
           };
         
+        struct ExtendedFmtHeader
+          {
+           public:
+             FmtHeader fmt;
+             
+           private:
+             u16le extensionSize;
+             
+           public:
+             u16 getExtensionSize() const noexcept
+               {
+                  return static_cast<u16>(extensionSize);
+               }
+          };
+        
         struct FactHeader
           {
            public:
@@ -97,6 +118,15 @@ namespace mods
              
            private:
              u32le sampleLength;
+          };
+        
+        struct AfspHeader
+          {
+           public:
+             ChunkHeader chunk;
+             
+           private:
+             char afspId[4];
           };
         
         struct DispHeader
@@ -168,6 +198,11 @@ namespace mods
                                 const mods::utils::RBuffer<u8>& riffBuffer,
                                 size_t offset,
                                 std::stringstream& description) const;
+             
+             void readAfsp(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                           const mods::utils::RBuffer<u8>& riffBuffer,
+                           size_t offset,
+                           std::stringstream& description) const;
              
              void buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description);
              

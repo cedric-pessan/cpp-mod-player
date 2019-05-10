@@ -10,7 +10,7 @@ namespace mods
         MultiplexerWavConverter::MultiplexerWavConverter(WavConverter::ptr left, WavConverter::ptr right)
           : _left(std::move(left)),
           _right(std::move(right)),
-          _temp(allocateTempBuffer(0))
+          _temp(allocateNewTempBuffer(0))
             {
             }
         
@@ -26,7 +26,7 @@ namespace mods
                   std::cout << "TODO: wrong buffer length in MultiplexerWavConverter" << std::endl;
                }
              
-             allocateTempBuffer(len);
+             ensureTempBufferSize(len);
              
              int nbElems = (len/2) / sizeof(s16);
              auto leftBuf = _temp.slice<u8>(0, len/2);
@@ -46,17 +46,21 @@ namespace mods
                }
           }
         
-        mods::utils::RWBuffer<u8> MultiplexerWavConverter::allocateTempBuffer(size_t len)
+        mods::utils::RWBuffer<u8> MultiplexerWavConverter::allocateNewTempBuffer(size_t len)
+          {
+             _tempVec.resize(len);
+             u8* ptr = _tempVec.data();
+             auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
+             auto buffer = std::make_shared<mods::utils::BufferBackend>(ptr, len, std::move(deleter));
+             return mods::utils::RWBuffer<u8>(buffer);
+          }
+        
+        void MultiplexerWavConverter::ensureTempBufferSize(size_t len)
           {
              if(_temp.size() < len)
                {
-                  _tempVec.resize(len);
-                  u8* ptr = _tempVec.data();
-                  auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
-                  auto buffer = std::make_shared<mods::utils::BufferBackend>(ptr, len, std::move(deleter));
-                  _temp = mods::utils::RWBuffer<u8>(buffer);
+                  _temp = allocateNewTempBuffer(len);
                }
-             return _temp;
           }
      } // namespace wav
 } // namespace mods

@@ -25,7 +25,8 @@ namespace mods
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
            private:
-             mods::utils::RWBuffer<u8> allocateTempBuffer(size_t len);
+             mods::utils::RWBuffer<u8> allocateNewTempBuffer(size_t len);
+             void ensureTempBufferSize(size_t len);
              
              WavConverter::ptr _left;
              WavConverter::ptr _right;

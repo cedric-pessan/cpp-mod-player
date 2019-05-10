@@ -8,7 +8,7 @@ namespace mods
         template<typename T>
           FromDoubleConverter<T>::FromDoubleConverter(WavConverter::ptr src)
             : _src(std::move(src)),
-          _temp(allocateTempBuffer(0))
+          _temp(allocateNewTempBuffer(0))
             {
                if(sizeof(T) > sizeof(double))
                  {
@@ -33,7 +33,7 @@ namespace mods
                int nbElems = len / sizeof(T);
                int toReadLen = nbElems * sizeof(double);
                
-               allocateTempBuffer(toReadLen);
+               ensureTempBufferSize(toReadLen);
                
                _src->read(&_temp, toReadLen);
                
@@ -60,17 +60,22 @@ namespace mods
             }
         
         template<typename T>
-          mods::utils::RWBuffer<u8> FromDoubleConverter<T>::allocateTempBuffer(size_t len)
+          mods::utils::RWBuffer<u8> FromDoubleConverter<T>::allocateNewTempBuffer(size_t len)
+            {
+               _tempVec.resize(len);
+               u8* ptr = _tempVec.data();
+               auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
+               auto buffer = std::make_shared<mods::utils::BufferBackend>(ptr, len, std::move(deleter));
+               return mods::utils::RWBuffer<u8>(buffer);
+            }
+        
+        template<typename T>
+          void FromDoubleConverter<T>::ensureTempBufferSize(size_t len)
             {
                if(_temp.size() < len)
                  {
-                    _tempVec.resize(len);
-                    u8* ptr = _tempVec.data();
-                    auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
-                    auto buffer = std::make_shared<mods::utils::BufferBackend>(ptr, len, std::move(deleter));
-                    _temp = mods::utils::RWBuffer<u8>(buffer);
+                    _temp = allocateNewTempBuffer(len);
                  }
-               return _temp;
             }
         
         template class FromDoubleConverter<s16>;

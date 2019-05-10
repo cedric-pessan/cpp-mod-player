@@ -72,6 +72,16 @@ namespace mods
                   static const std::string ISFT = "ISFT";
                   return ISFT;
                }
+             const std::string& getAfsp()
+               {
+                  static const std::string afsp = "afsp";
+                  return afsp;
+               }
+             const std::string& getICMT()
+               {
+                  static const std::string ICMT = "ICMT";
+                  return ICMT;
+               }
           } // namespace
         
         WavReader::WavReader(const std::string& filename)
@@ -137,6 +147,10 @@ namespace mods
                               checkInit(false, ss.str());
                            }
                       }
+                    else if(chunkHeader->getChunkID() == getAfsp())
+                      {
+                         readAfsp(chunkHeader, riffBuffer, offset, description);
+                      }
                     else
                       {
                          std::stringstream ss;
@@ -172,9 +186,28 @@ namespace mods
              
              auto fmtHeader = riffBuffer.slice<FmtHeader>(offset, 1);
              
-             checkInit(fmtHeader->getAudioFormat() == WavAudioFormat::PCM, "Only PCM is supported at the moment");
-             
-             checkInit(fmtHeader->chunk.getChunkSize() == sizeof(FmtHeader) - sizeof(ChunkHeader), "Extra fmt infos not yet implemented");
+             switch(fmtHeader->getAudioFormat()) 
+               {
+                case WavAudioFormat::PCM:
+                  checkInit(fmtHeader->chunk.getChunkSize() == sizeof(FmtHeader) - sizeof(ChunkHeader), "Extra fmt infos not yet implemented for PCM");
+                  break;
+                  
+                case WavAudioFormat::A_LAW:
+                    {
+                       checkInit(fmtHeader->getBitsPerSample() == 8, "A-Law codec needs 8 bits per sample");
+                       checkInit(fmtHeader->chunk.getChunkSize() >= sizeof(ExtendedFmtHeader) - sizeof(ChunkHeader), "A-Law codec without extended fmt");
+                       auto extendedFmtHeader = riffBuffer.slice<ExtendedFmtHeader>(offset, 1);
+                       checkInit(extendedFmtHeader->getExtensionSize() == 0, "A-Law codec with extension");
+                    }
+                  break;
+                  
+                default:
+                    {
+                       std::stringstream ss;
+                       ss << "Codec not supported: " << fmtHeader->getAudioFormatAsNumber();
+                       checkInit(false, ss.str());
+                    }
+               }
              
              return fmtHeader;
           }
@@ -233,6 +266,30 @@ namespace mods
                }
           }
         
+        void WavReader::readAfsp(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                 const mods::utils::RBuffer<u8>& riffBuffer,
+                                 size_t offset,
+                                 std::stringstream& description) const
+          {
+             checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
+                       chunkHeader->getChunkSize() >= sizeof(AfspHeader), "Incomplete Afsp chunk");
+             
+             auto stringBuffer = riffBuffer.slice<char>(offset + sizeof(AfspHeader), chunkHeader->getChunkSize() - (sizeof(AfspHeader) - sizeof(ChunkHeader)));
+             std::string s = std::string(stringBuffer.begin(), stringBuffer.end());
+             for(size_t i = 0; i < s.length(); ++i)
+               {
+                  if(s[i] == '\0' && i != s.length()-1)
+                    {
+                       s[i] = '\n';
+                    }
+               }
+             if(!description.str().empty())
+               {
+                  description << std::endl;
+               }
+             description << "Afsp infos:" << s;
+          }
+        
         void WavReader::parseInfoList(const mods::utils::RBuffer<ListHeader>& listHeader,
                                       const mods::utils::RBuffer<u8>& riffBuffer,
                                       size_t offset,
@@ -265,6 +322,10 @@ namespace mods
                   else if(chunkHeader->getChunkID() == getISFT())
                     {
                        description << "software:";
+                    }
+                  else if(chunkHeader->getChunkID() == getICMT())
+                    {
+                       description << "comment:";
                     }
                   else
                     {
