@@ -174,7 +174,7 @@ namespace mods
                _converter = WavConverter::buildConverter(data, fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), _statCollector);
                _length = data.size();
                
-               buildInfo(fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), description.str());
+               buildInfo(fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), description.str(), fmtHeader->getAudioFormat());
             }
         
         mods::utils::RBuffer<FmtHeader> WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
@@ -344,7 +344,7 @@ namespace mods
                }
           }
         
-        void WavReader::buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description)
+        void WavReader::buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec)
           {
              std::stringstream ss;
              if(description.length() > 0)
@@ -353,7 +353,8 @@ namespace mods
                }
              ss << "bits per sample: " << bitsPerSample << std::endl;
              ss << "number of channels: " << nbChannels << std::endl;
-             ss << "frequency: " << frequency;
+             ss << "frequency: " << frequency << std::endl;
+             ss << "codec: " << toString(codec);
              _info = ss.str();
           }
         
@@ -380,5 +381,20 @@ namespace mods
              ss << "Reading..." << percentage << "%";
              return ss.str();
           }
+        
+        const std::string& toString(WavAudioFormat fmt)         
+          {
+             static const std::string PCM = "PCM";
+             static const std::string A_LAW = "A-LAW";
+             switch(fmt)
+               {
+                case WavAudioFormat::PCM:
+                  return PCM;
+                case WavAudioFormat::A_LAW:
+                  return A_LAW;
+               }
+             return PCM; // doesn't matter, it can't be reached
+          }
+        
      } // namespace wav
 } // namespace mods

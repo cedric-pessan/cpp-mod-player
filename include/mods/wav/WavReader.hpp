@@ -16,6 +16,8 @@ namespace mods
                A_LAW = 0x0006
           };
         
+        const std::string& toString(WavAudioFormat fmt);
+        
         enum struct DispType : u32
           {
              TEXT = 1
@@ -204,7 +206,7 @@ namespace mods
                            size_t offset,
                            std::stringstream& description) const;
              
-             void buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description);
+             void buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec);
              
              
              WavConverter::ptr _converter;
