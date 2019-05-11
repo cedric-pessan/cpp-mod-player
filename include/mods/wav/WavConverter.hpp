@@ -4,6 +4,7 @@
 #include "mods/utils/RBuffer.hpp"
 #include "mods/utils/RWBuffer.hpp"
 #include "mods/wav/StatCollector.hpp"
+#include "mods/wav/WavTypes.hpp"
 
 #include <memory>
 #include <vector>
@@ -17,7 +18,7 @@ namespace mods
            public:
              using ptr = std::unique_ptr<WavConverter>;
              
-             static ptr buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int nbChannels, int frequency, StatCollector::sptr statCollector);
+             static ptr buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int nbChannels, int frequency, StatCollector::sptr statCollector, WavAudioFormat codec);
              
              WavConverter() = default;
              virtual ~WavConverter() = default;

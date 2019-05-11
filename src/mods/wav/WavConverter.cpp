@@ -20,7 +20,7 @@ namespace mods
    namespace wav
      {
         // static
-        WavConverter::ptr WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int nbChannels, int frequency, StatCollector::sptr statCollector)
+        WavConverter::ptr WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int nbChannels, int frequency, StatCollector::sptr statCollector, WavAudioFormat codec)
           {
              /* pipeline:
               sampleReader
@@ -81,7 +81,14 @@ namespace mods
                        for(int i = 0; i < nbChannels; ++i)
                          {
                             auto signedChannel = std::make_unique<UnsignedToSignedWavConverter<u8>>(std::move(channels[i]));
-                            upscaledChannels.push_back(std::make_unique<UpscaleWavConverter<s16, s8>>(std::move(signedChannel)));
+                            if(codec == WavAudioFormat::A_LAW)
+                              {
+                                 std::cout << "WavConverter: unsupported A-law conversion to 16 bits" << std::endl;
+                              }
+                            else
+                              {
+                                 upscaledChannels.push_back(std::make_unique<UpscaleWavConverter<s16, s8>>(std::move(signedChannel)));
+                              }
                          }
                     }
                   else
@@ -90,7 +97,14 @@ namespace mods
                        for(int i = 0; i < nbChannels; ++i)
                          {
                             auto signedChannel = std::make_unique<UnsignedToSignedWavConverter<u8>>(std::move(channels[i]));
-                            upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s8>>(std::move(signedChannel)));
+                            if(codec == WavAudioFormat::A_LAW)
+                              {
+                                 std::cout << "WavConverter: unsupported A-law conversion to double" << std::endl;
+                              }
+                            else
+                              {
+                                 upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s8>>(std::move(signedChannel)));
+                              }
                          }
                     }
                   break;

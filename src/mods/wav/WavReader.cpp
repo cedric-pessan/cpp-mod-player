@@ -171,7 +171,7 @@ namespace mods
                auto& fmtHeader = *optFmtHeader;
                auto& data = *optData;
                _statCollector = std::make_shared<StatCollector>();
-               _converter = WavConverter::buildConverter(data, fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), _statCollector);
+               _converter = WavConverter::buildConverter(data, fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), _statCollector, fmtHeader->getAudioFormat());
                _length = data.size();
                
                buildInfo(fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), description.str(), fmtHeader->getAudioFormat());
@@ -381,20 +381,5 @@ namespace mods
              ss << "Reading..." << percentage << "%";
              return ss.str();
           }
-        
-        const std::string& toString(WavAudioFormat fmt)         
-          {
-             static const std::string PCM = "PCM";
-             static const std::string A_LAW = "A-LAW";
-             switch(fmt)
-               {
-                case WavAudioFormat::PCM:
-                  return PCM;
-                case WavAudioFormat::A_LAW:
-                  return A_LAW;
-               }
-             return PCM; // doesn't matter, it can't be reached
-          }
-        
      } // namespace wav
 } // namespace mods
