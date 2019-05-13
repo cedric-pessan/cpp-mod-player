@@ -1,4 +1,5 @@
 
+#include "mods/wav/ALawConverter.hpp"
 #include "mods/wav/BytesSkipConverter.hpp"
 #include "mods/wav/ChannelCopyWavConverter.hpp"
 #include "mods/wav/DummyWavConverter.hpp"
@@ -99,7 +100,7 @@ namespace mods
                             auto signedChannel = std::make_unique<UnsignedToSignedWavConverter<u8>>(std::move(channels[i]));
                             if(codec == WavAudioFormat::A_LAW)
                               {
-                                 std::cout << "WavConverter: unsupported A-law conversion to double" << std::endl;
+                                 upscaledChannels.push_back(std::make_unique<ALawConverter<double>>(std::move(signedChannel)));
                               }
                             else
                               {
