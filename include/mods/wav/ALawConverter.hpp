@@ -3,8 +3,6 @@
 
 #include "mods/wav/WavConverter.hpp"
 
-#include <type_traits>
-
 namespace mods
 {
    namespace wav
@@ -25,11 +23,14 @@ namespace mods
              bool isFinished() const override;
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
-             template<typename T2>
-               typename std::enable_if<std::is_same<T2, T>::value && std::is_floating_point<T2>::value>::type aLawTransform(T2* out, s8 value) const;
+             
              
            private:
+             void fillLookupTable();
+             void aLawTransform(T* out, s8 value) const;
+             
              WavConverter::ptr _src;
+             std::array<T, 256> _lookupTable;
           };
      } // namespace wav
 } // namespace mods
