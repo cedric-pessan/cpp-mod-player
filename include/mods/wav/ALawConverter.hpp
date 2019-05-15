@@ -22,6 +22,11 @@ namespace mods
              bool isFinished() const override;
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
+             static constexpr u8 getZero()
+               {
+                  return 0x80 | 0x55;
+               }
+             
            private:
              static constexpr int MANTISSA_SIZE = 4;
              static constexpr int MANTISSA_MASK = 0xF;

@@ -39,7 +39,7 @@ namespace mods
                 case 8:
                   if(codec == WavAudioFormat::A_LAW)
                     {
-                       defaultValue = 0;
+                       defaultValue = ALawConverter::getZero();
                     }
                   else
                     {
