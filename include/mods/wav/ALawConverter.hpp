@@ -7,8 +7,7 @@ namespace mods
 {
    namespace wav
      {
-        template<typename T>
-          class ALawConverter : public WavConverter
+        class ALawConverter : public WavConverter
           {
            public:
              explicit ALawConverter(WavConverter::ptr src);
@@ -23,14 +22,16 @@ namespace mods
              bool isFinished() const override;
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
-             
-             
            private:
+             static constexpr int MANTISSA_SIZE = 4;
+             static constexpr int MANTISSA_MASK = 0xF;
+             static constexpr int EXPONENT_MASK = 0x7;
+             
              void fillLookupTable();
-             void aLawTransform(T* out, s8 value) const;
+             s16 aLawTransform(s8 value) const;
              
              WavConverter::ptr _src;
-             std::array<T, 256> _lookupTable;
+             std::array<s16, 256> _lookupTable;
           };
      } // namespace wav
 } // namespace mods

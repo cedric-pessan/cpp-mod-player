@@ -55,5 +55,6 @@ namespace mods
             }
         
         template class ToDoubleConverter<s8>;
+        template class ToDoubleConverter<s16>;
      } // namespace wav
 } // namespace mods

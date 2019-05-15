@@ -37,15 +37,18 @@ namespace mods
              switch(bitsPerSample)
                {
                 case 8:
-                  defaultValue = 128;
+                  if(codec == WavAudioFormat::A_LAW)
+                    {
+                       defaultValue = 0;
+                    }
+                  else
+                    {
+                       defaultValue = 128;
+                    }
                   break;
                   
                 case 16:
-                  defaultValue = 0;
-                  break;
-                  
                 case 24:
-                  defaultValue = 0;
                   break;
                   
                 default:
@@ -79,15 +82,15 @@ namespace mods
                   if(isResamplableByPositiveIntegerFactor(frequency)) 
                     {
                        upscaledBitsPerSample = 16;
-                       for(int i = 0; i < nbChannels; ++i)
+                       if(codec == WavAudioFormat::A_LAW) 
                          {
-                            auto signedChannel = std::make_unique<UnsignedToSignedWavConverter<u8>>(std::move(channels[i]));
-                            if(codec == WavAudioFormat::A_LAW)
+                            std::cout << "WavConverter: unsupported A-law conversion to 16 bits" << std::endl;
+                         }
+                       else
+                         {
+                            for(int i = 0; i < nbChannels; ++i)
                               {
-                                 std::cout << "WavConverter: unsupported A-law conversion to 16 bits" << std::endl;
-                              }
-                            else
-                              {
+                                 auto signedChannel = std::make_unique<UnsignedToSignedWavConverter<u8>>(std::move(channels[i]));
                                  upscaledChannels.push_back(std::make_unique<UpscaleWavConverter<s16, s8>>(std::move(signedChannel)));
                               }
                          }
@@ -95,15 +98,19 @@ namespace mods
                   else
                     {
                        upscaledBitsPerSample = -1;
-                       for(int i = 0; i < nbChannels; ++i)
+                       if(codec == WavAudioFormat::A_LAW)
                          {
-                            auto signedChannel = std::make_unique<UnsignedToSignedWavConverter<u8>>(std::move(channels[i]));
-                            if(codec == WavAudioFormat::A_LAW)
+                            for(int i = 0; i < nbChannels; ++i)
                               {
-                                 upscaledChannels.push_back(std::make_unique<ALawConverter<double>>(std::move(signedChannel)));
+                                 auto aLawChannel = std::make_unique<ALawConverter>(std::move(channels[i]));
+                                 upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(aLawChannel)));
                               }
-                            else
+                         }
+                       else
+                         {
+                            for(int i = 0; i < nbChannels; ++i)
                               {
+                                 auto signedChannel = std::make_unique<UnsignedToSignedWavConverter<u8>>(std::move(channels[i]));
                                  upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s8>>(std::move(signedChannel)));
                               }
                          }
