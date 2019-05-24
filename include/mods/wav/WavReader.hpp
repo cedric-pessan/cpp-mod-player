@@ -10,6 +10,8 @@ namespace mods
 {
    namespace wav
      {
+        class Format;
+        
         class WavReader : public ModuleReader
           {
            public:
@@ -28,9 +30,9 @@ namespace mods
              std::string getProgressInfo() const override;
              
            private:
-             mods::utils::RBuffer<FmtHeader> readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                                                     const mods::utils::RBuffer<u8>& riffBuffer,
-                                                     size_t offset) const;
+             Format readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                            const mods::utils::RBuffer<u8>& riffBuffer,
+                            size_t offset) const;
              mods::utils::RBuffer<FactHeader> readFact(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
                                                        const mods::utils::RBuffer<u8>& riffBuffer,
                                                        size_t offset) const;

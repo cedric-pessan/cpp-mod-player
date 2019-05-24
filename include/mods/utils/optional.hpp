@@ -1,6 +1,8 @@
 #ifndef MODS_UTILS_OPTIONAL_HPP
 #define MODS_UTILS_OPTIONAL_HPP
 
+#include "mods/utils/types.hpp"
+
 namespace mods
 {
    /*
@@ -46,10 +48,29 @@ namespace mods
              return _value.value; // NOLINT(cppcoreguidelines-pro-type-union-access)
           }
         
+        optional(optional&& o)
+          : _hasValue(o._hasValue),
+          _value()
+            {
+               if(_hasValue)
+                 {
+                    _value.value = std::move(o._value.value);
+                 }
+            }
+        
+        optional& operator=(optional&& o)
+          {
+             cleanValue();
+             _hasValue = o._hasValue;
+             if(_hasValue)
+               {
+                  _value.value = std::move(o._value.value);
+               }
+             return *this;
+          }
+        
         optional(const optional&) = delete;
-        optional(const optional&&) = delete;
         optional& operator=(const optional&) = delete;
-        optional& operator=(const optional&&) = delete;
         
       private:
         void cleanValue()
@@ -76,9 +97,9 @@ namespace mods
                }
              
              Value(const Value&) = delete;
-             Value(const Value&&) = delete;
+             Value(Value&&) = delete;
              Value& operator=(const Value&) = delete;
-             Value& operator=(const Value&&) = delete;
+             Value& operator=(Value&&) = delete;
           } _value;
      };
    

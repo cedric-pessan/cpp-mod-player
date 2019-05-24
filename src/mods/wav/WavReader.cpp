@@ -1,4 +1,5 @@
 
+#include "mods/wav/Format.hpp"
 #include "mods/wav/WavReader.hpp"
 #include "mods/utils/FileUtils.hpp"
 #include "mods/utils/optional.hpp"
@@ -101,7 +102,7 @@ namespace mods
                auto riffBuffer = _fileBuffer.slice<u8>(sizeof(RiffHeader), riffHeader->chunk.getChunkSize() - sizeof(RiffHeader) + sizeof(ChunkHeader));
                
                using mods::utils::RBuffer;
-               optional<RBuffer<FmtHeader>> optFmtHeader;
+               optional<Format> optFmt;
                optional<RBuffer<FactHeader>> optFactHeader;
                optional<RBuffer<u8>> optData;
                
@@ -112,8 +113,8 @@ namespace mods
                     
                     if(chunkHeader->getChunkID() == getFMT())
                       {
-                         checkInit(!optFmtHeader.has_value(), "Multiple fmt chunks defined");
-                         optFmtHeader = readFMT(chunkHeader, riffBuffer, offset);
+                         checkInit(!optFmt.has_value(), "Multiple fmt chunks defined");
+                         optFmt = readFMT(chunkHeader, riffBuffer, offset);
                       }
                     else if(chunkHeader->getChunkID() == getFACT())
                       {
@@ -166,27 +167,58 @@ namespace mods
                     offset += chunkSize + sizeof(ChunkHeader);
                  }
                
-               checkInit(optFmtHeader.has_value() && optData.has_value(), "Wav file should have at least a fmt and data chunk");
+               checkInit(optFmt.has_value() && optData.has_value(), "Wav file should have at least a fmt and data chunk");
                
-               auto& fmtHeader = *optFmtHeader;
+               auto& fmt = *optFmt;
                auto& data = *optData;
                _statCollector = std::make_shared<StatCollector>();
-               _converter = WavConverter::buildConverter(data, fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), _statCollector, fmtHeader->getAudioFormat());
+               _converter = WavConverter::buildConverter(data, fmt.getBitsPerSample(), fmt.getNumChannels(), fmt.getSampleRate(), _statCollector, fmt.getAudioFormat());
                _length = data.size();
                
-               buildInfo(fmtHeader->getBitsPerSample(), fmtHeader->getNumChannels(), fmtHeader->getSampleRate(), description.str(), fmtHeader->getAudioFormat());
+               buildInfo(fmt.getBitsPerSample(), fmt.getNumChannels(), fmt.getSampleRate(), description.str(), fmt.getAudioFormat());
             }
         
-        mods::utils::RBuffer<FmtHeader> WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                                                           const mods::utils::RBuffer<u8>& riffBuffer,
-                                                           size_t offset) const
+        Format WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                  const mods::utils::RBuffer<u8>& riffBuffer,
+                                  size_t offset) const
           {
              checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
                        chunkHeader->getChunkSize() >= sizeof(FmtHeader) - sizeof(ChunkHeader) , "Incomplete FMT chunk");
              
              auto fmtHeader = riffBuffer.slice<FmtHeader>(offset, 1);
              
-             switch(fmtHeader->getAudioFormat()) 
+             optional<mods::utils::RBuffer<ExtendedFmtHeader>> extendedFmtHeader;
+             
+             if(fmtHeader->chunk.getChunkSize() >= sizeof(ExtendedFmtHeader) - sizeof(ChunkHeader))
+               {
+                  mods::utils::RBuffer<ExtendedFmtHeader> buf = riffBuffer.slice<ExtendedFmtHeader>(offset, 1);
+                  extendedFmtHeader = buf;
+               }
+             
+             optional<mods::utils::RBuffer<ExtensibleHeader>> extensibleHeader;
+             
+             if(extendedFmtHeader.has_value() &&
+                fmtHeader->chunk.getChunkSize() >= sizeof(ExtensibleHeader) - sizeof(ChunkHeader) &&
+                (*extendedFmtHeader)->getExtensionSize() == (sizeof(ExtensibleHeader) - sizeof(ExtendedFmtHeader)))
+               {
+                  mods::utils::RBuffer<ExtensibleHeader> buf = riffBuffer.slice<ExtensibleHeader>(offset, 1);
+                  extensibleHeader = buf;
+               }
+             
+             auto format = fmtHeader->getAudioFormat();
+             if(format == WavAudioFormat::EXTENSIBLE)
+               {
+                  if(extensibleHeader.has_value())
+                    {
+                       auto& ext = *extensibleHeader;
+                       format = ext->getAudioFormat();
+                       
+                       checkInit(ext->getChannelMask() == 0, "Channel mask not supported yet");
+                       checkInit(ext->getValidBitsPerSample() == ext->extendedFmt.fmt.getBitsPerSample(), "Ignoring bits in sample is not supported yet");
+                    }
+               }
+             
+             switch(format) 
                {
                 case WavAudioFormat::PCM:
                   checkInit(fmtHeader->chunk.getChunkSize() == sizeof(FmtHeader) - sizeof(ChunkHeader), "Extra fmt infos not yet implemented for PCM");
@@ -195,9 +227,8 @@ namespace mods
                 case WavAudioFormat::A_LAW:
                     {
                        checkInit(fmtHeader->getBitsPerSample() == 8, "A-Law codec needs 8 bits per sample");
-                       checkInit(fmtHeader->chunk.getChunkSize() >= sizeof(ExtendedFmtHeader) - sizeof(ChunkHeader), "A-Law codec without extended fmt");
-                       auto extendedFmtHeader = riffBuffer.slice<ExtendedFmtHeader>(offset, 1);
-                       checkInit(extendedFmtHeader->getExtensionSize() == 0, "A-Law codec with extension");
+                       checkInit(extendedFmtHeader.has_value(), "A-law codec without extended fmt");
+                       checkInit((*extendedFmtHeader)->getExtensionSize() == 0, "A-Law codec with extension");
                     }
                   break;
                   
@@ -209,7 +240,7 @@ namespace mods
                     }
                }
              
-             return fmtHeader;
+             return Format(std::move(fmtHeader), std::move(extensibleHeader));
           }
         
         mods::utils::RBuffer<FactHeader> WavReader::readFact(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,

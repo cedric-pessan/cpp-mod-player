@@ -10,7 +10,8 @@ namespace mods
         enum struct WavAudioFormat : u16
           {
              PCM = 0x0001,
-               A_LAW = 0x0006
+               A_LAW = 0x0006,
+               EXTENSIBLE = 0xFFFE
           };
         
         const std::string& toString(WavAudioFormat fmt);
@@ -107,6 +108,35 @@ namespace mods
              u16 getExtensionSize() const noexcept
                {
                   return static_cast<u16>(extensionSize);
+               }
+          };
+        
+        struct ExtensibleHeader
+          {
+           public:
+             ExtendedFmtHeader extendedFmt;
+             
+           private:
+             u16le validBitsPerSample;
+             u32le channelMask;
+             u16le audioFormat;
+             u8 subformat[14];
+             
+           public:
+             WavAudioFormat getAudioFormat() const noexcept
+               {
+                  u16 value = static_cast<u16>(audioFormat);
+                  return static_cast<WavAudioFormat>(value);
+               }
+             
+             u16 getValidBitsPerSample() const noexcept
+               {
+                  return static_cast<u16>(validBitsPerSample);
+               }
+             
+             u32 getChannelMask() const noexcept
+               {
+                  return static_cast<u32>(channelMask);
                }
           };
         
