@@ -213,7 +213,10 @@ namespace mods
                        auto& ext = *extensibleHeader;
                        format = ext->getAudioFormat();
                        
-                       checkInit(ext->getChannelMask() == 0, "Channel mask not supported yet");
+                       if(!((fmtHeader->getNumChannels() == 1 && ext->getChannelMask() == 1) || (fmtHeader->getNumChannels() == 2 && ext->getChannelMask() == 3)))
+                         {
+                            checkInit(false, "Channel mask not supported yet");
+                         }
                        checkInit(ext->getValidBitsPerSample() == ext->extendedFmt.fmt.getBitsPerSample(), "Ignoring bits in sample is not supported yet");
                     }
                }
@@ -228,7 +231,6 @@ namespace mods
                     {
                        checkInit(fmtHeader->getBitsPerSample() == 8, "A-Law codec needs 8 bits per sample");
                        checkInit(extendedFmtHeader.has_value(), "A-law codec without extended fmt");
-                       checkInit((*extendedFmtHeader)->getExtensionSize() == 0, "A-Law codec with extension");
                     }
                   break;
                   
