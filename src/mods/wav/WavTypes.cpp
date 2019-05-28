@@ -9,6 +9,7 @@ namespace mods
           {
              static const std::string PCM = "PCM";
              static const std::string A_LAW = "A-LAW";
+             static const std::string MU_LAW = "MU_LAW";
              static const std::string EXTENSIBLE = "EXTENSIBLE";
              switch(fmt)
                {
@@ -16,6 +17,8 @@ namespace mods
                   return PCM;
                 case WavAudioFormat::A_LAW:
                   return A_LAW;
+                case WavAudioFormat::MU_LAW:
+                  return MU_LAW;
                 case WavAudioFormat::EXTENSIBLE:
                   return EXTENSIBLE;
                }

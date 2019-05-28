@@ -4,6 +4,7 @@
 #include "mods/wav/ChannelCopyWavConverter.hpp"
 #include "mods/wav/DummyWavConverter.hpp"
 #include "mods/wav/FromDoubleConverter.hpp"
+#include "mods/wav/MuLawConverter.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
 #include "mods/wav/ResampleConverter.hpp"
@@ -40,6 +41,10 @@ namespace mods
                   if(codec == WavAudioFormat::A_LAW)
                     {
                        defaultValue = ALawConverter::getZero();
+                    }
+                  else if(codec == WavAudioFormat::MU_LAW)
+                    {
+                       defaultValue = MuLawConverter::getZero();
                     }
                   else
                     {
@@ -86,6 +91,10 @@ namespace mods
                          {
                             std::cout << "WavConverter: unsupported A-law conversion to 16 bits" << std::endl;
                          }
+                       else if(codec == WavAudioFormat::MU_LAW)
+                         {
+                            std::cout << "WavConverter: unsupported MU-law conversion to 16 bits" << std::endl;
+                         }
                        else
                          {
                             for(int i = 0; i < nbChannels; ++i)
@@ -104,6 +113,14 @@ namespace mods
                               {
                                  auto aLawChannel = std::make_unique<ALawConverter>(std::move(channels[i]));
                                  upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(aLawChannel)));
+                              }
+                         }
+                       else if(codec == WavAudioFormat::MU_LAW)
+                         {
+                            for(int i = 0; i < nbChannels; ++i)
+                              {
+                                 auto muLawChannel = std::make_unique<MuLawConverter>(std::move(channels[i]));
+                                 upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(muLawChannel)));
                               }
                          }
                        else

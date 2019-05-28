@@ -11,6 +11,7 @@ namespace mods
           {
              PCM = 0x0001,
                A_LAW = 0x0006,
+               MU_LAW = 0x007,
                EXTENSIBLE = 0xFFFE
           };
         

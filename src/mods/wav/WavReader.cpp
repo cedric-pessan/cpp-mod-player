@@ -234,6 +234,13 @@ namespace mods
                     }
                   break;
                   
+                case WavAudioFormat::MU_LAW:
+                    {
+                       checkInit(fmtHeader->getBitsPerSample() == 8, "MU-Law codec needs 8 bits per sample");
+                       checkInit(extendedFmtHeader.has_value(), "MU-law codec without extended fmt");
+                    }
+                  break;
+                  
                 default:
                     {
                        std::stringstream ss;
