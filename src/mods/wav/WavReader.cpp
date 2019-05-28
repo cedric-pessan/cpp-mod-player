@@ -224,7 +224,6 @@ namespace mods
              switch(format) 
                {
                 case WavAudioFormat::PCM:
-                  checkInit(fmtHeader->chunk.getChunkSize() == sizeof(FmtHeader) - sizeof(ChunkHeader), "Extra fmt infos not yet implemented for PCM");
                   break;
                   
                 case WavAudioFormat::A_LAW:
