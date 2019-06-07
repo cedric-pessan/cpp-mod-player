@@ -91,6 +91,11 @@ namespace mods
                   return static_cast<u32>(sampleRate);
                }
              
+             u16 getBlockAlign() const noexcept
+               {
+                  return static_cast<u16>(blockAlign);
+               }
+             
              u16 getBitsPerSample() const noexcept
                {
                   return static_cast<u16>(bitsPerSample);

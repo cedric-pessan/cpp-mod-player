@@ -31,6 +31,8 @@ namespace mods
              
              u16 getBitsPerSample() const noexcept;
              
+             u16 getBitsPerContainer() const noexcept;
+             
            private:
              mods::utils::RBuffer<FmtHeader> _fmtHeader;
              optional<mods::utils::RBuffer<ExtensibleHeader>> _extensibleHeader;

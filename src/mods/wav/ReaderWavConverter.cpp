@@ -7,33 +7,33 @@ namespace mods
 {
    namespace wav
      {
-        template<int CH, int NBCHANNELS, int BITSPERSAMPLE>
-          ReaderWavConverter<CH, NBCHANNELS, BITSPERSAMPLE>::ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector::sptr statCollector)
+        template<int CH, int NBCHANNELS, int BITSPERCONTAINER>
+          ReaderWavConverter<CH, NBCHANNELS, BITSPERCONTAINER>::ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector::sptr statCollector)
             : _buffer(std::move(buffer)),
           _it(_buffer.begin()),
           _end(_buffer.end()),
           _defaultValue(defaultValue),
           _statCollector(std::move(statCollector))
             {
-               _it += CH * BYTESPERSAMPLE;
+               _it += CH * BYTESPERCONTAINER;
             }
         
-        template<int CH, int NBCHANNELS, int BITSPERSAMPLE>
-          bool ReaderWavConverter<CH, NBCHANNELS, BITSPERSAMPLE>::isFinished() const
+        template<int CH, int NBCHANNELS, int BITSPERCONTAINER>
+          bool ReaderWavConverter<CH, NBCHANNELS, BITSPERCONTAINER>::isFinished() const
           {
              return _it >= _end;
           }
         
-        template<int CH, int NBCHANNELS, int BITSPERSAMPLE>
-          void ReaderWavConverter<CH, NBCHANNELS, BITSPERSAMPLE>::read(mods::utils::RWBuffer<u8>* buf, int len)
+        template<int CH, int NBCHANNELS, int BITSPERCONTAINER>
+          void ReaderWavConverter<CH, NBCHANNELS, BITSPERCONTAINER>::read(mods::utils::RWBuffer<u8>* buf, int len)
             {
                size_t bytesRead = 0;
                auto& out = *buf;
-               for(int i=0; i<len; i+=BYTESPERSAMPLE)
+               for(int i=0; i<len; i+=BYTESPERCONTAINER)
                  {
                     if(_it < _end) 
                       {
-                         for(int b=0; b<BYTESPERSAMPLE; ++b)
+                         for(int b=0; b<BYTESPERCONTAINER; ++b)
                            {
                               if(_it < _end)
                                 {
@@ -46,7 +46,7 @@ namespace mods
                                    out[i+b] = _defaultValue;
                                 }
                            }
-                         _it += (NBCHANNELS-1) * BYTESPERSAMPLE;
+                         _it += (NBCHANNELS-1) * BYTESPERCONTAINER;
                       }
                     else
                       {

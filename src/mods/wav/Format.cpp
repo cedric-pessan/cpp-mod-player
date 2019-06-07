@@ -35,7 +35,20 @@ namespace mods
         
         u16 Format::getBitsPerSample() const noexcept
           {
+             if(_extensibleHeader.has_value())
+               {
+                  std::cout << "TODO: getBitsPerSample(): check extensible header" << std::endl;
+               }
              return _fmtHeader->getBitsPerSample();
+          }
+        
+        u16 Format::getBitsPerContainer() const noexcept
+          {
+             if(_extensibleHeader.has_value())
+               {
+                  std::cout << "TODO: getBitsPerContainer(): check extensible header" << std::endl;
+               }
+             return _fmtHeader->getBlockAlign() * 8 / getNumChannels();
           }
      } // namespace wav
 } // namespace mods

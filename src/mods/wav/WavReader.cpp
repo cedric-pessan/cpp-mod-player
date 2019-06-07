@@ -172,7 +172,7 @@ namespace mods
                auto& fmt = *optFmt;
                auto& data = *optData;
                _statCollector = std::make_shared<StatCollector>();
-               _converter = WavConverter::buildConverter(data, fmt.getBitsPerSample(), fmt.getNumChannels(), fmt.getSampleRate(), _statCollector, fmt.getAudioFormat());
+               _converter = WavConverter::buildConverter(data, fmt.getBitsPerSample(), fmt.getBitsPerContainer(), fmt.getNumChannels(), fmt.getSampleRate(), _statCollector, fmt.getAudioFormat());
                _length = data.size();
                
                buildInfo(fmt.getBitsPerSample(), fmt.getNumChannels(), fmt.getSampleRate(), description.str(), fmt.getAudioFormat());

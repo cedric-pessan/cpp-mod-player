@@ -10,7 +10,7 @@ namespace mods
 {
    namespace wav
      {
-        template<int CH, int NBCHANNELS, int BITSPERSAMPLE>
+        template<int CH, int NBCHANNELS, int BITSPERCONTAINER>
           class ReaderWavConverter : public WavConverter
           {
            public:
@@ -34,7 +34,7 @@ namespace mods
              u8 _defaultValue;
              StatCollector::sptr _statCollector;
              
-             constexpr static int BYTESPERSAMPLE = BITSPERSAMPLE/8;
+             constexpr static int BYTESPERCONTAINER = BITSPERCONTAINER/8;
           };
      } // namespace wav
 } // namespace mods
