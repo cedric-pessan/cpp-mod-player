@@ -3,13 +3,13 @@
 #include "mods/wav/ChannelCopyWavConverter.hpp"
 #include "mods/wav/DownscaleWavConverter.hpp"
 #include "mods/wav/DummyWavConverter.hpp"
+#include "mods/wav/FillLSBConverter.hpp"
 #include "mods/wav/FromDoubleConverter.hpp"
 #include "mods/wav/MuLawConverter.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
 #include "mods/wav/ResampleConverter.hpp"
 #include "mods/wav/ResamplePositiveIntegerFactor.hpp"
-#include "mods/wav/ShiftLeftConverter.hpp"
 #include "mods/wav/ToDoubleConverter.hpp"
 #include "mods/wav/UnpackToTypeConverter.hpp"
 #include "mods/wav/UnsignedToSignedWavConverter.hpp"
@@ -56,6 +56,7 @@ namespace mods
                     }
                   break;
                   
+                case 12:
                 case 16:
                 case 24:
                   if(codec != WavAudioFormat::PCM)
@@ -84,7 +85,7 @@ namespace mods
                   break;
                   
                 default:
-                  std::cout << "WavConverter: unsupported " << bitsPerSample << " bits per sample for demux stage" << std::endl;
+                  std::cout << "WavConverter: unsupported " << bitsPerContainer << " bits per container for demux stage" << std::endl;
                }
              
              int unpackedBitsPerContainer = bitsPerContainer;
@@ -130,10 +131,17 @@ namespace mods
                {
                   switch(unpackedBitsPerContainer)
                     {
+                     case 16:
+                       for(int i = 0; i < nbChannels; ++i)
+                         {
+                            unpackedSampleChannels.push_back(std::make_unique<FillLSBConverter<s16>>(std::move(unpackedContainerChannels[i]), unpackedBitsPerContainer - bitsPerSample));
+                         }
+                       break;
+                       
                      case 32:
                        for(int i = 0; i < nbChannels; ++i)
                          {
-                            unpackedSampleChannels.push_back(std::make_unique<ShiftLeftConverter<s32>>(std::move(unpackedContainerChannels[i]), unpackedBitsPerContainer - bitsPerSample));
+                            unpackedSampleChannels.push_back(std::make_unique<FillLSBConverter<s32>>(std::move(unpackedContainerChannels[i]), unpackedBitsPerContainer - bitsPerSample));
                          }
                        break;
                        
@@ -207,7 +215,11 @@ namespace mods
                     }
                   else
                     {
-                       std::cout << "WavConverter: unsupported resample for 16 bits per sample upscale" << std::endl;
+                       upscaledBitsPerSample = -1;
+                       for(int i = 0; i < nbChannels; ++i)
+                         {
+                            upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(unpackedSampleChannels[i])));
+                         }
                     }
                   break;
                   

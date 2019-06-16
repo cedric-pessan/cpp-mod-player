@@ -50,7 +50,10 @@ namespace mods
                       }
                     else
                       {
-                         out[i] = _defaultValue;
+                         for(int b=0; b<BYTESPERCONTAINER; ++b)
+                           {
+                              out[i+b] = _defaultValue;
+                           }
                       }
                  }
                _statCollector->inc(bytesRead);

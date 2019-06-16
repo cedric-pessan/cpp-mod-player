@@ -56,7 +56,7 @@ namespace mods
                               outValue |= (0xFF << (8 * j));
                            }
                       }
-                    outView[i] = outValue;
+                    outView[i] = outValue << (sizeof(T) - _packSize)*8;
                  }
             }
         

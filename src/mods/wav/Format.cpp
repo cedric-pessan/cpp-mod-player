@@ -37,7 +37,8 @@ namespace mods
           {
              if(_extensibleHeader.has_value())
                {
-                  std::cout << "TODO: getBitsPerSample(): check extensible header" << std::endl;
+                  auto& extensibleHeader = *_extensibleHeader;
+                  return extensibleHeader->getValidBitsPerSample();
                }
              return _fmtHeader->getBitsPerSample();
           }
@@ -46,7 +47,7 @@ namespace mods
           {
              if(_extensibleHeader.has_value())
                {
-                  std::cout << "TODO: getBitsPerContainer(): check extensible header" << std::endl;
+                  return _fmtHeader->getBitsPerSample();
                }
              return _fmtHeader->getBlockAlign() * 8 / getNumChannels();
           }

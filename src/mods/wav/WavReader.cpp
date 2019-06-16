@@ -176,6 +176,10 @@ namespace mods
                _length = data.size();
                
                buildInfo(fmt.getBitsPerSample(), fmt.getNumChannels(), fmt.getSampleRate(), description.str(), fmt.getAudioFormat());
+               
+                 {
+                    std::cout << "data length:" << data.size() << std::endl;
+                 }
             }
         
         Format WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,

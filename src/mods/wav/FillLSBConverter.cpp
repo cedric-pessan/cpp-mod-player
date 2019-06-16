@@ -1,31 +1,30 @@
 
-#include "mods/wav/ShiftLeftConverter.hpp"
+#include "mods/wav/FillLSBConverter.hpp"
 
 namespace mods
 {
    namespace wav
      {
         template<typename T>
-          ShiftLeftConverter<T>::ShiftLeftConverter(WavConverter::ptr src, u32 shiftBy)
+          FillLSBConverter<T>::FillLSBConverter(WavConverter::ptr src, u32 bitsToFill)
             : _src(std::move(src)),
-          _shiftLeft(shiftBy),
-          _shiftRight((sizeof(T)*8) - shiftBy),
-          _maskRight((1u << shiftBy) -1)
+          _shift(((sizeof(T) * 8) - bitsToFill)-1),
+          _mask((1u << bitsToFill) -1)
               {
-                 if(shiftBy >= sizeof(T)*8)
+                 if(bitsToFill >= sizeof(T)*8)
                    {
-                      std::cout << "TODO: invalid shift in ShiftLeftConverter" << std::endl;
+                      std::cout << "TODO: invalid number of bits to fill in FillLSBConverter" << std::endl;
                    }
               }
         
         template<typename T>
-          bool ShiftLeftConverter<T>::isFinished() const
+          bool FillLSBConverter<T>::isFinished() const
           {
              return _src->isFinished();
           }
         
         template<typename T>
-          void ShiftLeftConverter<T>::read(mods::utils::RWBuffer<u8>* buf, int len)
+          void FillLSBConverter<T>::read(mods::utils::RWBuffer<u8>* buf, int len)
             {
                if((len % sizeof(T)) != 0)
                  {
@@ -37,13 +36,16 @@ namespace mods
                int nbElems = len / sizeof(T);
                auto bufView = buf->slice<T>(0, nbElems);
                
+               std::cout << std::hex;
                for(T& v : bufView)
                  {
-                    v <<= _shiftLeft;
-                    v |= ((v >> _shiftRight) & _maskRight);
+                    v &= ~_mask;
+                    v |= ((v >> _shift) & _mask);
                  }
+               std::cout << std::dec;
             }
         
-        template class ShiftLeftConverter<s32>;
+        template class FillLSBConverter<s16>;
+        template class FillLSBConverter<s32>;
      } // namespace wav
 } // namespace mods
