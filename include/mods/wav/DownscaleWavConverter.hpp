@@ -27,7 +27,7 @@ namespace mods
              mods::utils::RWBuffer<u8> allocateNewTempBuffer(size_t len);
              void ensureTempBufferSize(size_t len);
              
-             constexpr int shiftRight()
+             constexpr u32 shiftRight()
                {
                   return (sizeof(TIn) - sizeof(TOut))*8;
                }

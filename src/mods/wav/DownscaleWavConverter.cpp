@@ -43,7 +43,7 @@ namespace mods
                for(int i = 0; i<nbElems; ++i)
                {
                   TIn value = inView[i];
-                  outView[i] = value >> shiftRight();
+                  outView[i] = static_cast<u32>(value) >> shiftRight();
                }
             }
         

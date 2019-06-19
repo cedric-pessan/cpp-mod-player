@@ -1,8 +1,8 @@
 
 #include "mods/wav/Format.hpp"
-#include "mods/wav/WavReader.hpp"
 #include "mods/utils/FileUtils.hpp"
 #include "mods/utils/optional.hpp"
+#include "mods/wav/WavReader.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -176,10 +176,6 @@ namespace mods
                _length = data.size();
                
                buildInfo(fmt.getBitsPerSample(), fmt.getNumChannels(), fmt.getSampleRate(), description.str(), fmt.getAudioFormat());
-               
-                 {
-                    std::cout << "data length:" << data.size() << std::endl;
-                 }
             }
         
         Format WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,

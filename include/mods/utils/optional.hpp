@@ -48,23 +48,24 @@ namespace mods
              return _value.value; // NOLINT(cppcoreguidelines-pro-type-union-access)
           }
         
-        optional(optional&& o)
-          : _hasValue(o._hasValue),
-          _value()
+        optional(optional&& o) noexcept
+          : _value()
             {
-               if(_hasValue)
+               if(o._hasValue)
                  {
-                    _value.value = std::move(o._value.value);
+                    *this = std::move(o._value.value); // NOLINT(cppcoreguidelines-pro-type-union-access)
+                    o._hasValue = false;
                  }
             }
         
-        optional& operator=(optional&& o)
+        optional& operator=(optional&& o) noexcept
           {
              cleanValue();
-             _hasValue = o._hasValue;
-             if(_hasValue)
+             _hasValue = false;
+             if(o._hasValue)
                {
-                  _value.value = std::move(o._value.value);
+                  *this = std::move(o._value.value); // NOLINT(cppcoreguidelines-pro-type-union-access)
+                  o._hasValue = false;
                }
              return *this;
           }

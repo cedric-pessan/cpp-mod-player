@@ -40,23 +40,24 @@ namespace mods
                
                for(int i=0; i<nbElems; ++i)
                  {
-                    T outValue = 0;
+                    u32 v = 0;
                     u8 inValue = 0;
                     
                     for(size_t j=0; j<_packSize; ++j)
                       {
                          inValue = inView[i*_packSize + j];
-                         outValue |= ((u32)inValue << (8 * j));
+                         v |= (static_cast<u32>(inValue) << (8 * j));
                       }
                     
-                    if((inValue & 0x80) != 0)
+                    if((inValue & 0x80u) != 0)
                       {
                          for(size_t j=_packSize; j<sizeof(T); ++j)
                            {
-                              outValue |= (0xFF << (8 * j));
+                              v |= (0xFFu << (8u * j));
                            }
                       }
-                    outView[i] = outValue << (sizeof(T) - _packSize)*8;
+                    T outValue = v << (((sizeof(T) - _packSize)*8) & 31u);
+                    outView[i] = outValue;
                  }
             }
         

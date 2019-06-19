@@ -39,8 +39,10 @@ namespace mods
                std::cout << std::hex;
                for(T& v : bufView)
                  {
-                    v &= ~_mask;
-                    v |= ((v >> _shift) & _mask);
+                    u32 tmp = v;
+                    tmp &= ~_mask;
+                    tmp |= ((tmp >> _shift) & _mask);
+                    v = tmp;
                  }
                std::cout << std::dec;
             }

@@ -43,33 +43,38 @@ namespace mods
         s16 ALawConverter::aLawTransform(s8 value) const
           {
              u8 v = static_cast<u8>(value);
-             return _lookupTable[v];
+             return _lookupTable.at(v);
           }
         
         void ALawConverter::fillLookupTable()
           {
-             for(int value=0; value<std::numeric_limits<u8>::max(); ++value)
+             for(u32 value=0; value<std::numeric_limits<u8>::max(); ++value)
                {
-                  int v = value ^ 0x55; // invert even bits
+                  u32 v = value ^ 0x55u; // invert even bits
                   int exponent = (v >> MANTISSA_SIZE) & EXPONENT_MASK;
-                  int mantissa = v & MANTISSA_MASK;
-                  bool negative = (v & 0x80) == 0;
+                  u32 mantissa = v & MANTISSA_MASK;
+                  bool negative = (v & 0x80u) == 0;
                   
-                  s16 dest = mantissa << 1;
-                  dest |= 1;
+                  u16 dest = mantissa << 1u;
+                  dest |= 1u;
                   if(exponent > 0)
                     {
-                       dest |= (1 << (MANTISSA_SIZE+1));
+                       dest |= (1u << (MANTISSA_SIZE+1));
                        for(int i=0; i<exponent-1; ++i)
                          {
-                            dest <<= 1;
-                            dest |= 1;
+                            dest <<= 1u;
+                            dest |= 1u;
                          }
                     }
-                  dest <<= 3;
-                  dest |= (dest >> 12) & 0x7;
-                  if(negative) dest = -dest;
-                  _lookupTable[value] = dest;
+                  dest <<= 3u;
+                  dest |= static_cast<u16>(dest >> 12u) & 0x7u;
+                  
+                  s16 signedDest = dest;
+                  if(negative)
+                    {
+                       signedDest = -signedDest;
+                    }
+                  _lookupTable.at(value) = signedDest;
                }
           }
      } // namespace wav

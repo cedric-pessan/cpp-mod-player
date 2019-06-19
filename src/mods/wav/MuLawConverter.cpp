@@ -43,25 +43,29 @@ namespace mods
         s16 MuLawConverter::muLawTransform(s8 value) const
           {
              u8 v = static_cast<u8>(value);
-             return _lookupTable[v];
+             return _lookupTable.at(v);
           }
         
         void MuLawConverter::fillLookupTable()
           {
-             for(int value=0; value<std::numeric_limits<u8>::max(); ++value)
+             for(u32 value=0; value<std::numeric_limits<u8>::max(); ++value)
                {
-                  int v = value ^ 0xFF; // invert all bits
-                  int exponent = (v >> MANTISSA_SIZE) & EXPONENT_MASK;
-                  int mantissa = v & MANTISSA_MASK;
-                  bool negative = (v & 0x80) == 0;
+                  u32 v = value ^ 0xFFu; // invert all bits
+                  u32 exponent = (v >> MANTISSA_SIZE) & EXPONENT_MASK;
+                  u32 mantissa = v & MANTISSA_MASK;
+                  bool negative = (v & 0x80u) == 0;
                   
-                  s16 dest = mantissa << 1;
-                  dest |= 0b100001;
+                  u16 dest = mantissa << 1u;
+                  dest |= 0b100001u;
                   dest <<= exponent;
                   dest -= 33;
-                  dest <<= 2;
-                  if(negative) dest = -dest;
-                  _lookupTable[value] = dest;
+                  dest <<= 2u;
+                  s16 signedDest = dest;
+                  if(negative)
+                    {
+                       signedDest = -signedDest;
+                    }
+                  _lookupTable.at(value) = signedDest;
                }
           }
      } // namespace wav

@@ -1,8 +1,8 @@
 #ifndef MODS_WAV_FORMAT_HPP
 #define MODS_WAV_FORMAT_HPP
 
-#include "mods/utils/optional.hpp"
 #include "mods/utils/RBuffer.hpp"
+#include "mods/utils/optional.hpp"
 #include "mods/utils/types.hpp"
 #include "mods/wav/WavTypes.hpp"
 

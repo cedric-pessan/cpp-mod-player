@@ -24,19 +24,19 @@ namespace mods
              
              static constexpr u8 getZero()
                {
-                  return 0x80 | 0x55;
+                  return 0x80u | 0x55u;
                }
              
            private:
-             static constexpr int MANTISSA_SIZE = 4;
-             static constexpr int MANTISSA_MASK = 0xF;
-             static constexpr int EXPONENT_MASK = 0x7;
+             static constexpr u32 MANTISSA_SIZE = 4;
+             static constexpr u32 MANTISSA_MASK = 0xF;
+             static constexpr u32 EXPONENT_MASK = 0x7;
              
              void fillLookupTable();
              s16 aLawTransform(s8 value) const;
              
              WavConverter::ptr _src;
-             std::array<s16, 256> _lookupTable;
+             std::array<s16, 256> _lookupTable {};
           };
      } // namespace wav
 } // namespace mods
