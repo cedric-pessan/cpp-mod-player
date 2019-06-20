@@ -213,11 +213,10 @@ namespace mods
                        auto& ext = *extensibleHeader;
                        format = ext->getAudioFormat();
                        
-                       if(!((fmtHeader->getNumChannels() == 1 && ext->getChannelMask() == 1) || (fmtHeader->getNumChannels() == 2 && ext->getChannelMask() == 3)))
+                       if(!((fmtHeader->getNumChannels() == 1 && ext->getChannelMask() == 1) || (fmtHeader->getNumChannels() == 2 && ext->getChannelMask() == 3) || ext->getChannelMask() == 0))
                          {
                             checkInit(false, "Channel mask not supported yet");
                          }
-                       checkInit(ext->getValidBitsPerSample() == ext->extendedFmt.fmt.getBitsPerSample(), "Ignoring bits in sample is not supported yet");
                     }
                }
              
