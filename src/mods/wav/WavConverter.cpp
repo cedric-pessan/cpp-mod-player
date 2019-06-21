@@ -233,7 +233,11 @@ namespace mods
                     }
                   else
                     {
-                       std::cout << "WavConverter: unsupported resample for 32 bits per sample upscale" << std::endl;
+                       upscaledBitsPerSample = -1;
+                       for(int i = 0; i < nbChannels; ++i)
+                         {
+                            upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s32>>(std::move(unpackedSampleChannels[i])));
+                         }
                     }
                   break;
                   
