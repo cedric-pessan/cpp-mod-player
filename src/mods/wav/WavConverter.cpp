@@ -59,6 +59,7 @@ namespace mods
                 case 12:
                 case 16:
                 case 24:
+                case 32:
                   if(codec != WavAudioFormat::PCM)
                     {
                        std::cout << "WavConverter: codec is not pcm and bits per sample is not 8" << std::endl;
@@ -82,6 +83,10 @@ namespace mods
                   
                 case 24:
                   buildDemuxStage<24>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
+                  break;
+                  
+                case 32:
+                  buildDemuxStage<32>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
                   break;
                   
                 default:
@@ -111,6 +116,13 @@ namespace mods
                   for(int i = 0; i < nbChannels; ++i)
                     {
                        unpackedContainerChannels.push_back(std::make_unique<UnpackToTypeConverter<s32>>(std::move(channels[i]), 3));
+                    }
+                  break;
+                  
+                case 32:
+                  for(int i = 0; i < nbChannels; ++i)
+                    {
+                       unpackedContainerChannels.push_back(std::make_unique<DummyWavConverter>(std::move(channels[i])));
                     }
                   break;
                   

@@ -73,5 +73,10 @@ namespace mods
         
         template class ReaderWavConverter<0,2,24>;
         template class ReaderWavConverter<1,2,24>;
+        
+        template class ReaderWavConverter<0,1,32>;
+        
+        template class ReaderWavConverter<0,2,32>;
+        template class ReaderWavConverter<1,2,32>;
      } // namespace wav
 } // namespace mods
