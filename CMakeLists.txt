@@ -45,7 +45,6 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/ALawConverter.cpp
                          src/mods/wav/ChannelCopyWavConverter.cpp
                          src/mods/wav/DownscaleWavConverter.cpp
-                         src/mods/wav/DummyWavConverter.cpp
                          src/mods/wav/FillLSBConverter.cpp
                          src/mods/wav/Format.cpp
                          src/mods/wav/FromDoubleConverter.cpp

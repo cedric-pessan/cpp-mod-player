@@ -2,7 +2,6 @@
 #include "mods/wav/ALawConverter.hpp"
 #include "mods/wav/ChannelCopyWavConverter.hpp"
 #include "mods/wav/DownscaleWavConverter.hpp"
-#include "mods/wav/DummyWavConverter.hpp"
 #include "mods/wav/FillLSBConverter.hpp"
 #include "mods/wav/FromDoubleConverter.hpp"
 #include "mods/wav/MuLawConverter.hpp"
@@ -106,14 +105,14 @@ namespace mods
                 case 8:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       unpackedContainerChannels.push_back(std::make_unique<DummyWavConverter>(std::move(channels[i])));
+                       unpackedContainerChannels.push_back(std::move(channels[i]));
                     }
                   break;
                   
                 case 16:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       unpackedContainerChannels.push_back(std::make_unique<DummyWavConverter>(std::move(channels[i])));
+                       unpackedContainerChannels.push_back(std::move(channels[i]));
                     }
                   break;
                   
@@ -128,7 +127,7 @@ namespace mods
                 case 32:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       unpackedContainerChannels.push_back(std::make_unique<DummyWavConverter>(std::move(channels[i])));
+                       unpackedContainerChannels.push_back(std::move(channels[i]));
                     }
                   break;
                   
@@ -142,7 +141,7 @@ namespace mods
                {
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       unpackedSampleChannels.push_back(std::make_unique<DummyWavConverter>(std::move(unpackedContainerChannels[i])));
+                       unpackedSampleChannels.push_back(std::move(unpackedContainerChannels[i]));
                     }
                }
              else
@@ -226,7 +225,7 @@ namespace mods
                     {
                        for(int i = 0; i < nbChannels; ++i)
                          {
-                            upscaledChannels.push_back(std::make_unique<DummyWavConverter>(std::move(unpackedSampleChannels[i])));
+                            upscaledChannels.push_back(std::move(unpackedSampleChannels[i]));
                          }
                     }
                   else
@@ -247,7 +246,7 @@ namespace mods
                           case WavAudioFormat::PCM:
                             for(int i = 0; i < nbChannels; ++i)
                               {
-                                 upscaledChannels.push_back(std::make_unique<DummyWavConverter>(std::move(unpackedSampleChannels[i])));
+                                 upscaledChannels.push_back(std::move(unpackedSampleChannels[i]));
                               }
                             break;
                           default:
@@ -310,7 +309,7 @@ namespace mods
                 case 44100:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       resampledChannels.push_back(std::make_unique<DummyWavConverter>(std::move(upscaledChannels[i])));
+                       resampledChannels.push_back(std::move(upscaledChannels[i]));
                     }
                   break;
                   
@@ -331,9 +330,9 @@ namespace mods
                     }
                   break;
                   
-                case 2:
-                  mixedLeft = std::make_unique<DummyWavConverter>(std::move(resampledChannels[0]));
-                  mixedRight = std::make_unique<DummyWavConverter>(std::move(resampledChannels[1]));
+                case 2:                  
+                  mixedLeft = std::move(resampledChannels[0]);
+                  mixedRight = std::move(resampledChannels[1]);
                   break;
                   
                 default:
@@ -346,8 +345,8 @@ namespace mods
              switch(resampledBitsPerSample)
                {
                 case 16:
-                  downScaledLeft = std::make_unique<DummyWavConverter>(std::move(mixedLeft));
-                  downScaledRight = std::make_unique<DummyWavConverter>(std::move(mixedRight));
+                  downScaledLeft = std::move(mixedLeft);
+                  downScaledRight = std::move(mixedRight);
                   break;
                   
                 case 32:
