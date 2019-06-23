@@ -8,6 +8,7 @@ namespace mods
         const std::string& toString(WavAudioFormat fmt)         
           {
              static const std::string PCM = "PCM";
+             static const std::string IEEE_FLOAT = "IEEE FLOAT";
              static const std::string A_LAW = "A-LAW";
              static const std::string MU_LAW = "MU_LAW";
              static const std::string EXTENSIBLE = "EXTENSIBLE";
@@ -15,6 +16,8 @@ namespace mods
                {
                 case WavAudioFormat::PCM:
                   return PCM;
+                case WavAudioFormat::IEEE_FLOAT:
+                  return IEEE_FLOAT;
                 case WavAudioFormat::A_LAW:
                   return A_LAW;
                 case WavAudioFormat::MU_LAW:

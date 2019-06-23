@@ -10,6 +10,7 @@ namespace mods
         enum struct WavAudioFormat : u16
           {
              PCM = 0x0001,
+               IEEE_FLOAT = 0x0003,
                A_LAW = 0x0006,
                MU_LAW = 0x007,
                EXTENSIBLE = 0xFFFE

@@ -59,10 +59,16 @@ namespace mods
                 case 12:
                 case 16:
                 case 24:
-                case 32:
                   if(codec != WavAudioFormat::PCM)
                     {
                        std::cout << "WavConverter: codec is not pcm and bits per sample is not 8" << std::endl;
+                    }
+                  break;
+                  
+                case 32:
+                  if(codec != WavAudioFormat::PCM && codec != WavAudioFormat::IEEE_FLOAT)
+                    {
+                       std::cout << "WavConverter: 32 bits should be used with pcm or ieee float codec" << std::endl;
                     }
                   break;
                   
@@ -170,49 +176,47 @@ namespace mods
                   if(isResamplableByPositiveIntegerFactor(frequency)) 
                     {
                        upscaledBitsPerSample = 16;
-                       if(codec == WavAudioFormat::A_LAW) 
+                       switch(codec)
                          {
-                            std::cout << "WavConverter: unsupported A-law conversion to 16 bits" << std::endl;
-                         }
-                       else if(codec == WavAudioFormat::MU_LAW)
-                         {
-                            std::cout << "WavConverter: unsupported MU-law conversion to 16 bits" << std::endl;
-                         }
-                       else
-                         {
+                          case WavAudioFormat::PCM:
                             for(int i = 0; i < nbChannels; ++i)
                               {
                                  auto signedChannel = std::make_unique<UnsignedToSignedWavConverter<u8>>(std::move(unpackedSampleChannels[i]));
                                  upscaledChannels.push_back(std::make_unique<UpscaleWavConverter<s16, s8>>(std::move(signedChannel)));
                               }
+                            break;
+                          default:
+                            std::cout << "WavConverter: unsuported codec in upscale stage for 8 bits sample (integer factor resampling case)" << std::endl;
                          }
                     }
                   else
                     {
                        upscaledBitsPerSample = -1;
-                       if(codec == WavAudioFormat::A_LAW)
+                       switch(codec)
                          {
+                          case WavAudioFormat::A_LAW:
                             for(int i = 0; i < nbChannels; ++i)
                               {
                                  auto aLawChannel = std::make_unique<ALawConverter>(std::move(unpackedSampleChannels[i]));
                                  upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(aLawChannel)));
                               }
-                         }
-                       else if(codec == WavAudioFormat::MU_LAW)
-                         {
+                            break;
+                          case WavAudioFormat::MU_LAW:
                             for(int i = 0; i < nbChannels; ++i)
                               {
                                  auto muLawChannel = std::make_unique<MuLawConverter>(std::move(unpackedSampleChannels[i]));
                                  upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(muLawChannel)));
                               }
-                         }
-                       else
-                         {
+                            break;
+                          case WavAudioFormat::PCM:
                             for(int i = 0; i < nbChannels; ++i)
                               {
                                  auto signedChannel = std::make_unique<UnsignedToSignedWavConverter<u8>>(std::move(unpackedSampleChannels[i]));
                                  upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s8>>(std::move(signedChannel)));
                               }
+                            break;
+                          default:
+                            std::cout << "WavConverter: unsuported codec in upscale stage for 8 bits sample" << std::endl;
                          }
                     }
                   break;
@@ -238,17 +242,38 @@ namespace mods
                 case 32:
                   if(isResamplableByPositiveIntegerFactor(frequency))
                     {
-                       for(int i = 0; i < nbChannels; ++i)
+                       switch(codec)
                          {
-                            upscaledChannels.push_back(std::make_unique<DummyWavConverter>(std::move(unpackedSampleChannels[i])));
+                          case WavAudioFormat::PCM:
+                            for(int i = 0; i < nbChannels; ++i)
+                              {
+                                 upscaledChannels.push_back(std::make_unique<DummyWavConverter>(std::move(unpackedSampleChannels[i])));
+                              }
+                            break;
+                          default:
+                            std::cout << "WavConverter: unsuported codec in upscale stage for 32 bits sample (integer factor resampling)" << std::endl;
                          }
                     }
                   else
                     {
-                       upscaledBitsPerSample = -1;
-                       for(int i = 0; i < nbChannels; ++i)
+                       switch(codec)
                          {
-                            upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s32>>(std::move(unpackedSampleChannels[i])));
+                          case WavAudioFormat::PCM:
+                            upscaledBitsPerSample = -1;
+                            for(int i = 0; i < nbChannels; ++i)
+                              {
+                                 upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s32>>(std::move(unpackedSampleChannels[i])));
+                              }
+                            break;
+                          case WavAudioFormat::IEEE_FLOAT:
+                            upscaledBitsPerSample = -1;
+                            for(int i = 0; i < nbChannels; ++i)
+                              {
+                                 upscaledChannels.push_back(std::make_unique<ToDoubleConverter<float>>(std::move(unpackedSampleChannels[i])));
+                              }
+                            break;
+                          default:
+                            std::cout << "WavConverter: unsuported codec in upscale stage for 32 bits sample" << std::endl;
                          }
                     }
                   break;

@@ -41,21 +41,35 @@ namespace mods
                
                for(int i = nbElems-1; i>=0; --i)
                  {
-                    double value = inView[i];
-                    if(value >= 0)
-                      {
-                         value /= static_cast<double>(std::numeric_limits<T>::max());
-                      }
-                    else
-                      {
-                         value /= -static_cast<double>(std::numeric_limits<T>::min());
-                      }
+                    double value = convert(inView[i]);
                     outView[i] = value;
                  }
+            }
+        
+        template<>
+          double ToDoubleConverter<float>::convert(float in) 
+            {
+               return in;
+            }
+        
+        template<typename T>
+          double ToDoubleConverter<T>::convert(T in)
+            {
+               double value = in;
+               if(value >= 0)
+                 {
+                    value /= static_cast<double>(std::numeric_limits<T>::max());
+                 }
+               else
+                 {
+                    value /= -static_cast<double>(std::numeric_limits<T>::min());
+                 }
+               return value;
             }
         
         template class ToDoubleConverter<s8>;
         template class ToDoubleConverter<s16>;
         template class ToDoubleConverter<s32>;
+        template class ToDoubleConverter<float>;
      } // namespace wav
 } // namespace mods
