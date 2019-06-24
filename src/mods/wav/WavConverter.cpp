@@ -71,6 +71,13 @@ namespace mods
                     }
                   break;
                   
+                case 64:
+                  if(codec != WavAudioFormat::IEEE_FLOAT)
+                    {
+                       std::cout << "WavConverter: 64 bits should be used with pcm or ieee float codec" << std::endl;
+                    }
+                  break;
+                  
                 default:
                   std::cout << "WavConverter: unknown default value for " << bitsPerSample << " bits per sample" << std::endl;
                }
@@ -92,6 +99,10 @@ namespace mods
                   
                 case 32:
                   buildDemuxStage<32>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
+                  break;
+                  
+                case 64:
+                  buildDemuxStage<64>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
                   break;
                   
                 default:
@@ -125,6 +136,13 @@ namespace mods
                   break;
                   
                 case 32:
+                  for(int i = 0; i < nbChannels; ++i)
+                    {
+                       unpackedContainerChannels.push_back(std::move(channels[i]));
+                    }
+                  break;
+                  
+                case 64:
                   for(int i = 0; i < nbChannels; ++i)
                     {
                        unpackedContainerChannels.push_back(std::move(channels[i]));
@@ -276,6 +294,20 @@ namespace mods
                          }
                     }
                   break;
+                  
+                case 64:
+                  if(codec != WavAudioFormat::IEEE_FLOAT)
+                    {
+                       std::cout << "WavConverter: unsuported codec in upscale stage for 64 bits sample" << std::endl;
+                    }
+                  else
+                    {
+                       upscaledBitsPerSample = -1;
+                       for(int i = 0; i < nbChannels; ++i)
+                         {
+                            upscaledChannels.push_back(std::move(unpackedSampleChannels[i]));
+                         }
+                    }
                   
                 default:
                   std::cout << "WavConverter: unsupported bits per sample to upscale: " << unpackedBitsPerSample << std::endl;
