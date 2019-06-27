@@ -240,6 +240,12 @@ namespace mods
                   checkInit(extendedFmtHeader.has_value(), "IEEE float codec without extended fmt");
                   break;
                   
+                case WavAudioFormat::GSM:
+                  std::cout << "gsm bits per sample:" << fmtHeader->getBitsPerSample() << std::endl;
+                  std::cout << "gsm sample rate:" << fmtHeader->getSampleRate() << std::endl;
+                  checkInit(extendedFmtHeader.has_value(), "IEEE float codec without extended fmt");
+                  break;
+                  
                 default:
                     {
                        std::stringstream ss;
