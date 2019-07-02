@@ -220,6 +220,8 @@ namespace mods
                     }
                }
              
+             Format decodedFormat(std::move(fmtHeader), std::move(extensibleHeader));
+             
              switch(format) 
                {
                 case WavAudioFormat::PCM:
@@ -241,8 +243,7 @@ namespace mods
                   break;
                   
                 case WavAudioFormat::GSM:
-                  std::cout << "gsm bits per sample:" << fmtHeader->getBitsPerSample() << std::endl;
-                  std::cout << "gsm sample rate:" << fmtHeader->getSampleRate() << std::endl;
+                  checkInit((decodedFormat.getBitsPerContainer() % 260) == 0, "Container length for GSM should be a multiple of 260");
                   checkInit(extendedFmtHeader.has_value(), "IEEE float codec without extended fmt");
                   break;
                   
@@ -254,7 +255,7 @@ namespace mods
                     }
                }
              
-             return Format(std::move(fmtHeader), std::move(extensibleHeader));
+             return decodedFormat;
           }
         
         mods::utils::RBuffer<FactHeader> WavReader::readFact(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,

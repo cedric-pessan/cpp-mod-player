@@ -48,11 +48,13 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/FillLSBConverter.cpp
                          src/mods/wav/Format.cpp
                          src/mods/wav/FromDoubleConverter.cpp
+                         src/mods/wav/GSMDecoderConverter.cpp
                          src/mods/wav/MuLawConverter.cpp
                          src/mods/wav/MultiplexerWavConverter.cpp
                          src/mods/wav/ReaderWavConverter.cpp
                          src/mods/wav/ResampleConverter.cpp
                          src/mods/wav/ResamplePositiveIntegerFactor.cpp
+                         src/mods/wav/ShiftLeftConverter.cpp
                          src/mods/wav/StatCollector.cpp
                          src/mods/wav/ToDoubleConverter.cpp
                          src/mods/wav/UnpackToTypeConverter.cpp

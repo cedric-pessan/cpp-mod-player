@@ -4,11 +4,13 @@
 #include "mods/wav/DownscaleWavConverter.hpp"
 #include "mods/wav/FillLSBConverter.hpp"
 #include "mods/wav/FromDoubleConverter.hpp"
+#include "mods/wav/GSMDecoderConverter.hpp"
 #include "mods/wav/MuLawConverter.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
 #include "mods/wav/ResampleConverter.hpp"
 #include "mods/wav/ResamplePositiveIntegerFactor.hpp"
+#include "mods/wav/ShiftLeftConverter.hpp"
 #include "mods/wav/ToDoubleConverter.hpp"
 #include "mods/wav/UnpackToTypeConverter.hpp"
 #include "mods/wav/UnsignedToSignedWavConverter.hpp"
@@ -40,6 +42,13 @@ namespace mods
              u8 defaultValue = 0;
              switch(bitsPerSample)
                {
+                case 0:
+                  if(codec != WavAudioFormat::GSM)
+                    {
+                       std::cout << "0 bit value is only valid for GSM codec" << std::endl;
+                    }
+                  break;
+                  
                 case 8:
                   if(codec == WavAudioFormat::A_LAW)
                     {
@@ -105,6 +114,10 @@ namespace mods
                   buildDemuxStage<64>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
                   break;
                   
+                case 520:
+                  buildDemuxStage<520>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
+                  break;
+                  
                 default:
                   std::cout << "WavConverter: unsupported " << bitsPerContainer << " bits per container for demux stage" << std::endl;
                }
@@ -146,6 +159,20 @@ namespace mods
                   for(int i = 0; i < nbChannels; ++i)
                     {
                        unpackedContainerChannels.push_back(std::move(channels[i]));
+                    }
+                  break;
+                  
+                case 520:
+                  if(codec != WavAudioFormat::GSM)
+                    {
+                       std::cout << "WavConverter: 520 container should be GSM codec" << std::endl;
+                    }
+                  unpackedBitsPerContainer = bitsPerContainer = 16;
+                  bitsPerSample = 13;
+                  for(int i=0; i < nbChannels; ++i)
+                    {
+                       auto gsm = std::make_unique<GSMDecoderConverter>(std::move(channels[i]));
+                       unpackedContainerChannels.push_back(std::make_unique<ShiftLeftConverter>(std::move(gsm)));
                     }
                   break;
                   
