@@ -12,8 +12,7 @@ namespace mods
         
         bool ShiftLeftConverter::isFinished() const
           {
-             std::cout << "TODO: ShiftLeftConverter::isFinished() const" << std::endl;
-             return false;
+             return _src->isFinished();
           }
         
         void ShiftLeftConverter::read(mods::utils::RWBuffer<u8>* buf, int len)
