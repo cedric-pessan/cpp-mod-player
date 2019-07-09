@@ -66,7 +66,7 @@ namespace mods
                 private:
                   const_iterator(const RBuffer<T>& rbuf, size_type pos)
                     : _pos(pos),
-                    _rbuf(rbuf)
+                    _rbuf(&rbuf)
                       {
                       }
                   friend class RBuffer; // only RBuffer can create these
@@ -74,11 +74,11 @@ namespace mods
                 public:
                   const_iterator(const_iterator&&) noexcept = default;
                   const_iterator(const const_iterator&) = default;
+                  const_iterator& operator=(const_iterator&&) = default;
                   ~const_iterator() = default;
                   
                   const_iterator() = delete;
                   const_iterator& operator=(const const_iterator&) = delete;
-                  const_iterator& operator=(const const_iterator&&) = delete;
                   
                   bool operator==(const const_iterator& obj) const
                     {
@@ -102,7 +102,7 @@ namespace mods
                   
                   const_reference operator*() const
                     {
-                       return _rbuf[_pos];
+                       return (*_rbuf)[_pos];
                     }
                   
                   const_iterator operator++()
@@ -119,7 +119,7 @@ namespace mods
                   
                 private:
                   size_type _pos;
-                  const RBuffer<T>& _rbuf;
+                  const RBuffer<T>* _rbuf;
                };
              
              const_iterator begin() const noexcept

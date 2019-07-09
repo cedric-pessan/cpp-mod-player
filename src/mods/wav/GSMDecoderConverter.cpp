@@ -7,8 +7,9 @@ namespace mods
      {
         GSMDecoderConverter::GSMDecoderConverter(WavConverter::ptr src)
           : _src(std::move(src)),
-          _decodedBuffer(allocateNewBuffer(_decodedVec, GSM_FRAME_SIZE * 2)),
-          _itDecodedBuffer(_decodedBuffer.RBuffer<u8>::end())
+          _decodedBuffer(allocateNewBuffer(_decodedVec, GSM_DECODED_FRAME_SIZE)),
+          _itDecodedBuffer(_decodedBuffer.RBuffer<u8>::end()),
+          _encodedBuffer(allocateNewBuffer(_encodedVec, GSM_ENCODED_PACK_SIZE))
             {
             }
         
@@ -19,8 +20,27 @@ namespace mods
         
         void GSMDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, int len)
           {
-             _src->read(buf, len);
-             std::cout << "TODO: GSMDecoderConverter::read(mods::utils::RWBuffer<u8>*, int)" << std::endl;
+             int count = 0;
+             while(count < len)
+               {
+                  if(_itDecodedBuffer != _decodedBuffer.RBuffer<u8>::end())
+                    {
+                       (*buf)[count++] = *_itDecodedBuffer;
+                       ++_itDecodedBuffer;
+                    }
+                  else
+                    {
+                       if(_src->isFinished())
+                         {
+                            (*buf)[count++] = 0;
+                         }
+                       else
+                         {
+                            decodeGSMFrame();
+                            _itDecodedBuffer = _decodedBuffer.RBuffer<u8>::begin();
+                         }
+                    }
+               }
           }
         
         mods::utils::RWBuffer<u8> GSMDecoderConverter::allocateNewBuffer(std::vector<u8>& backVec, size_t len)
@@ -31,5 +51,23 @@ namespace mods
              auto buffer = std::make_shared<mods::utils::BufferBackend>(ptr, len, std::move(deleter));
              return mods::utils::RWBuffer<u8>(buffer);
           }
+        
+        void GSMDecoderConverter::decodeGSMFrame()
+          {
+             if(_evenFrame)
+               {
+                  _src->read(&_encodedBuffer, GSM_ENCODED_PACK_SIZE);
+                  _bitReader.reset();
+               }
+             
+             uncompressGSMFrame();
+             _evenFrame = !_evenFrame;
+          }
+        
+        void GSMDecoderConverter::uncompressGSMFrame()
+          {
+             std::cout << "GSMDecoderConverter::uncompressGSMFrame()" << std::endl;
+          }
+        
      } // namespace wav
 } // namespace mods

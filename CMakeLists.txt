@@ -63,6 +63,7 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/WavConverter.cpp
                          src/mods/wav/WavReader.cpp
                          src/mods/wav/WavTypes.cpp
+                         src/mods/utils/BitReader.cpp
                          src/mods/utils/BufferBackend.cpp
                          src/mods/utils/FileUtils.cpp
                          ${SRCS_UNIX}
