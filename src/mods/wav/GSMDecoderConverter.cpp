@@ -5,11 +5,14 @@ namespace mods
 {
    namespace wav
      {
+        constexpr std::array<int, 8> GSMDecoderConverter::_LAR_SIZES;
+        
         GSMDecoderConverter::GSMDecoderConverter(WavConverter::ptr src)
           : _src(std::move(src)),
           _decodedBuffer(allocateNewBuffer(_decodedVec, GSM_DECODED_FRAME_SIZE)),
           _itDecodedBuffer(_decodedBuffer.RBuffer<u8>::end()),
-          _encodedBuffer(allocateNewBuffer(_encodedVec, GSM_ENCODED_PACK_SIZE))
+          _encodedBuffer(allocateNewBuffer(_encodedVec, GSM_ENCODED_PACK_SIZE)),
+          _bitReader(_encodedBuffer)
             {
             }
         
@@ -66,7 +69,19 @@ namespace mods
         
         void GSMDecoderConverter::uncompressGSMFrame()
           {
+             readParameters();
+             
              std::cout << "GSMDecoderConverter::uncompressGSMFrame()" << std::endl;
+          }
+        
+        void GSMDecoderConverter::readParameters()
+          {
+             for(int i=0; i<8; ++i)
+               {
+                  _LAR[i] = _bitReader.read(_LAR_SIZES[i]);
+               }
+             
+             std::cout << "GSMDecoderConverter::readParameters()" << std::endl;
           }
         
      } // namespace wav

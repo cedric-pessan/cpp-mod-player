@@ -28,6 +28,7 @@ namespace mods
              
              void decodeGSMFrame();
              void uncompressGSMFrame();
+             void readParameters();
              
              WavConverter::ptr _src;
              
@@ -46,6 +47,12 @@ namespace mods
              
              constexpr static int GSM_ENCODED_FRAME_SIZE = 260;
              constexpr static int GSM_ENCODED_PACK_SIZE = (GSM_ENCODED_FRAME_SIZE * 2) / 8;
+             
+             std::array<int, 8> _LAR;
+             constexpr static std::array<int, 8> _LAR_SIZES
+               {
+                  6, 6, 5, 5, 4, 4, 3, 3
+               };
           };
      } // namespace wav
 } // namespace mods
