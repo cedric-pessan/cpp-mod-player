@@ -81,7 +81,18 @@ namespace mods
                   _LAR[i] = _bitReader.read(_LAR_SIZES[i]);
                }
              
-             std::cout << "GSMDecoderConverter::readParameters()" << std::endl;
+             for(int i=0; i<4; ++i)
+               {
+                  _subframes[i].N = _bitReader.read(LTP_LAG_SIZE);
+                  _subframes[i].b = _bitReader.read(LTP_GAIN_SIZE);
+                  
+                  _subframes[i].M = _bitReader.read(RPE_GRID_POSITION_SIZE);
+                  _subframes[i].Xmax = _bitReader.read(RPE_BLOCK_AMPLITUDE_SIZE);
+                  for(int j=0; j<13; ++j)
+                    {
+                       _subframes[i].x[j] = _bitReader.read(RPE_PULSE_SIZE);
+                    }
+               }
           }
         
      } // namespace wav

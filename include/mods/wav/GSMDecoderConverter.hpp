@@ -53,6 +53,27 @@ namespace mods
                {
                   6, 6, 5, 5, 4, 4, 3, 3
                };
+             
+             struct SubFrame
+               {
+                  // LTP
+                  int N;
+                  int b;
+                  
+                  // RPE
+                  int M;
+                  int Xmax;
+                  std::array<int, 13> x;
+               };
+             
+             std::array<SubFrame, 4> _subframes;
+             
+             constexpr static int LTP_LAG_SIZE = 7;
+             constexpr static int LTP_GAIN_SIZE = 2;
+             
+             constexpr static int RPE_GRID_POSITION_SIZE = 2;
+             constexpr static int RPE_BLOCK_AMPLITUDE_SIZE = 6;
+             constexpr static int RPE_PULSE_SIZE = 3;
           };
      } // namespace wav
 } // namespace mods
