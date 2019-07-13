@@ -34,6 +34,8 @@ namespace mods
                     {
                        value |= 1;
                     }
+                  
+                  ++_position;
                }
              return value;
           }
