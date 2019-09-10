@@ -10,7 +10,6 @@
 #include "mods/wav/ReaderWavConverter.hpp"
 #include "mods/wav/ResampleConverter.hpp"
 #include "mods/wav/ResamplePositiveIntegerFactor.hpp"
-#include "mods/wav/ShiftLeftConverter.hpp"
 #include "mods/wav/ToDoubleConverter.hpp"
 #include "mods/wav/UnpackToTypeConverter.hpp"
 #include "mods/wav/UnsignedToSignedWavConverter.hpp"
@@ -171,8 +170,7 @@ namespace mods
                   bitsPerSample = 13;
                   for(int i=0; i < nbChannels; ++i)
                     {
-                       auto gsm = std::make_unique<GSMDecoderConverter>(std::move(channels[i]));
-                       unpackedContainerChannels.push_back(std::make_unique<ShiftLeftConverter>(std::move(gsm)));
+                       unpackedContainerChannels.push_back(std::make_unique<GSMDecoderConverter>(std::move(channels[i])));
                     }
                   break;
                   

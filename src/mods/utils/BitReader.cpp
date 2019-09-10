@@ -22,17 +22,15 @@ namespace mods
              
              for(int i=0; i<bits; ++i)
                {
-                  value <<= 1;
-                  
                   int bytePos = _position / 8;
                   u8 byte = _buf[bytePos];
                   
                   int bitInByte = _position & 7;
-                  u8 bitMask = 0x80 >> bitInByte;
+                  u8 bitMask = 1 << bitInByte;
                   
                   if(byte & bitMask)
                     {
-                       value |= 1;
+                       value |= (1 << i);
                     }
                   
                   ++_position;
