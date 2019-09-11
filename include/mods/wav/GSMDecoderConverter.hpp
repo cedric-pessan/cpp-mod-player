@@ -1,7 +1,7 @@
 #ifndef MODS_WAV_GSMDECODERCONVERTER_HPP
 #define MODS_WAV_GSMDECODERCONVERTER_HPP
 
-#include "mods/utils/BitReader.hpp"
+#include "mods/wav/GSMBitReader.hpp"
 #include "mods/wav/GSMInt16.hpp"
 #include "mods/wav/WavConverter.hpp"
 
@@ -55,7 +55,7 @@ namespace mods
              mods::utils::RWBuffer<u8> _encodedBuffer;
              
              bool _evenFrame = true;
-             mods::utils::BitReader _bitReader;
+             GSMBitReader _bitReader;
              
              constexpr static int GSM_DECODED_FRAME_SAMPLES = 160;
              constexpr static int GSM_DECODED_FRAME_SIZE = GSM_DECODED_FRAME_SAMPLES * 2;

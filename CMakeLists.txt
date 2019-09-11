@@ -48,6 +48,7 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/FillLSBConverter.cpp
                          src/mods/wav/Format.cpp
                          src/mods/wav/FromDoubleConverter.cpp
+                         src/mods/wav/GSMBitReader.cpp
                          src/mods/wav/GSMDecoderConverter.cpp
                          src/mods/wav/MuLawConverter.cpp
                          src/mods/wav/MultiplexerWavConverter.cpp
@@ -62,7 +63,6 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/WavConverter.cpp
                          src/mods/wav/WavReader.cpp
                          src/mods/wav/WavTypes.cpp
-                         src/mods/utils/BitReader.cpp
                          src/mods/utils/BufferBackend.cpp
                          src/mods/utils/FileUtils.cpp
                          ${SRCS_UNIX}
