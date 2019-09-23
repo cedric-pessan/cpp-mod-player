@@ -1,6 +1,8 @@
 #ifndef MODS_WAV_GSMINT16_HPP
 #define MODS_WAV_GSMINT16_HPP
 
+#include "mods/utils/arithmeticShifter.hpp"
+
 namespace mods
 {
    namespace wav
@@ -15,13 +17,13 @@ namespace mods
              GSMInt16& operator=(GSMInt16&&) = default;
              ~GSMInt16() = default;
              
-             constexpr GSMInt16(int value)
+             constexpr GSMInt16(int value) noexcept // NOLINT(hicpp-explicit-conversions,google-explicit-constructor)
                : _value(value)
                  {
                     signExtend();
                  }
              
-             GSMInt16& operator=(int value)
+             GSMInt16& operator=(int value) noexcept
                {
                   _value = value;
                   signExtend();
@@ -48,19 +50,21 @@ namespace mods
              
              GSMInt16 operator>>(const GSMInt16& shift) const
                {
-                  if(shift < 0) return *this << -shift;
-                  u32 x = static_cast<u32>(_value);
-                  auto n = shift.getValue();
-                  if (_value < 0)
-                    return x >> n | ~(~0U >> n);
-                  else
-                    return x >> n;
+                  if(shift < 0)
+                    {
+                       return *this << -shift;
+                    }
+                  auto n = static_cast<u32>(shift.getValue());
+                  return mods::utils::arithmeticShifter::shiftRight(_value, n);
                }
              GSMInt16 operator<<(const GSMInt16& shift) const
                {
-                  if(shift < 0) return *this >> -shift;
+                  if(shift < 0)
+                    {
+                       return *this >> -shift;
+                    }
                   u32 x = static_cast<u32>(_value);
-                  auto n = shift.getValue();
+                  auto n = static_cast<u32>(shift.getValue());
                   return x << n;
                }
              
@@ -72,28 +76,47 @@ namespace mods
              GSMInt16 operator+(const GSMInt16& v) const
                {
                   auto res = _value + v._value;
-                  if(res > 32767) res = 32767;
-                  else if(res < -32768) res = -32768;
+                  if(res > 32767)
+                    {
+                       res = 32767;
+                    }
+                  else if(res < -32768)
+                    {
+                       res = -32768;
+                    }
                   return res;
                }
              GSMInt16 operator-(const GSMInt16& v) const
                {
                   auto res = _value - v._value;
-                  if(res > 32767) res = 32767;
-                  else if(res < -32768) res = -32768;
+                  if(res > 32767)
+                    {
+                       res = 32767;
+                    }
+                  else if(res < -32768)
+                    {
+                       res = -32768;
+                    }
                   return res;
                }
              
              GSMInt16 mult_round(const GSMInt16& v) const
                {
-                  if(_value == -32768 && v._value == -32768) return 32767;
+                  if(_value == -32768 && v._value == -32768)
+                    {
+                       return 32767;
+                    }
                   s32 res = _value * v._value + 16384;
-                  return res >> 15;
+                  
+                  return mods::utils::arithmeticShifter::shiftRight(res, 15);
                }
              
              GSMInt16 abs() const
                {
-                  if(_value == -32768) return 32767;
+                  if(_value == -32768)
+                    {
+                       return 32767;
+                    }
                   if(_value < 0)
                     {
                        return -_value;

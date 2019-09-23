@@ -16,21 +16,21 @@ namespace mods
              _position = 0;
           }
         
-        int GSMBitReader::read(int bits)
+        int GSMBitReader::read(size_t bits)
           {
-             int value = 0;
+             u32 value = 0;
              
-             for(int i=0; i<bits; ++i)
+             for(size_t i=0; i<bits; ++i)
                {
                   int bytePos = _position / 8;
                   u8 byte = _buf[bytePos];
                   
-                  int bitInByte = _position & 7;
-                  u8 bitMask = 1 << bitInByte;
+                  size_t bitInByte = _position & 7u;
+                  u8 bitMask = 1u << bitInByte;
                   
-                  if(byte & bitMask)
+                  if((byte & bitMask) != 0)
                     {
-                       value |= (1 << i);
+                       value |= (1u << i);
                     }
                   
                   ++_position;

@@ -12,7 +12,7 @@ namespace mods
         class GSMDecoderConverter : public WavConverter
           {
            public:
-             GSMDecoderConverter(WavConverter::ptr src);
+             explicit GSMDecoderConverter(WavConverter::ptr src);
              
              GSMDecoderConverter() = delete;
              GSMDecoderConverter(const GSMDecoderConverter&) = delete;
@@ -25,7 +25,8 @@ namespace mods
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
            private:
-             mods::utils::RWBuffer<u8> allocateNewBuffer(std::vector<u8>& backVec, size_t len);
+             template<typename ARRAY>
+               static mods::utils::RWBuffer<typename ARRAY::value_type> initializeArrayBuffer(const ARRAY& backArray);
              
              void decodeGSMFrame();
              void uncompressGSMFrame();
@@ -47,66 +48,94 @@ namespace mods
              
              WavConverter::ptr _src;
              
-             std::vector<u8> _decodedVec;
-             mods::utils::RWBuffer<u8> _decodedBuffer;
-             mods::utils::RWBuffer<u8>::const_iterator _itDecodedBuffer;
-             
-             std::vector<u8> _encodedVec;
-             mods::utils::RWBuffer<u8> _encodedBuffer;
-             
-             bool _evenFrame = true;
-             GSMBitReader _bitReader;
-             
              constexpr static int GSM_DECODED_FRAME_SAMPLES = 160;
              constexpr static int GSM_DECODED_FRAME_SIZE = GSM_DECODED_FRAME_SAMPLES * 2;
              
              constexpr static int GSM_ENCODED_FRAME_SIZE = 260;
              constexpr static int GSM_ENCODED_PACK_SIZE = (GSM_ENCODED_FRAME_SIZE * 2) / 8;
              
-             std::array<GSMInt16, 8> _LARc;
+             std::array<u8, GSM_DECODED_FRAME_SIZE> _decodedArray;
+             mods::utils::RWBuffer<u8> _decodedBuffer;
+             mods::utils::RWBuffer<u8>::const_iterator _itDecodedBuffer;
+             
+             std::array<u8, GSM_ENCODED_PACK_SIZE> _encodedArray;
+             mods::utils::RWBuffer<u8> _encodedBuffer;
+             
+             bool _evenFrame = true;
+             GSMBitReader _bitReader;
+             
+             std::array<GSMInt16, 8> _LARc_array;
+             mods::utils::RWBuffer<GSMInt16> _LARc;
              
              using LARppArray = std::array<GSMInt16, 8>;
-             std::array<LARppArray, 2> _LARpp;
+             using LARppBuffer = mods::utils::RWBuffer<GSMInt16>;
+             std::array<LARppArray, 2> _LARppArrays;
+             std::array<LARppBuffer, 2> _LARppBufferArray;
+             mods::utils::RWBuffer<LARppBuffer> _LARpp;
              int _currentLARpp = 0;
-             std::array<GSMInt16, 8> _LARp;
-             std::array<GSMInt16, 8> _rp;
-             std::array<GSMInt16, 9> _v;
-             std::array<GSMInt16, GSM_DECODED_FRAME_SAMPLES> _sr;
-             GSMInt16 _msr;
-             std::array<GSMInt16, GSM_DECODED_FRAME_SAMPLES> _sro;
              
-             constexpr static std::array<int, 8> _LAR_SIZES
+             std::array<GSMInt16, 8> _LARpArray;
+             mods::utils::RWBuffer<GSMInt16> _LARp;
+             
+             std::array<GSMInt16, 8> _rpArray;
+             mods::utils::RWBuffer<GSMInt16> _rp;
+             
+             std::array<GSMInt16, 9> _vArray;
+             mods::utils::RWBuffer<GSMInt16> _v;
+             
+             std::array<GSMInt16, GSM_DECODED_FRAME_SAMPLES> _srArray;
+             mods::utils::RWBuffer<GSMInt16> _sr;
+             
+             GSMInt16 _msr;
+             std::array<GSMInt16, GSM_DECODED_FRAME_SAMPLES> _sroArray;
+             mods::utils::RWBuffer<GSMInt16> _sro;
+             
+             constexpr static std::array<int, 8> _LAR_SIZES_array
                {
                   6, 6, 5, 5, 4, 4, 3, 3
                };
+             static const mods::utils::RBuffer<int> _LAR_SIZES;
              
-             constexpr static std::array<GSMInt16, 8> _FAC
+             constexpr static std::array<GSMInt16, 8> _FAC_array
                {
                   18431, 20479, 22527, 24575, 26623, 28671, 30719, 32767
                };
+             static const mods::utils::RBuffer<GSMInt16> _FAC;
              
-             constexpr static std::array<GSMInt16, 4> _QLB
+             constexpr static std::array<GSMInt16, 4> _QLB_array
                {
                   3277, 11469, 21299, 32767
                };
+             static const mods::utils::RBuffer<GSMInt16> _QLB;
              
-             constexpr static std::array<GSMInt16, 8> _MIC
+             constexpr static std::array<GSMInt16, 8> _MIC_array
                {
                   -32, -32, -16, -16, -8, -8, -4, -4
                };
+             static const mods::utils::RBuffer<GSMInt16> _MIC;
              
-             constexpr static std::array<GSMInt16, 8> _B
+             constexpr static std::array<GSMInt16, 8> _B_array
                {
                   0, 0, 2048, -2560, 94, -1792, -341, -1144
                };
+             static const mods::utils::RBuffer<GSMInt16> _B;
              
-             constexpr static std::array<GSMInt16, 8> _INVA
+             constexpr static std::array<GSMInt16, 8> _INVA_array
                {
                   13107, 13107, 13107, 13107, 19223, 17476, 31454, 29708
                };
+             static const mods::utils::RBuffer<GSMInt16> _INVA;
              
              struct SubFrame
                {
+                private:
+                  std::array<GSMInt16, 13> _xArray;
+                  std::array<GSMInt16, 13> _xpArray;
+                  std::array<GSMInt16, 40> _epArray;
+                  
+                public:
+                  SubFrame();
+                  
                   // LTP
                   GSMInt16 N;
                   GSMInt16 b;
@@ -114,14 +143,15 @@ namespace mods
                   // RPE
                   GSMInt16 M;
                   GSMInt16 Xmax;
-                  std::array<GSMInt16, 13> x;
+                  mods::utils::RWBuffer<GSMInt16> x;
                   
                   // temporaries
-                  std::array<GSMInt16, 13> xp;
-                  std::array<GSMInt16, 40> ep;
+                  mods::utils::RWBuffer<GSMInt16> xp;
+                  mods::utils::RWBuffer<GSMInt16> ep;
                };
              
-             std::array<SubFrame, 4> _subframes;
+             std::array<SubFrame, 4> _subframesArray;
+             mods::utils::RWBuffer<SubFrame> _subframes;
              
              GSMInt16 _nrp = 40;
              

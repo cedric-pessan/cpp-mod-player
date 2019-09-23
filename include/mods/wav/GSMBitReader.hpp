@@ -10,7 +10,7 @@ namespace mods
         class GSMBitReader
           {
            public:
-             GSMBitReader(const mods::utils::RBuffer<u8>& buf);
+             explicit GSMBitReader(const mods::utils::RBuffer<u8>& buf);
              
              GSMBitReader() = delete;
              GSMBitReader(const GSMBitReader&) = delete;
@@ -21,10 +21,10 @@ namespace mods
              
              void reset();
              
-             int read(int bits);
+             int read(size_t bits);
              
            private:
-             int _position = 0;
+             size_t _position = 0;
              const mods::utils::RBuffer<u8>& _buf;
           };
      } // namespace wav

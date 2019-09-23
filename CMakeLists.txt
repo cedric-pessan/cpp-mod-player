@@ -71,5 +71,5 @@ add_executable(modreader src/main.cpp
 
 target_link_libraries(modreader ${SDL_LIBRARY})
 
-set_property(TARGET filter_generator PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-set_property(TARGET modreader PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+#set_property(TARGET filter_generator PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+#set_property(TARGET modreader PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)

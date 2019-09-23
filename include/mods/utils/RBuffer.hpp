@@ -74,7 +74,7 @@ namespace mods
                 public:
                   const_iterator(const_iterator&&) noexcept = default;
                   const_iterator(const const_iterator&) = default;
-                  const_iterator& operator=(const_iterator&&) = default;
+                  const_iterator& operator=(const_iterator&&) noexcept = default;
                   ~const_iterator() = default;
                   
                   const_iterator() = delete;
