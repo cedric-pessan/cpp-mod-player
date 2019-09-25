@@ -94,37 +94,37 @@ namespace mods
                {
                   6, 6, 5, 5, 4, 4, 3, 3
                };
-             static const mods::utils::RBuffer<int> _LAR_SIZES;
+             mods::utils::RBuffer<int> _LAR_SIZES;
              
              constexpr static std::array<GSMInt16, 8> _FAC_array
                {
                   18431, 20479, 22527, 24575, 26623, 28671, 30719, 32767
                };
-             static const mods::utils::RBuffer<GSMInt16> _FAC;
+             mods::utils::RBuffer<GSMInt16> _FAC;
              
              constexpr static std::array<GSMInt16, 4> _QLB_array
                {
                   3277, 11469, 21299, 32767
                };
-             static const mods::utils::RBuffer<GSMInt16> _QLB;
+             mods::utils::RBuffer<GSMInt16> _QLB;
              
              constexpr static std::array<GSMInt16, 8> _MIC_array
                {
                   -32, -32, -16, -16, -8, -8, -4, -4
                };
-             static const mods::utils::RBuffer<GSMInt16> _MIC;
+             mods::utils::RBuffer<GSMInt16> _MIC;
              
              constexpr static std::array<GSMInt16, 8> _B_array
                {
                   0, 0, 2048, -2560, 94, -1792, -341, -1144
                };
-             static const mods::utils::RBuffer<GSMInt16> _B;
+             mods::utils::RBuffer<GSMInt16> _B;
              
              constexpr static std::array<GSMInt16, 8> _INVA_array
                {
                   13107, 13107, 13107, 13107, 19223, 17476, 31454, 29708
                };
-             static const mods::utils::RBuffer<GSMInt16> _INVA;
+             mods::utils::RBuffer<GSMInt16> _INVA;
              
              struct SubFrame
                {

@@ -12,13 +12,6 @@ namespace mods
         constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_B_array;
         constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_INVA_array;
         
-        const mods::utils::RBuffer<int> GSMDecoderConverter::_LAR_SIZES = GSMDecoderConverter::initializeArrayBuffer(_LAR_SIZES_array);
-        const mods::utils::RBuffer<GSMInt16> GSMDecoderConverter::_FAC = GSMDecoderConverter::initializeArrayBuffer(_FAC_array);
-        const mods::utils::RBuffer<GSMInt16> GSMDecoderConverter::_QLB = GSMDecoderConverter::initializeArrayBuffer(_QLB_array);
-        const mods::utils::RBuffer<GSMInt16> GSMDecoderConverter::_MIC = GSMDecoderConverter::initializeArrayBuffer(_MIC_array);
-        const mods::utils::RBuffer<GSMInt16> GSMDecoderConverter::_B = GSMDecoderConverter::initializeArrayBuffer(_B_array);
-        const mods::utils::RBuffer<GSMInt16> GSMDecoderConverter::_INVA = GSMDecoderConverter::initializeArrayBuffer(_INVA_array);
-        
         GSMDecoderConverter::GSMDecoderConverter(WavConverter::ptr src)
           : _src(std::move(src)),
           _decodedBuffer(initializeArrayBuffer(_decodedArray)),
@@ -37,6 +30,12 @@ namespace mods
           _v(initializeArrayBuffer(_vArray)),
           _sr(initializeArrayBuffer(_srArray)),
           _sro(initializeArrayBuffer(_sroArray)),
+          _LAR_SIZES(initializeArrayBuffer(_LAR_SIZES_array)),
+          _FAC(initializeArrayBuffer(_FAC_array)),
+          _QLB(initializeArrayBuffer(_QLB_array)),
+          _MIC(initializeArrayBuffer(_MIC_array)),
+          _B(initializeArrayBuffer(_B_array)),
+          _INVA(initializeArrayBuffer(_INVA_array)),
           _subframes(initializeArrayBuffer(_subframesArray))
             {
             }
