@@ -24,7 +24,7 @@ namespace mods
              
              namespace
                {
-                  class FileReaderDeleter : public BufferBackend::Deleter
+                  class FileReaderDeleter : public RBufferBackend::Deleter
                     {
                      public:
                        explicit FileReaderDeleter(std::vector<u8>&& v)
@@ -44,7 +44,7 @@ namespace mods
                     };
                } // namespace
              
-             BufferBackend::sptr readFileToBuffer(const std::string& filename)
+             RBufferBackend::sptr readFileToBuffer(const std::string& filename)
                {
                   std::ifstream file(filename, std::ios::binary | std::ios::ate);
                   std::streamsize size = file.tellg();
@@ -56,9 +56,9 @@ namespace mods
                        u8* ptr = v.data();
                        size_t length = v.size();
                        auto deleter = std::make_unique<FileReaderDeleter>(std::move(v));
-                       return std::make_shared<BufferBackend>(ptr, length, std::move(deleter));
+                       return std::make_shared<RBufferBackend>(ptr, length, std::move(deleter));
                     }
-                  return BufferBackend::sptr();
+                  return RBufferBackend::sptr();
                }
           } // namespace FileUtils
      } // namespace utils

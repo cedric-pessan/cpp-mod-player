@@ -18,8 +18,8 @@ namespace mods
           mods::utils::RWBuffer<u8> ResampleConverter<InFrequency, OutFrequency>::initBuffer()
           {
              u8* ptr = _inputArray.data();
-             auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
-             auto buffer = std::make_shared<mods::utils::BufferBackend>(ptr, _numTaps * sizeof(double), std::move(deleter));
+             auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
+             auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, _numTaps * sizeof(double), std::move(deleter));
              return mods::utils::RWBuffer<u8>(buffer);
           }
         

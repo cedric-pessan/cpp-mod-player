@@ -228,17 +228,17 @@ namespace mods
                   break;
                   
                 case WavAudioFormat::A_LAW:
-                  checkInit(fmtHeader->getBitsPerSample() == 8, "A-Law codec needs 8 bits per sample");
+                  checkInit(decodedFormat.getBitsPerSample() == 8, "A-Law codec needs 8 bits per sample");
                   checkInit(extendedFmtHeader.has_value(), "A-law codec without extended fmt");
                   break;
                   
                 case WavAudioFormat::MU_LAW:
-                  checkInit(fmtHeader->getBitsPerSample() == 8, "MU-Law codec needs 8 bits per sample");
+                  checkInit(decodedFormat.getBitsPerSample() == 8, "MU-Law codec needs 8 bits per sample");
                   checkInit(extendedFmtHeader.has_value(), "MU-law codec without extended fmt");
                   break;
                   
                 case WavAudioFormat::IEEE_FLOAT:
-                  checkInit(fmtHeader->getBitsPerSample() == 32 || fmtHeader->getBitsPerSample() == 64, "IEEE float codec needs 32 or 64 bits per sample");
+                  checkInit(decodedFormat.getBitsPerSample() == 32 || decodedFormat.getBitsPerSample() == 64, "IEEE float codec needs 32 or 64 bits per sample");
                   checkInit(extendedFmtHeader.has_value(), "IEEE float codec without extended fmt");
                   break;
                   
@@ -250,7 +250,7 @@ namespace mods
                 default:
                     {
                        std::stringstream ss;
-                       ss << "Codec not supported: " << fmtHeader->getAudioFormatAsNumber();
+                       ss << "Codec not supported: " << decodedFormat.getAudioFormatAsNumber();
                        checkInit(false, ss.str());
                     }
                }

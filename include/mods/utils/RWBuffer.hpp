@@ -2,6 +2,7 @@
 #define MODS_UTILS_RWBUFFER_HPP
 
 #include "mods/utils/RBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
 
 namespace mods
 {
@@ -13,9 +14,11 @@ namespace mods
            public:
              using size_type = size_t;
              using reference = T&;
+             using backend_type = RWBufferBackend;
              
-             explicit RWBuffer(BufferBackend::sptr backend)
-               : RBuffer<T>(backend)
+             explicit RWBuffer(RWBufferBackend::sptr backend)
+               : RBuffer<T>(backend),
+               _buf(static_cast<T*>(static_cast<void*>(RWBufferBackend::Attorney::getBuffer(*backend))))
                  {
                  }
              
@@ -30,12 +33,12 @@ namespace mods
                const RWBuffer<T2> slice(size_t offset, size_t len)
                  {
                     using TBuf = RWBuffer<T2>;
-                    return this->template buildSlice<TBuf, T2>(offset, len);
+                    return this->template buildSlice<TBuf, T2, T*>(_buf, offset, len);
                  }
              
              reference operator[](size_type pos)
                {
-                  return *(RBuffer<T>::_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                  return *(_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                }
              
              class iterator
@@ -93,13 +96,16 @@ namespace mods
                }
              
            private:
-             RWBuffer(BufferBackend::sptr backend, size_t offset, size_t len)
-               : RBuffer<T>(std::move(backend), offset, len)
+             RWBuffer(RWBufferBackend::sptr backend, size_t offset, size_t len)
+               : RBuffer<T>(backend, offset, len),
+               _buf(static_cast<T*>(static_cast<void*>(RWBufferBackend::Attorney::getBuffer(*backend) + offset))) // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                  {
                  }
              
              template<typename T2>
                friend class RBuffer;
+             
+             T* _buf;
           };
      } // namespace utils
 } // namespace mods

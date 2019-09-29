@@ -84,8 +84,8 @@ namespace mods
    void SoundPlayer::callback(u8* buf, int len)
      {
         std::lock_guard<std::mutex> lock(_playListMutex);
-        auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
-        auto bufferBackend = std::make_shared<mods::utils::BufferBackend>(buf, len, std::move(deleter));
+        auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
+        auto bufferBackend = std::make_shared<mods::utils::RWBufferBackend>(buf, len, std::move(deleter));
         mods::utils::RWBuffer<u8> rwbuf(bufferBackend);
         for(auto& entry : _playList) 
           {

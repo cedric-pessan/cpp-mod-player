@@ -50,8 +50,8 @@ namespace mods
           {
              _tempVec.resize(len);
              u8* ptr = _tempVec.data();
-             auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
-             auto buffer = std::make_shared<mods::utils::BufferBackend>(ptr, len, std::move(deleter));
+             auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
+             auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
              return mods::utils::RWBuffer<u8>(buffer);
           }
         

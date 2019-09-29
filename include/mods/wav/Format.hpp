@@ -25,6 +25,8 @@ namespace mods
              
              WavAudioFormat getAudioFormat() const noexcept;
              
+             u16 getAudioFormatAsNumber() const noexcept;
+             
              u16 getNumChannels() const noexcept;
              
              u32 getSampleRate() const noexcept;

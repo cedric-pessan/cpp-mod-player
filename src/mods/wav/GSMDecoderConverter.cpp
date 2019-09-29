@@ -14,29 +14,31 @@ namespace mods
         
         GSMDecoderConverter::GSMDecoderConverter(WavConverter::ptr src)
           : _src(std::move(src)),
-          _decodedBuffer(initializeArrayBuffer(_decodedArray)),
+          _decodedArray {},
+          _decodedBuffer(initializeArrayRWBuffer(_decodedArray)),
           _itDecodedBuffer(_decodedBuffer.RBuffer<u8>::end()),
-          _encodedBuffer(initializeArrayBuffer(_encodedArray)),
+          _encodedArray {},
+          _encodedBuffer(initializeArrayRWBuffer(_encodedArray)),
           _bitReader(_encodedBuffer),
-          _LARc(initializeArrayBuffer(_LARc_array)),
+          _LARc(initializeArrayRWBuffer(_LARc_array)),
           _LARppBufferArray 
           {
-             initializeArrayBuffer(_LARppArrays[0]),
-               initializeArrayBuffer(_LARppArrays[1])
+             initializeArrayRWBuffer(_LARppArrays[0]),
+               initializeArrayRWBuffer(_LARppArrays[1])
           },
-          _LARpp(initializeArrayBuffer(_LARppBufferArray)),
-          _LARp(initializeArrayBuffer(_LARpArray)),
-          _rp(initializeArrayBuffer(_rpArray)),
-          _v(initializeArrayBuffer(_vArray)),
-          _sr(initializeArrayBuffer(_srArray)),
-          _sro(initializeArrayBuffer(_sroArray)),
-          _LAR_SIZES(initializeArrayBuffer(_LAR_SIZES_array)),
-          _FAC(initializeArrayBuffer(_FAC_array)),
-          _QLB(initializeArrayBuffer(_QLB_array)),
-          _MIC(initializeArrayBuffer(_MIC_array)),
-          _B(initializeArrayBuffer(_B_array)),
-          _INVA(initializeArrayBuffer(_INVA_array)),
-          _subframes(initializeArrayBuffer(_subframesArray))
+          _LARpp(initializeArrayRWBuffer(_LARppBufferArray)),
+          _LARp(initializeArrayRWBuffer(_LARpArray)),
+          _rp(initializeArrayRWBuffer(_rpArray)),
+          _v(initializeArrayRWBuffer(_vArray)),
+          _sr(initializeArrayRWBuffer(_srArray)),
+          _sro(initializeArrayRWBuffer(_sroArray)),
+          _LAR_SIZES(initializeArrayRBuffer(_LAR_SIZES_array)),
+          _FAC(initializeArrayRBuffer(_FAC_array)),
+          _QLB(initializeArrayRBuffer(_QLB_array)),
+          _MIC(initializeArrayRBuffer(_MIC_array)),
+          _B(initializeArrayRBuffer(_B_array)),
+          _INVA(initializeArrayRBuffer(_INVA_array)),
+          _subframes(initializeArrayRWBuffer(_subframesArray))
             {
             }
         
@@ -71,13 +73,23 @@ namespace mods
           }
         
         template<typename ARRAY>
-          mods::utils::RWBuffer<typename ARRAY::value_type> GSMDecoderConverter::initializeArrayBuffer(const ARRAY& backArray)
+          mods::utils::RWBuffer<typename ARRAY::value_type> GSMDecoderConverter::initializeArrayRWBuffer(ARRAY& backArray)
             {
-               const u8* ptr = static_cast<const u8*>(static_cast<const void*>(backArray.data()));
+               auto* ptr = static_cast<u8*>(static_cast<void*>(backArray.data()));
                auto len = backArray.size();
-               auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
-               auto buffer = std::make_shared<mods::utils::BufferBackend>(const_cast<u8*>(ptr), len * sizeof(typename ARRAY::value_type), std::move(deleter));
+               auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
+               auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len * sizeof(typename ARRAY::value_type), std::move(deleter));
                return mods::utils::RWBuffer<u8>(buffer).slice<typename ARRAY::value_type>(0, len);
+            }
+        
+        template<typename ARRAY>
+          mods::utils::RBuffer<typename ARRAY::value_type> GSMDecoderConverter::initializeArrayRBuffer(const ARRAY& backArray)
+            {
+               auto* ptr = static_cast<const u8*>(static_cast<const void*>(backArray.data()));
+               auto len = backArray.size();
+               auto deleter = std::make_unique<mods::utils::RBufferBackend::EmptyDeleter>();
+               auto buffer = std::make_shared<mods::utils::RBufferBackend>(ptr, len * sizeof(typename ARRAY::value_type), std::move(deleter));
+               return mods::utils::RBuffer<u8>(buffer).slice<typename ARRAY::value_type>(0, len);
             }
         
         void GSMDecoderConverter::decodeGSMFrame()
@@ -368,21 +380,30 @@ namespace mods
         GSMInt16& GSMDecoderConverter::RingArray::operator[](const GSMInt16& index)
           {
              int idx = index.getValue() + _origin;
-             if(idx < 0) idx += _ARRAY_SIZE;
-             if(idx >= _ARRAY_SIZE) idx -= _ARRAY_SIZE;
-             return _array[idx];
+             if(idx < 0)
+               {
+                  idx += _ARRAY_SIZE;
+               }
+             if(idx >= _ARRAY_SIZE)
+               {
+                  idx -= _ARRAY_SIZE;
+               }
+             return _array.at(idx);
           }
         
         void GSMDecoderConverter::RingArray::slideOrigin(int offset)
           {
              _origin += offset;
-             if(_origin >= _ARRAY_SIZE) _origin -= _ARRAY_SIZE;
+             if(_origin >= _ARRAY_SIZE)
+               {
+                  _origin -= _ARRAY_SIZE;
+               }
           }
         
         GSMDecoderConverter::SubFrame::SubFrame()
-          : x(GSMDecoderConverter::initializeArrayBuffer(_xArray)),
-          xp(GSMDecoderConverter::initializeArrayBuffer(_xpArray)),
-          ep(GSMDecoderConverter::initializeArrayBuffer(_epArray))
+          : x(GSMDecoderConverter::initializeArrayRWBuffer(_xArray)),
+          xp(GSMDecoderConverter::initializeArrayRWBuffer(_xpArray)),
+          ep(GSMDecoderConverter::initializeArrayRWBuffer(_epArray))
             {
             }
         

@@ -165,9 +165,9 @@ int main(int argc, char** argv)
         return -1;
      }
    
-   auto deleter = std::make_unique<mods::utils::BufferBackend::EmptyDeleter>();
+   auto deleter = std::make_unique<mods::utils::RBufferBackend::EmptyDeleter>();
    auto argvp = static_cast<u8*>(static_cast<void*>(argv));
-   auto argBuffer = std::make_shared<mods::utils::BufferBackend>(argvp, argc * sizeof(char*), std::move(deleter));
+   auto argBuffer = std::make_shared<mods::utils::RBufferBackend>(argvp, argc * sizeof(char*), std::move(deleter));
    const mods::utils::RBuffer<char*> args(argBuffer);
    
    mods::utils::generateFilters(args[1], args[2]);

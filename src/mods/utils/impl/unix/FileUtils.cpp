@@ -1,5 +1,5 @@
 
-#include "mods/utils/BufferBackend.hpp"
+#include "mods/utils/RBufferBackend.hpp"
 #include "mods/utils/impl/unix/FileUtils.h"
 
 #include <fcntl.h>
@@ -16,7 +16,7 @@ namespace mods
           {
              namespace
                {
-                  class UnixMapperDeleter : public BufferBackend::Deleter
+                  class UnixMapperDeleter : public RBufferBackend::Deleter
                     {
                      public:
                        UnixMapperDeleter(int fd, void *ptr, size_t length)
@@ -43,26 +43,26 @@ namespace mods
                     };
                } // namespace
              
-             BufferBackend::sptr mapFileToBuffer(const std::string& filename)
+             RBufferBackend::sptr mapFileToBuffer(const std::string& filename)
                {
                   int fd = modsOpen(filename.c_str(), O_RDONLY);
                   if(fd == -1)
                     {
-                       return BufferBackend::sptr();
+                       return RBufferBackend::sptr();
                     }
                   size_t length = ::lseek(fd, 0, SEEK_END);
                   if(length == static_cast<size_t>(static_cast<off_t>(-1)))
                     {
-                       return BufferBackend::sptr();
+                       return RBufferBackend::sptr();
                     }
                   void* ptr = ::mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
                   if(modsHasMapFailed(ptr) == FILEUTILS_TRUE)
                     {
-                       return BufferBackend::sptr();
+                       return RBufferBackend::sptr();
                     }
                   
                   auto deleter = std::make_unique<UnixMapperDeleter>(fd, ptr, length);
-                  return std::make_shared<BufferBackend>(static_cast<u8*>(ptr), length, std::move(deleter));
+                  return std::make_shared<RBufferBackend>(static_cast<u8*>(ptr), length, std::move(deleter));
                }
           } // namespace FileUtils
      } // namespace utils

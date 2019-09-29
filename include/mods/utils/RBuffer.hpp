@@ -1,7 +1,7 @@
 #ifndef MODS_UTILS_RBUFFER_HPP
 #define MODS_UTILS_RBUFFER_HPP
 
-#include "BufferBackend.hpp"
+#include "RBufferBackend.hpp"
 
 #include <iostream>
 
@@ -15,11 +15,12 @@ namespace mods
            public:
              using size_type = size_t;
              using const_reference = const T&;
+             using backend_type = RBufferBackend;
              
-             explicit RBuffer(BufferBackend::sptr backend)
+             explicit RBuffer(RBufferBackend::sptr backend)
                : _backend(std::move(backend)),
-               _buf(static_cast<T*>(static_cast<void*>(BufferBackend::Attorney::getBuffer(*_backend)))),
-               _len(BufferBackend::Attorney::getLength(*_backend) / sizeof(T))
+               _buf(static_cast<const T*>(static_cast<const void*>(RBufferBackend::Attorney::getBuffer(*_backend)))),
+               _len(RBufferBackend::Attorney::getLength(*_backend) / sizeof(T))
                  {
                  }
              
@@ -31,7 +32,7 @@ namespace mods
              RBuffer& operator=(const RBuffer&) = delete;
              RBuffer& operator=(RBuffer&&) noexcept = default;
              
-             T* operator->() const
+             const T* operator->() const
                {
                   return _buf;
                }
@@ -40,7 +41,7 @@ namespace mods
                const RBuffer<T2> slice(size_t offset, size_t len) const
                {
                   using TBuf = RBuffer<T2>;
-                  return buildSlice<TBuf, T2>(offset, len);
+                  return buildSlice<TBuf, T2, const T*>(_buf, offset, len);
                }
              
              size_type size() const noexcept
@@ -141,12 +142,13 @@ namespace mods
                     }
                }
              
-             BufferBackend::sptr _backend;
+             RBufferBackend::sptr _backend;
+             const T* _buf;
              
            protected:
-             RBuffer(BufferBackend::sptr backend, size_t offset, size_t len)
+             RBuffer(RBufferBackend::sptr backend, size_t offset, size_t len)
                : _backend(std::move(backend)),
-               _buf(static_cast<T*>(static_cast<void*>(BufferBackend::Attorney::getBuffer(*_backend) + offset))), // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+               _buf(static_cast<const T*>(static_cast<const void*>(RBufferBackend::Attorney::getBuffer(*_backend) + offset))), // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                _len(len)
                  {
                  }
@@ -154,15 +156,17 @@ namespace mods
              template<typename T2>
                friend class RBuffer;
              
-             template<typename Buf, typename T2>
-               const Buf buildSlice(size_t offset, size_t len) const
+             template<typename Buf, typename T2, typename InternalBuf>
+               const Buf buildSlice(InternalBuf buf, size_t offset, size_t len) const
                {
-                  size_t currentOffset = static_cast<u8*>(_buf) - static_cast<u8*>(BufferBackend::Attorney::getBuffer(*_backend));
+                  using BackendType = typename Buf::backend_type;
+                  using ValueType = typename BackendType::value_type;
+                  auto backend = std::static_pointer_cast<BackendType>(_backend);
+                  size_t currentOffset = static_cast<ValueType*>(buf) - static_cast<ValueType*>(BackendType::Attorney::getBuffer(*backend));
                   check(offset * sizeof(T) + len * sizeof(T2) <= _len * sizeof(T), "invalid slice limits");
-                  return Buf(_backend, currentOffset + offset * sizeof(T), len);
+                  return Buf(backend, currentOffset + offset * sizeof(T), len);
                }
              
-             T* _buf;
              size_t _len;
           };
      } // namespace utils

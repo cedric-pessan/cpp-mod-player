@@ -11,7 +11,7 @@ namespace mods
           {
              const RBuffer<u8> mapFile(const std::string& filename);
              
-             BufferBackend::sptr readFileToBuffer(const std::string& filename);
+             RBufferBackend::sptr readFileToBuffer(const std::string& filename);
           } // namespace FileUtils
      } // namespace utils
 } // namespace mods

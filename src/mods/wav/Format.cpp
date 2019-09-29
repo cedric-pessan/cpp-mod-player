@@ -23,6 +23,17 @@ namespace mods
              return (*_extensibleHeader)->getAudioFormat();
           }
         
+        u16 Format::getAudioFormatAsNumber() const noexcept
+          {
+             auto fmt = _fmtHeader->getAudioFormat();
+             if(fmt != WavAudioFormat::EXTENSIBLE || !_extensibleHeader.has_value())
+               {
+                  return _fmtHeader->getAudioFormatAsNumber();
+               }
+             
+             return (*_extensibleHeader)->getAudioFormatAsNumber();
+          }
+        
         u16 Format::getNumChannels() const noexcept
           {
              return _fmtHeader->getNumChannels();

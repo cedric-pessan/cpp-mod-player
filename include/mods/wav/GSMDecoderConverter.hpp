@@ -26,7 +26,10 @@ namespace mods
              
            private:
              template<typename ARRAY>
-               static mods::utils::RWBuffer<typename ARRAY::value_type> initializeArrayBuffer(const ARRAY& backArray);
+               static mods::utils::RWBuffer<typename ARRAY::value_type> initializeArrayRWBuffer(ARRAY& backArray);
+             
+             template<typename ARRAY>
+               static mods::utils::RBuffer<typename ARRAY::value_type> initializeArrayRBuffer(const ARRAY& backArray);
              
              void decodeGSMFrame();
              void uncompressGSMFrame();

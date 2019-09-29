@@ -137,6 +137,11 @@ namespace mods
                   return static_cast<WavAudioFormat>(value);
                }
              
+             u16 getAudioFormatAsNumber() const noexcept
+               {
+                  return static_cast<u16>(audioFormat);
+               }
+             
              u16 getValidBitsPerSample() const noexcept
                {
                   return static_cast<u16>(validBitsPerSample);

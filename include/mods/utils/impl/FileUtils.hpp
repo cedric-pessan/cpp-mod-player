@@ -1,7 +1,7 @@
 #ifndef MODS_UTILS_IMPL_FILEUTILS_HPP
 #define MODS_UTILS_IMPL_FILEUTILS_HPP
 
-#include "mods/utils/BufferBackend.hpp"
+#include "mods/utils/RBufferBackend.hpp"
 
 namespace mods
 {
@@ -9,7 +9,7 @@ namespace mods
      {
         namespace FileUtils
           {
-             BufferBackend::sptr mapFileToBuffer(const std::string& filename);
+             RBufferBackend::sptr mapFileToBuffer(const std::string& filename);
           } // namespace FileUtils
      } // namespace utils
 } // namespace mods

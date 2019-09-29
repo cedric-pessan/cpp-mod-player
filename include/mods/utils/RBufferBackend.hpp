@@ -1,5 +1,5 @@
-#ifndef MODS_UTILS_BUFFERBACKEND_HPP
-#define MODS_UTILS_BUFFERBACKEND_HPP
+#ifndef MODS_UTILS_RBUFFERBACKEND_HPP
+#define MODS_UTILS_RBUFFERBACKEND_HPP
 
 #include "types.hpp"
 
@@ -10,12 +10,12 @@ namespace mods
 {
    namespace utils
      {
-        template<typename T> class RBuffer;
-        
-        class BufferBackend
+        class RBufferBackend
           {
            public:
-             using sptr = std::shared_ptr<BufferBackend>;
+             using sptr = std::shared_ptr<RBufferBackend>;
+             using value_type = const u8;
+             
              class Deleter
                {
                 public:
@@ -42,17 +42,17 @@ namespace mods
                   EmptyDeleter& operator=(const EmptyDeleter&&) = delete;
                };
              
-             BufferBackend(u8* buf, size_t length, Deleter::ptr deleter);
-             ~BufferBackend() = default;
+             RBufferBackend(const u8* buf, size_t length, Deleter::ptr deleter);
+             ~RBufferBackend() = default;
              
-             BufferBackend() = delete;
-             BufferBackend(const BufferBackend&) = delete;
-             BufferBackend(const BufferBackend&&) = delete;
-             BufferBackend& operator=(const BufferBackend&) = delete;
-             BufferBackend& operator=(const BufferBackend&&) = delete;
+             RBufferBackend() = delete;
+             RBufferBackend(const RBufferBackend&) = delete;
+             RBufferBackend(const RBufferBackend&&) = delete;
+             RBufferBackend& operator=(const RBufferBackend&) = delete;
+             RBufferBackend& operator=(const RBufferBackend&&) = delete;
              
            private:
-             u8* _buf;
+             const u8* _buf;
              size_t _length;
              Deleter::ptr _deleter;
              
@@ -68,12 +68,12 @@ namespace mods
                   ~Attorney() = delete;
                   
                 private:
-                  static u8* getBuffer(const BufferBackend& buffer)
+                  static const u8* getBuffer(const RBufferBackend& buffer)
                     {
                        return buffer._buf;
                     }
                   
-                  static size_t getLength(const BufferBackend& buffer)
+                  static size_t getLength(const RBufferBackend& buffer)
                     {
                        return buffer._length;
                     }
@@ -85,4 +85,4 @@ namespace mods
      } // namespace utils
 } // namespace mods
 
-#endif // MODS_UTILS_BUFFERBACKEND_HPP
+#endif // MODS_UTILS_RBUFFERBACKEND_HPP

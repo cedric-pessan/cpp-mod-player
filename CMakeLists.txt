@@ -23,9 +23,9 @@ include_directories(${SDL_INCLUDE_DIR}
 configure_file(include/mods/utils/nativeEndian.hpp.in include/mods/utils/nativeEndian.hpp)
 
 add_executable(filter_generator src/mods/utils/Band.cpp
-                                src/mods/utils/BufferBackend.cpp
                                 src/mods/utils/FilterGeneratorTool.cpp
-                                src/mods/utils/FirFilterDesigner.cpp)
+                                src/mods/utils/FirFilterDesigner.cpp
+                                src/mods/utils/RBufferBackend.cpp)
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/mods/utils")
 
@@ -63,8 +63,9 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/WavConverter.cpp
                          src/mods/wav/WavReader.cpp
                          src/mods/wav/WavTypes.cpp
-                         src/mods/utils/BufferBackend.cpp
                          src/mods/utils/FileUtils.cpp
+                         src/mods/utils/RBufferBackend.cpp
+                         src/mods/utils/RWBufferBackend.cpp
                          ${SRCS_UNIX}
                          ${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp
                          ${CMAKE_CURRENT_BINARY_DIR}/src/mods/utils/Filters.cpp)
