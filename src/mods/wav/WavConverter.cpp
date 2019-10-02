@@ -6,6 +6,7 @@
 #include "mods/wav/FromDoubleConverter.hpp"
 #include "mods/wav/GSMDecoderConverter.hpp"
 #include "mods/wav/MuLawConverter.hpp"
+#include "mods/wav/MultiChannelMixer.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
 #include "mods/wav/ResampleConverter.hpp"
@@ -24,7 +25,7 @@ namespace mods
    namespace wav
      {
         // static
-        WavConverter::ptr WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, StatCollector::sptr statCollector, WavAudioFormat codec)
+        WavConverter::ptr WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, StatCollector::sptr statCollector, WavAudioFormat codec, u32 channelMask)
           {
              /* pipeline:
               sampleReader
@@ -377,23 +378,44 @@ namespace mods
              ptr mixedLeft;
              ptr mixedRight;
              
-             switch(nbChannels)
+             if(channelMask == 0)
                {
-                case 1:
+                  switch(nbChannels)
                     {
-                       auto duplicator = std::make_unique<ChannelCopyWavConverter>(std::move(resampledChannels[0]));
-                       mixedRight = duplicator->getCopy();
-                       mixedLeft = std::move(duplicator);
+                     case 1:
+                         {
+                            auto duplicator = std::make_unique<ChannelCopyWavConverter>(std::move(resampledChannels[0]));
+                            mixedRight = duplicator->getCopy();
+                            mixedLeft = std::move(duplicator);
+                         }
+                       break;
+                       
+                     case 2:                  
+                       mixedLeft = std::move(resampledChannels[0]);
+                       mixedRight = std::move(resampledChannels[1]);
+                       break;
+                       
+                     default:
+                       std::cout << "WavConverter: unsupported number of channels for mixing stage: " << nbChannels << std::endl;
                     }
-                  break;
+               }
+             else
+               {
+                  std::vector<WavConverter::ptr> floatChannels;
+                  switch(resampledBitsPerSample)
+                    {
+                       /*for(int i=0; i<nbChannels; ++i)
+                        {
+                        ...
+                        }*/
+                     default:
+                       std::cout << "WavConverter: unsupported bits per sample in surround mixer:" << resampledBitsPerSample << std::endl;
+                    }
+                  resampledBitsPerSample = -1;
                   
-                case 2:                  
-                  mixedLeft = std::move(resampledChannels[0]);
-                  mixedRight = std::move(resampledChannels[1]);
-                  break;
-                  
-                default:
-                  std::cout << "WavConverter: unsupported number of channels for mixing stage: " << nbChannels << std::endl;
+                  auto mixer = std::make_unique<MultiChannelMixer>();
+                  mixedRight = mixer->getRight();
+                  mixedLeft = std::move(mixer);
                }
              
              ptr downScaledLeft;

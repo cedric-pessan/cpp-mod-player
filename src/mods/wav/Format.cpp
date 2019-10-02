@@ -6,9 +6,11 @@ namespace mods
    namespace wav
      {
         Format::Format(mods::utils::RBuffer<FmtHeader>&& fmtHeader,
-                       optional<mods::utils::RBuffer<ExtensibleHeader>>&& extensibleHeader)
+                       optional<mods::utils::RBuffer<ExtensibleHeader>>&& extensibleHeader,
+                       bool useChannelMask)
           : _fmtHeader(std::move(fmtHeader)),
-          _extensibleHeader(std::move(extensibleHeader))
+          _extensibleHeader(std::move(extensibleHeader)),
+          _useChannelMask(useChannelMask)
             {
             }
         
@@ -61,6 +63,16 @@ namespace mods
                   return _fmtHeader->getBitsPerSample();
                }
              return _fmtHeader->getBlockAlign() * 8 / getNumChannels();
+          }
+        
+        u32 Format::getChannelMask() const noexcept
+          {
+             if(_extensibleHeader.has_value())
+               {
+                  auto& extensibleHeader = *_extensibleHeader;
+                  return extensibleHeader->getChannelMask();
+               }
+             return 0;
           }
      } // namespace wav
 } // namespace mods

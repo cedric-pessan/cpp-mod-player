@@ -51,6 +51,7 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/GSMBitReader.cpp
                          src/mods/wav/GSMDecoderConverter.cpp
                          src/mods/wav/MuLawConverter.cpp
+                         src/mods/wav/MultiChannelMixer.cpp
                          src/mods/wav/MultiplexerWavConverter.cpp
                          src/mods/wav/ReaderWavConverter.cpp
                          src/mods/wav/ResampleConverter.cpp

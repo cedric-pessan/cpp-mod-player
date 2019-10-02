@@ -172,7 +172,7 @@ namespace mods
                auto& fmt = *optFmt;
                auto& data = *optData;
                _statCollector = std::make_shared<StatCollector>();
-               _converter = WavConverter::buildConverter(data, fmt.getBitsPerSample(), fmt.getBitsPerContainer(), fmt.getNumChannels(), fmt.getSampleRate(), _statCollector, fmt.getAudioFormat());
+               _converter = WavConverter::buildConverter(data, fmt.getBitsPerSample(), fmt.getBitsPerContainer(), fmt.getNumChannels(), fmt.getSampleRate(), _statCollector, fmt.getAudioFormat(), fmt.getChannelMask());
                _length = data.size();
                
                buildInfo(fmt.getBitsPerSample(), fmt.getNumChannels(), fmt.getSampleRate(), description.str(), fmt.getAudioFormat());
@@ -205,6 +205,7 @@ namespace mods
                   extensibleHeader = buf;
                }
              
+             bool useChannelMask = false;
              auto format = fmtHeader->getAudioFormat();
              if(format == WavAudioFormat::EXTENSIBLE)
                {
@@ -215,12 +216,12 @@ namespace mods
                        
                        if(!((fmtHeader->getNumChannels() == 1 && ext->getChannelMask() == 1) || (fmtHeader->getNumChannels() == 2 && ext->getChannelMask() == 3) || ext->getChannelMask() == 0))
                          {
-                            checkInit(false, "Channel mask not supported yet");
+                            useChannelMask = true;
                          }
                     }
                }
              
-             Format decodedFormat(std::move(fmtHeader), std::move(extensibleHeader));
+             Format decodedFormat(std::move(fmtHeader), std::move(extensibleHeader), useChannelMask);
              
              switch(format) 
                {

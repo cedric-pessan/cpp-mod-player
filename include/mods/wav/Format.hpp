@@ -14,7 +14,8 @@ namespace mods
           {
            public:
              Format(mods::utils::RBuffer<FmtHeader>&& fmtHeader,
-                    optional<mods::utils::RBuffer<ExtensibleHeader>>&& extensibleHeader);
+                    optional<mods::utils::RBuffer<ExtensibleHeader>>&& extensibleHeader,
+                    bool useChannelMask);
              
              Format() = delete;
              Format(const Format&) = delete;
@@ -35,9 +36,12 @@ namespace mods
              
              u16 getBitsPerContainer() const noexcept;
              
+             u32 getChannelMask() const noexcept;
+             
            private:
              mods::utils::RBuffer<FmtHeader> _fmtHeader;
              optional<mods::utils::RBuffer<ExtensibleHeader>> _extensibleHeader;
+             bool _useChannelMask;
           };
      } // namespace wav
 } // namespace mods
