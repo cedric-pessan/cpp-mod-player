@@ -404,10 +404,12 @@ namespace mods
                   std::vector<WavConverter::ptr> floatChannels;
                   switch(resampledBitsPerSample)
                     {
-                       /*for(int i=0; i<nbChannels; ++i)
-                        {
-                        ...
-                        }*/
+                     case 16:
+                       for(int i=0; i<nbChannels; ++i)
+                         {
+                            floatChannels.push_back(std::make_unique<ToDoubleConverter<float>>(std::move(resampledChannels[i])));
+                         }
+                       break;
                      default:
                        std::cout << "WavConverter: unsupported bits per sample in surround mixer:" << resampledBitsPerSample << std::endl;
                     }
@@ -473,6 +475,15 @@ namespace mods
                   case 2:
                     channels->push_back(std::make_unique<ReaderWavConverter<0,2,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
                     channels->push_back(std::make_unique<ReaderWavConverter<1,2,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    break;
+                    
+                  case 6:
+                    channels->push_back(std::make_unique<ReaderWavConverter<0,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<1,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<2,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<3,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<4,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<5,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
                     break;
                     
                   default:

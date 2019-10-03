@@ -64,29 +64,81 @@ namespace mods
         template class ReaderWavConverter<0,2,8>;
         template class ReaderWavConverter<1,2,8>;
         
+        template class ReaderWavConverter<0,6,8>;
+        template class ReaderWavConverter<1,6,8>;
+        template class ReaderWavConverter<2,6,8>;
+        template class ReaderWavConverter<3,6,8>;
+        template class ReaderWavConverter<4,6,8>;
+        template class ReaderWavConverter<5,6,8>;
+        
+        //------------------
+        
         template class ReaderWavConverter<0,1,16>;
         
         template class ReaderWavConverter<0,2,16>;
         template class ReaderWavConverter<1,2,16>;
+        
+        template class ReaderWavConverter<0,6,16>;
+        template class ReaderWavConverter<1,6,16>;
+        template class ReaderWavConverter<2,6,16>;
+        template class ReaderWavConverter<3,6,16>;
+        template class ReaderWavConverter<4,6,16>;
+        template class ReaderWavConverter<5,6,16>;
+        
+        //------------------
         
         template class ReaderWavConverter<0,1,24>;
         
         template class ReaderWavConverter<0,2,24>;
         template class ReaderWavConverter<1,2,24>;
         
+        template class ReaderWavConverter<0,6,24>;
+        template class ReaderWavConverter<1,6,24>;
+        template class ReaderWavConverter<2,6,24>;
+        template class ReaderWavConverter<3,6,24>;
+        template class ReaderWavConverter<4,6,24>;
+        template class ReaderWavConverter<5,6,24>;
+        
+        //------------------
+        
         template class ReaderWavConverter<0,1,32>;
         
         template class ReaderWavConverter<0,2,32>;
         template class ReaderWavConverter<1,2,32>;
+        
+        template class ReaderWavConverter<0,6,32>;
+        template class ReaderWavConverter<1,6,32>;
+        template class ReaderWavConverter<2,6,32>;
+        template class ReaderWavConverter<3,6,32>;
+        template class ReaderWavConverter<4,6,32>;
+        template class ReaderWavConverter<5,6,32>;
+        
+        //------------------
         
         template class ReaderWavConverter<0,1,64>;
         
         template class ReaderWavConverter<0,2,64>;
         template class ReaderWavConverter<1,2,64>;
         
+        template class ReaderWavConverter<0,6,64>;
+        template class ReaderWavConverter<1,6,64>;
+        template class ReaderWavConverter<2,6,64>;
+        template class ReaderWavConverter<3,6,64>;
+        template class ReaderWavConverter<4,6,64>;
+        template class ReaderWavConverter<5,6,64>;
+        
+        //------------------
+        
         template class ReaderWavConverter<0,1,520>;
         
         template class ReaderWavConverter<0,2,520>;
         template class ReaderWavConverter<1,2,520>;
+        
+        template class ReaderWavConverter<0,6,520>;
+        template class ReaderWavConverter<1,6,520>;
+        template class ReaderWavConverter<2,6,520>;
+        template class ReaderWavConverter<3,6,520>;
+        template class ReaderWavConverter<4,6,520>;
+        template class ReaderWavConverter<5,6,520>;
      } // namespace wav
 } // namespace mods
