@@ -10,7 +10,7 @@ namespace mods
         class MultiChannelMixer : public impl::MultiChannelMixerSlave
           {
            public:
-             MultiChannelMixer() = default;
+             MultiChannelMixer();
              
              //MultiChannelMixer() = delete;
              MultiChannelMixer(const MultiChannelMixer&) = delete;
@@ -19,7 +19,10 @@ namespace mods
              MultiChannelMixer& operator=(MultiChannelMixer&&) = delete;
              ~MultiChannelMixer() override = default;
              
-             WavConverter::ptr getRight();
+             WavConverter::ptr getRightChannel();
+             
+           private:
+             WavConverter::ptr _right;
           };
      } // namespace wav
 } // namespace mods

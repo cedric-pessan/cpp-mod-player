@@ -416,7 +416,7 @@ namespace mods
                   resampledBitsPerSample = -1;
                   
                   auto mixer = std::make_unique<MultiChannelMixer>();
-                  mixedRight = mixer->getRight();
+                  mixedRight = mixer->getRightChannel();
                   mixedLeft = std::move(mixer);
                }
              

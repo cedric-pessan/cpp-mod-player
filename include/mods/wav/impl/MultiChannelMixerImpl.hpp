@@ -23,6 +23,9 @@ namespace mods
                   
                   bool isFinished() const override;
                   void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+                  
+                protected:
+                  WavConverter::ptr buildSlave() const;
                };
           } // namespace impl
      } // namespace wav

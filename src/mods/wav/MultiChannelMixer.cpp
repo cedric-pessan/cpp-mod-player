@@ -7,6 +7,11 @@ namespace mods
      {
         namespace impl
           {
+             WavConverter::ptr MultiChannelMixerSlave::buildSlave() const
+               {
+                  return std::make_unique<MultiChannelMixerSlave>();
+               }
+             
              bool MultiChannelMixerSlave::isFinished() const
                {
                   std::cout << "TODO: MultiChannelMixerSlave::isFinished() const" << std::endl;
@@ -19,10 +24,14 @@ namespace mods
                }
           } // namespace impl
         
-        WavConverter::ptr MultiChannelMixer::getRight()
+        MultiChannelMixer::MultiChannelMixer()
+          : _right(buildSlave())
+            {
+            }
+        
+        WavConverter::ptr MultiChannelMixer::getRightChannel()
           {
-             std::cout << "TODO: MultiChannelMixer::getRight()" << std::endl;
-             return nullptr;
+             return std::move(_right);
           }
      } // namespace wav
 } // namespace mods
