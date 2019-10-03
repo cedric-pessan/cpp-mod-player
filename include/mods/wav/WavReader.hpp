@@ -54,6 +54,7 @@ namespace mods
                            const mods::utils::RBuffer<u8>& riffBuffer,
                            size_t offset,
                            std::stringstream& description) const;
+             void readCue() const;
              
              void buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec);
              

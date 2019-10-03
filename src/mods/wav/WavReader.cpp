@@ -83,6 +83,11 @@ namespace mods
                   static const std::string ICMT = "ICMT";
                   return ICMT;
                }
+             const std::string& getCUE()
+               {
+                  static const std::string CUE = "cue ";
+                  return CUE;
+               }
           } // namespace
         
         WavReader::WavReader(const std::string& filename)
@@ -151,6 +156,10 @@ namespace mods
                     else if(chunkHeader->getChunkID() == getAfsp())
                       {
                          readAfsp(chunkHeader, riffBuffer, offset, description);
+                      }
+                    else if(chunkHeader->getChunkID() == getCUE())
+                      {
+                         readCue();
                       }
                     else
                       {
@@ -335,6 +344,11 @@ namespace mods
                   description << std::endl;
                }
              description << "Afsp infos:" << s;
+          }
+        
+        void WavReader::readCue() const
+          {
+             // no need to read cue until we handle play lists
           }
         
         void WavReader::parseInfoList(const mods::utils::RBuffer<ListHeader>& listHeader,

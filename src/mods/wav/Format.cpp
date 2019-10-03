@@ -67,7 +67,7 @@ namespace mods
         
         u32 Format::getChannelMask() const noexcept
           {
-             if(_extensibleHeader.has_value())
+             if(_useChannelMask && _extensibleHeader.has_value())
                {
                   auto& extensibleHeader = *_extensibleHeader;
                   return extensibleHeader->getChannelMask();
