@@ -9,12 +9,28 @@ namespace mods
      {
         namespace impl
           {
-             class MultiChannelMixerSlave : public WavConverter
+             class InternalMultiChannelMixerSourceConverter
                {
                 public:
-                  MultiChannelMixerSlave() = default;
+                  using sptr = std::shared_ptr<InternalMultiChannelMixerSourceConverter>;
                   
-                  //MultiChannelMixerSlave() = delete;
+                  InternalMultiChannelMixerSourceConverter() = default;
+                  InternalMultiChannelMixerSourceConverter(const InternalMultiChannelMixerSourceConverter&) = delete;
+                  InternalMultiChannelMixerSourceConverter(InternalMultiChannelMixerSourceConverter&&) = delete;
+                  InternalMultiChannelMixerSourceConverter& operator=(const InternalMultiChannelMixerSourceConverter&) = delete;
+                  InternalMultiChannelMixerSourceConverter& operator=(InternalMultiChannelMixerSourceConverter&&) = delete;
+                  ~InternalMultiChannelMixerSourceConverter() = default;
+                  
+                  bool isFinished() const;
+               };
+             
+             class MultiChannelMixerSlave : public WavConverter
+               {
+                protected:
+                  MultiChannelMixerSlave(InternalMultiChannelMixerSourceConverter::sptr src);
+                  
+                public:
+                  MultiChannelMixerSlave() = delete;
                   MultiChannelMixerSlave(const MultiChannelMixerSlave&) = delete;
                   MultiChannelMixerSlave(MultiChannelMixerSlave&&) = delete;
                   MultiChannelMixerSlave& operator=(const MultiChannelMixerSlave&) = delete;
@@ -26,6 +42,9 @@ namespace mods
                   
                 protected:
                   WavConverter::ptr buildSlave() const;
+                  
+                private:
+                  InternalMultiChannelMixerSourceConverter::sptr _src;
                };
           } // namespace impl
      } // namespace wav

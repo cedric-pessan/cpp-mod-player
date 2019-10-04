@@ -17,19 +17,19 @@ namespace mods
                     SLAVE
                };
              
-             class InternalSourceConverter
+             class InternalCopySourceConverter
                {
                 public:
-                  using sptr = std::shared_ptr<InternalSourceConverter>;
+                  using sptr = std::shared_ptr<InternalCopySourceConverter>;
                   
-                  explicit InternalSourceConverter(WavConverter::ptr src);
+                  explicit InternalCopySourceConverter(WavConverter::ptr src);
                   
-                  InternalSourceConverter() = delete;
-                  InternalSourceConverter(const InternalSourceConverter&) = delete;
-                  InternalSourceConverter(const InternalSourceConverter&&) = delete;
-                  InternalSourceConverter& operator=(const InternalSourceConverter&) = delete;
-                  InternalSourceConverter& operator=(const InternalSourceConverter&&) = delete;
-                  ~InternalSourceConverter() = default;
+                  InternalCopySourceConverter() = delete;
+                  InternalCopySourceConverter(const InternalCopySourceConverter&) = delete;
+                  InternalCopySourceConverter(const InternalCopySourceConverter&&) = delete;
+                  InternalCopySourceConverter& operator=(const InternalCopySourceConverter&) = delete;
+                  InternalCopySourceConverter& operator=(const InternalCopySourceConverter&&) = delete;
+                  ~InternalCopySourceConverter() = default;
                   
                   bool isFinished(CopyDestId id) const;
                   void read(mods::utils::RWBuffer<u8>* buf, int len, CopyDestId id);
@@ -44,7 +44,7 @@ namespace mods
              class ChannelCopyWavConverterSlave : public WavConverter
                {
                 protected:
-                  ChannelCopyWavConverterSlave(InternalSourceConverter::sptr src, CopyDestId id);
+                  ChannelCopyWavConverterSlave(InternalCopySourceConverter::sptr src, CopyDestId id);
                   
                 public:
                   ChannelCopyWavConverterSlave() = delete;
@@ -61,7 +61,7 @@ namespace mods
                   WavConverter::ptr buildSlave() const;
              
                 private:
-                  InternalSourceConverter::sptr _src;
+                  InternalCopySourceConverter::sptr _src;
                   CopyDestId _id;
                };
           } // namespace impl

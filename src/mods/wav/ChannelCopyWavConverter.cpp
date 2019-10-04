@@ -9,12 +9,12 @@ namespace mods
      {
         namespace impl
           {
-             InternalSourceConverter::InternalSourceConverter(WavConverter::ptr src)
+             InternalCopySourceConverter::InternalCopySourceConverter(WavConverter::ptr src)
                : _src(std::move(src))
                  {
                  }
              
-             bool InternalSourceConverter::isFinished(CopyDestId id) const
+             bool InternalCopySourceConverter::isFinished(CopyDestId id) const
                {
                   auto idxBuffer = toUnderlying(id);
                   if(!_unconsumedBuffers.at(idxBuffer).empty())
@@ -24,7 +24,7 @@ namespace mods
                   return _src->isFinished();
                }
              
-             void InternalSourceConverter::read(mods::utils::RWBuffer<u8>* buf, int len, CopyDestId id)
+             void InternalCopySourceConverter::read(mods::utils::RWBuffer<u8>* buf, int len, CopyDestId id)
                {
                   int read = 0;
                   auto idxBuffer = toUnderlying(id);
@@ -46,7 +46,7 @@ namespace mods
                     }
                }
              
-             ChannelCopyWavConverterSlave::ChannelCopyWavConverterSlave(InternalSourceConverter::sptr src, CopyDestId id)
+             ChannelCopyWavConverterSlave::ChannelCopyWavConverterSlave(InternalCopySourceConverter::sptr src, CopyDestId id)
                : _src(std::move(src)),
                _id(id)
                  {
@@ -57,7 +57,7 @@ namespace mods
                   class make_unique_enabler : public ChannelCopyWavConverterSlave
                     {
                      public:
-                       explicit make_unique_enabler(const InternalSourceConverter::sptr& src)
+                       explicit make_unique_enabler(const InternalCopySourceConverter::sptr& src)
                          : ChannelCopyWavConverterSlave(src, CopyDestId::SLAVE)
                            {
                            }
@@ -84,7 +84,7 @@ namespace mods
           } // namespace impl
         
         ChannelCopyWavConverter::ChannelCopyWavConverter(WavConverter::ptr src)
-          : ChannelCopyWavConverterSlave(std::make_shared<impl::InternalSourceConverter>(std::move(src)), impl::CopyDestId::MASTER),
+          : ChannelCopyWavConverterSlave(std::make_shared<impl::InternalCopySourceConverter>(std::move(src)), impl::CopyDestId::MASTER),
           _copy(buildSlave())
             {
             }
