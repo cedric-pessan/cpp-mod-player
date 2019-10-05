@@ -3,48 +3,65 @@
 
 #include "mods/wav/WavConverter.hpp"
 
+#include <deque>
+
 namespace mods
 {
    namespace wav
      {
         namespace impl
           {
+             enum struct ChannelId
+               {
+                  LEFT,
+                    RIGHT
+               };
+             
              class InternalMultiChannelMixerSourceConverter
                {
                 public:
                   using sptr = std::shared_ptr<InternalMultiChannelMixerSourceConverter>;
                   
-                  InternalMultiChannelMixerSourceConverter() = default;
+                  explicit InternalMultiChannelMixerSourceConverter(std::vector<WavConverter::ptr> src);
+                  
+                  InternalMultiChannelMixerSourceConverter() = delete;
                   InternalMultiChannelMixerSourceConverter(const InternalMultiChannelMixerSourceConverter&) = delete;
                   InternalMultiChannelMixerSourceConverter(InternalMultiChannelMixerSourceConverter&&) = delete;
                   InternalMultiChannelMixerSourceConverter& operator=(const InternalMultiChannelMixerSourceConverter&) = delete;
                   InternalMultiChannelMixerSourceConverter& operator=(InternalMultiChannelMixerSourceConverter&&) = delete;
                   ~InternalMultiChannelMixerSourceConverter() = default;
                   
-                  bool isFinished() const;
+                  bool isFinished(ChannelId outChannel) const;
+                  
+                private:
+                  using UnconsumedBuffer = std::deque<double>;
+                  std::array<UnconsumedBuffer,2> _unconsumedBuffers;
+                  
+                  std::vector<WavConverter::ptr> _channels;
                };
              
-             class MultiChannelMixerSlave : public WavConverter
+             class MultiChannelMixerBase : public WavConverter
                {
                 protected:
-                  MultiChannelMixerSlave(InternalMultiChannelMixerSourceConverter::sptr src);
+                  MultiChannelMixerBase(InternalMultiChannelMixerSourceConverter::sptr src, ChannelId channel);
                   
                 public:
-                  MultiChannelMixerSlave() = delete;
-                  MultiChannelMixerSlave(const MultiChannelMixerSlave&) = delete;
-                  MultiChannelMixerSlave(MultiChannelMixerSlave&&) = delete;
-                  MultiChannelMixerSlave& operator=(const MultiChannelMixerSlave&) = delete;
-                  MultiChannelMixerSlave& operator=(MultiChannelMixerSlave&&) = delete;
-                  ~MultiChannelMixerSlave() override = default;
+                  MultiChannelMixerBase() = delete;
+                  MultiChannelMixerBase(const MultiChannelMixerBase&) = delete;
+                  MultiChannelMixerBase(MultiChannelMixerBase&&) = delete;
+                  MultiChannelMixerBase& operator=(const MultiChannelMixerBase&) = delete;
+                  MultiChannelMixerBase& operator=(MultiChannelMixerBase&&) = delete;
+                  ~MultiChannelMixerBase() override = default;
                   
                   bool isFinished() const override;
                   void read(mods::utils::RWBuffer<u8>* buf, int len) override;
                   
                 protected:
-                  WavConverter::ptr buildSlave() const;
+                  WavConverter::ptr buildRightChannel() const;
                   
                 private:
                   InternalMultiChannelMixerSourceConverter::sptr _src;
+                  ChannelId _channel;
                };
           } // namespace impl
      } // namespace wav

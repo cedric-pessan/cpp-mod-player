@@ -7,12 +7,12 @@ namespace mods
 {
    namespace wav
      {
-        class MultiChannelMixer : public impl::MultiChannelMixerSlave
+        class MultiChannelMixer : public impl::MultiChannelMixerBase
           {
            public:
-             /*MultiChannelMixer(std::vector<WavConverter::ptr> channels);*/
+             MultiChannelMixer(std::vector<WavConverter::ptr> channels);
              
-             MultiChannelMixer() /*= delete*/;
+             MultiChannelMixer() = delete;
              MultiChannelMixer(const MultiChannelMixer&) = delete;
              MultiChannelMixer(MultiChannelMixer&&) = delete;
              MultiChannelMixer& operator=(const MultiChannelMixer&) = delete;

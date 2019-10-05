@@ -7,24 +7,41 @@ namespace mods
      {
         namespace impl
           {
-             bool InternalMultiChannelMixerSourceConverter::isFinished() const
-               {
-                  std::cout << "TODO: InternalMultiChannelMixerSourceConverter::isFinished() const" << std::endl;
-                  return false;
-               }
-             
-             MultiChannelMixerSlave::MultiChannelMixerSlave(InternalMultiChannelMixerSourceConverter::sptr src)
-               : _src(std::move(src))
+             InternalMultiChannelMixerSourceConverter::InternalMultiChannelMixerSourceConverter(std::vector<WavConverter::ptr> channels)
+               : _channels(std::move(channels))
                  {
                  }
              
-             WavConverter::ptr MultiChannelMixerSlave::buildSlave() const
+             bool InternalMultiChannelMixerSourceConverter::isFinished(ChannelId outChannel) const
                {
-                  class make_unique_enabler : public MultiChannelMixerSlave
+                  auto idxBuffer = toUnderlying(outChannel);
+                  if(!_unconsumedBuffers.at(idxBuffer).empty())
+                    {
+                       return false;
+                    }
+                  for(auto& channel : _channels) 
+                    {
+                       if(!channel->isFinished())
+                         {
+                            return false;
+                         }
+                    }
+                  return true;
+               }
+             
+             MultiChannelMixerBase::MultiChannelMixerBase(InternalMultiChannelMixerSourceConverter::sptr src, ChannelId channel)
+               : _src(std::move(src)),
+               _channel(channel)
+                 {
+                 }
+             
+             WavConverter::ptr MultiChannelMixerBase::buildRightChannel() const
+               {
+                  class make_unique_enabler : public MultiChannelMixerBase
                     {
                      public:
                        explicit make_unique_enabler(const InternalMultiChannelMixerSourceConverter::sptr& src)
-                         : MultiChannelMixerSlave(src)
+                         : MultiChannelMixerBase(src, ChannelId::RIGHT)
                            {
                            }
                        
@@ -38,20 +55,20 @@ namespace mods
                   return std::make_unique<make_unique_enabler>(_src);
                }
              
-             bool MultiChannelMixerSlave::isFinished() const
+             bool MultiChannelMixerBase::isFinished() const
                {
-                  return _src->isFinished();
+                  return _src->isFinished(_channel);
                }
              
-             void MultiChannelMixerSlave::read(mods::utils::RWBuffer<u8>* buf, int len)
+             void MultiChannelMixerBase::read(mods::utils::RWBuffer<u8>* buf, int len)
                {
                   std::cout << "TODO: MultiChannelMixerSlave::read(...)" << std::endl;
                }
           } // namespace impl
         
-        MultiChannelMixer::MultiChannelMixer(/*std::vector<WavConverter::ptr> channels*/)
-          : MultiChannelMixerSlave(std::make_shared<impl::InternalMultiChannelMixerSourceConverter>(/*std::move(channels)*/)),
-          _right(buildSlave())
+        MultiChannelMixer::MultiChannelMixer(std::vector<WavConverter::ptr> channels)
+          : MultiChannelMixerBase(std::make_shared<impl::InternalMultiChannelMixerSourceConverter>(std::move(channels)), impl::ChannelId::LEFT),
+          _right(buildRightChannel())
             {
             }
         
