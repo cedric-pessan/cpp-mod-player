@@ -10,7 +10,21 @@ namespace mods
              InternalMultiChannelMixerSourceConverter::InternalMultiChannelMixerSourceConverter(std::vector<WavConverter::ptr> channels)
                : _channels(std::move(channels))
                  {
+                    for(size_t i = 0; i < _channels.size(); ++i)
+                      {
+                         _channelsBuffers.emplace_back(allocateNewTempBuffer());
+                      }
                  }
+             
+             mods::utils::RWBuffer<u8> InternalMultiChannelMixerSourceConverter::allocateNewTempBuffer()
+               {
+                  std::cout << "InternalMultiChannelMixerSourceConverter::allocateNewTempBuffer()" << std::endl;
+               }
+             
+             void InternalMultiChannelMixerSourceConverter::ensureChannelBuffersSizes()
+               {
+                  std::cout << "TODO: InternalMultiChannelMixerSourceConverter::ensureChannelBuffersSizes()" << std::endl;
+               }
              
              bool InternalMultiChannelMixerSourceConverter::isFinished(ChannelId outChannel) const
                {
@@ -27,6 +41,48 @@ namespace mods
                          }
                     }
                   return true;
+               }
+             
+             void InternalMultiChannelMixerSourceConverter::read(mods::utils::RWBuffer<u8>* buf, int len, ChannelId outChannel)
+               {
+                  if((len % sizeof(double)) != 0)
+                    {
+                       std::cout << "TODO: wrong buffer length in InternalMultiChannelMixerSourceConverter" << std::endl;
+                    }
+                  
+                  size_t toRead = len / sizeof(double);
+                  int read = 0;
+                  auto idxBuffer = toUnderlying(outChannel);
+                  auto outView = buf->slice<double>(0, toRead);
+                  
+                  while(!_unconsumedBuffers.at(idxBuffer).empty() && read < len)
+                    std::cout << "TODO: InternalMultiChannelMixerSourceCoverter::read(mods::utils::RWBuffer<u8>*, int, ChannelId) unconsumed loop" << std::endl;
+                  if(read < len) 
+                    {
+                       auto remainsToRead = toRead - read;
+                       ensureChannelBuffersSizes();
+                       for(size_t i=0; i<_channels.size(); ++i)
+                         {
+                            auto& channel = _channels[i];
+                            auto& tempChannelBuffer = _channelsBuffers[i];
+                            channel->read(&tempChannelBuffer, remainsToRead);
+                         }
+                       
+                       for(size_t i=0; i<remainsToRead; ++i)
+                         {
+                            double sample = mix();
+                            outView[read++] = sample;
+                            
+                            sample = mix();
+                            _unconsumedBuffers.at(1-idxBuffer).push_back(sample);
+                         }
+                    }
+               }
+             
+             double InternalMultiChannelMixerSourceConverter::mix() const
+               {
+                  std::cout << "TODO: InternalMultiChannelMixerSourceConverter::mix() const" << std::endl;
+                  return 0.0;
                }
              
              MultiChannelMixerBase::MultiChannelMixerBase(InternalMultiChannelMixerSourceConverter::sptr src, ChannelId channel)
@@ -62,7 +118,7 @@ namespace mods
              
              void MultiChannelMixerBase::read(mods::utils::RWBuffer<u8>* buf, int len)
                {
-                  std::cout << "TODO: MultiChannelMixerSlave::read(...)" << std::endl;
+                  _src->read(buf, len, _channel);
                }
           } // namespace impl
         

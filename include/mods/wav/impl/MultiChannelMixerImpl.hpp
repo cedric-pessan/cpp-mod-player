@@ -32,12 +32,19 @@ namespace mods
                   ~InternalMultiChannelMixerSourceConverter() = default;
                   
                   bool isFinished(ChannelId outChannel) const;
+                  void read(mods::utils::RWBuffer<u8>* buf, int len, ChannelId outChannel);
                   
                 private:
+                  mods::utils::RWBuffer<u8> allocateNewTempBuffer();
+                  void ensureChannelBuffersSizes();
+                  
+                  double mix() const;
+                  
                   using UnconsumedBuffer = std::deque<double>;
                   std::array<UnconsumedBuffer,2> _unconsumedBuffers;
                   
                   std::vector<WavConverter::ptr> _channels;
+                  std::vector<mods::utils::RWBuffer<u8>> _channelsBuffers;
                };
              
              class MultiChannelMixerBase : public WavConverter
