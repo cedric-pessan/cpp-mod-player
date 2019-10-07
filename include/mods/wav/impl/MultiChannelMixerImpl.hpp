@@ -35,8 +35,8 @@ namespace mods
                   void read(mods::utils::RWBuffer<u8>* buf, int len, ChannelId outChannel);
                   
                 private:
-                  mods::utils::RWBuffer<u8> allocateNewTempBuffer();
-                  void ensureChannelBuffersSizes();
+                  mods::utils::RWBuffer<u8> allocateNewTempBuffer(std::vector<u8>* backendVec, size_t len);
+                  void ensureChannelBuffersSizes(size_t len);
                   
                   double mix() const;
                   
@@ -44,6 +44,7 @@ namespace mods
                   std::array<UnconsumedBuffer,2> _unconsumedBuffers;
                   
                   std::vector<WavConverter::ptr> _channels;
+                  std::vector<std::vector<u8>> _channelsVec;
                   std::vector<mods::utils::RWBuffer<u8>> _channelsBuffers;
                };
              

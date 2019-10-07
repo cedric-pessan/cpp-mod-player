@@ -12,18 +12,26 @@ namespace mods
                  {
                     for(size_t i = 0; i < _channels.size(); ++i)
                       {
-                         _channelsBuffers.emplace_back(allocateNewTempBuffer());
+                         _channelsVec.emplace_back();
+                         _channelsBuffers.emplace_back(allocateNewTempBuffer(&_channelsVec.back(), 0));
                       }
                  }
              
-             mods::utils::RWBuffer<u8> InternalMultiChannelMixerSourceConverter::allocateNewTempBuffer()
+             mods::utils::RWBuffer<u8> InternalMultiChannelMixerSourceConverter::allocateNewTempBuffer(std::vector<u8>* backendVec, size_t len)
                {
-                  std::cout << "InternalMultiChannelMixerSourceConverter::allocateNewTempBuffer()" << std::endl;
+                  backendVec->resize(len);
+                  u8* ptr = backendVec->data();
+                  auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
+                  auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, 0, std::move(deleter));
+                  return mods::utils::RWBuffer<u8>(buffer);
                }
              
-             void InternalMultiChannelMixerSourceConverter::ensureChannelBuffersSizes()
+             void InternalMultiChannelMixerSourceConverter::ensureChannelBuffersSizes(size_t len)
                {
-                  std::cout << "TODO: InternalMultiChannelMixerSourceConverter::ensureChannelBuffersSizes()" << std::endl;
+                  for(size_t i=0; i<_channels.size(); ++i)
+                    {
+                       _channelsBuffers[i] = allocateNewTempBuffer(&_channelsVec[i], len);
+                    }
                }
              
              bool InternalMultiChannelMixerSourceConverter::isFinished(ChannelId outChannel) const
@@ -60,7 +68,7 @@ namespace mods
                   if(read < len) 
                     {
                        auto remainsToRead = toRead - read;
-                       ensureChannelBuffersSizes();
+                       ensureChannelBuffersSizes(remainsToRead * sizeof(double));
                        for(size_t i=0; i<_channels.size(); ++i)
                          {
                             auto& channel = _channels[i];
