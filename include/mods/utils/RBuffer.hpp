@@ -29,7 +29,7 @@ namespace mods
              
              ~RBuffer() = default;
              
-             RBuffer& operator=(const RBuffer&) = delete;
+             RBuffer& operator=(const RBuffer&) = default;
              RBuffer& operator=(RBuffer&&) noexcept = default;
              
              const T* operator->() const

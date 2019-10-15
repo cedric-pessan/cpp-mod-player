@@ -13,8 +13,48 @@ namespace mods
           {
              enum struct ChannelId
                {
-                  LEFT,
-                    RIGHT
+                  Left,
+                    Right
+               };
+             
+             enum struct DepthPositions
+               {
+                  Front,
+                    FrontCenter,
+                    LowFrequency,
+                    Back,
+                    FrontSide,
+                    BackCenter,
+                    Side,
+                    TopCenter,
+                    TopFront,
+                    TopFrontCenter,
+                    TopBack,
+                    TopBackCenter,
+                    NbDepthPositions
+               };
+             
+             enum struct ChannelTypes
+               {
+                  SPEAKER_FRONT_LEFT,
+                    SPEAKER_FRONT_RIGHT,
+                    SPEAKER_FRONT_CENTER,
+                    SPEAKER_LOW_FREQUENCY,
+                    SPEAKER_BACK_LEFT,
+                    SPEAKER_BACK_RIGHT,
+                    SPEAKER_FRONT_LEFT_OF_CENTER,
+                    SPEAKER_FRONT_RIGHT_OF_CENTER,
+                    SPEAKER_BACK_CENTER,
+                    SPEAKER_SIDE_LEFT,
+                    SPEAKER_SIDE_RIGHT,
+                    SPEAKER_TOP_CENTER,
+                    SPEAKER_TOP_FRONT_LEFT,
+                    SPEAKER_TOP_FRONT_CENTER,
+                    SPEAKER_TOP_FRONT_RIGHT,
+                    SPEAKER_TOP_BACK_LEFT,
+                    SPEAKER_TOP_BACK_CENTER,
+                    SPEAKER_TOP_BACK_RIGHT,
+                    NbChannelTypes
                };
              
              class InternalMultiChannelMixerSourceConverter
@@ -22,7 +62,7 @@ namespace mods
                 public:
                   using sptr = std::shared_ptr<InternalMultiChannelMixerSourceConverter>;
                   
-                  explicit InternalMultiChannelMixerSourceConverter(std::vector<WavConverter::ptr> src);
+                  InternalMultiChannelMixerSourceConverter(std::vector<WavConverter::ptr> src, u32 channelMask);
                   
                   InternalMultiChannelMixerSourceConverter() = delete;
                   InternalMultiChannelMixerSourceConverter(const InternalMultiChannelMixerSourceConverter&) = delete;
@@ -38,7 +78,8 @@ namespace mods
                   mods::utils::RWBuffer<u8> allocateNewTempBuffer(std::vector<u8>* backendVec, size_t len);
                   void ensureChannelBuffersSizes(size_t len);
                   
-                  double mix() const;
+                  void computeMixingCoefficients();
+                  double mix(int idxOutBuffer, size_t idxSample) const;
                   
                   using UnconsumedBuffer = std::deque<double>;
                   std::array<UnconsumedBuffer,2> _unconsumedBuffers;
@@ -46,6 +87,10 @@ namespace mods
                   std::vector<WavConverter::ptr> _channels;
                   std::vector<std::vector<u8>> _channelsVec;
                   std::vector<mods::utils::RWBuffer<u8>> _channelsBuffers;
+                  std::vector<mods::utils::RBuffer<double>> _channelsViews;
+                  std::array<std::vector<double>, 2> _coefficients;
+                  
+                  u32 _channelMask;
                };
              
              class MultiChannelMixerBase : public WavConverter

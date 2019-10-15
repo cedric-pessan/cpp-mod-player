@@ -7,14 +7,18 @@ namespace mods
      {
         namespace impl
           {
-             InternalMultiChannelMixerSourceConverter::InternalMultiChannelMixerSourceConverter(std::vector<WavConverter::ptr> channels)
-               : _channels(std::move(channels))
+             InternalMultiChannelMixerSourceConverter::InternalMultiChannelMixerSourceConverter(std::vector<WavConverter::ptr> channels, u32 channelMask)
+               : _channels(std::move(channels)),
+               _channelMask(channelMask)
                  {
                     for(size_t i = 0; i < _channels.size(); ++i)
                       {
                          _channelsVec.emplace_back();
                          _channelsBuffers.emplace_back(allocateNewTempBuffer(&_channelsVec.back(), 0));
+                         _channelsViews.emplace_back(_channelsBuffers.back().slice<double>(0, 0));
                       }
+                    
+                    computeMixingCoefficients();
                  }
              
              mods::utils::RWBuffer<u8> InternalMultiChannelMixerSourceConverter::allocateNewTempBuffer(std::vector<u8>* backendVec, size_t len)
@@ -22,7 +26,7 @@ namespace mods
                   backendVec->resize(len);
                   u8* ptr = backendVec->data();
                   auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-                  auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, 0, std::move(deleter));
+                  auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
                   return mods::utils::RWBuffer<u8>(buffer);
                }
              
@@ -30,7 +34,8 @@ namespace mods
                {
                   for(size_t i=0; i<_channels.size(); ++i)
                     {
-                       _channelsBuffers[i] = allocateNewTempBuffer(&_channelsVec[i], len);
+                       _channelsBuffers[i] = allocateNewTempBuffer(&_channelsVec[i], len * sizeof(double));
+                       _channelsViews[i] = _channelsBuffers[i].slice<double>(0, len);
                     }
                }
              
@@ -62,35 +67,127 @@ namespace mods
                   int read = 0;
                   auto idxBuffer = toUnderlying(outChannel);
                   auto outView = buf->slice<double>(0, toRead);
+                  auto out = *buf;
                   
                   while(!_unconsumedBuffers.at(idxBuffer).empty() && read < len)
-                    std::cout << "TODO: InternalMultiChannelMixerSourceCoverter::read(mods::utils::RWBuffer<u8>*, int, ChannelId) unconsumed loop" << std::endl;
-                  if(read < len) 
+                    {
+                       u8 value = _unconsumedBuffers.at(idxBuffer).front();
+                       out[read++] = value;
+                       _unconsumedBuffers.at(idxBuffer).pop_front();
+                    }
+                  if(read < len)
                     {
                        auto remainsToRead = toRead - read;
-                       ensureChannelBuffersSizes(remainsToRead * sizeof(double));
+                       ensureChannelBuffersSizes(remainsToRead);
                        for(size_t i=0; i<_channels.size(); ++i)
                          {
                             auto& channel = _channels[i];
                             auto& tempChannelBuffer = _channelsBuffers[i];
-                            channel->read(&tempChannelBuffer, remainsToRead);
+                            channel->read(&tempChannelBuffer, remainsToRead * sizeof(double));
                          }
                        
                        for(size_t i=0; i<remainsToRead; ++i)
                          {
-                            double sample = mix();
+                            double sample = mix(idxBuffer, i);
                             outView[read++] = sample;
                             
-                            sample = mix();
+                            sample = mix(1-idxBuffer, i);
                             _unconsumedBuffers.at(1-idxBuffer).push_back(sample);
                          }
                     }
                }
              
-             double InternalMultiChannelMixerSourceConverter::mix() const
+             namespace
                {
-                  std::cout << "TODO: InternalMultiChannelMixerSourceConverter::mix() const" << std::endl;
-                  return 0.0;
+                  struct ChannelDescriptor
+                    {
+                       DepthPositions depthPosition;
+                       bool left;
+                       double defaultLeftCoefficient;
+                       bool right;
+                       double defaultRightCoefficient;
+                    };
+                  
+                  std::array<ChannelDescriptor, toUnderlying(ChannelTypes::NbChannelTypes)> channelDescriptors 
+                    {
+                         {
+                              { DepthPositions::Front, true, 1.0, false, 0.0 },         // FRONT_LEFT
+                              { DepthPositions::Front, false, 0.0, true, 1.0 },         // FRONT_RIGHT
+                              { DepthPositions::FrontCenter, true, 0.5, true, 0.5 },    // FRONT_CENTER
+                              { DepthPositions::LowFrequency, true, 0.5, true, 0.5 },   // LOW_FREQUENCY
+                              { DepthPositions::Back, true, 1.0, false, 0.0 },          // BACK_LEFT
+                              { DepthPositions::Back, false, 0.0, true, 1.0 },          // BACK_RIGHT
+                              { DepthPositions::FrontSide, true, 0.75, true, 0.25 },    // FRONT_LEFT_OF_CENTER
+                              { DepthPositions::FrontSide, true, 0.25, true, 0.75 },    // FRONT_RIGHT_OF_CENTER
+                              { DepthPositions::BackCenter, true, 0.5, true, 0.5 },     // BACK_CENTER
+                              { DepthPositions::Side, true, 1.0, false, 0.0 },          // SIDE_LEFT
+                              { DepthPositions::Side, false, 0.0, true, 1.0 },          // SIDE_RIGHT
+                              { DepthPositions::TopCenter, true, 0.5, true, 0.5 },      // TOP_CENTER
+                              { DepthPositions::TopFront, true, 0.75, true, 0.25 },     // TOP_FRONT_LEFT
+                              { DepthPositions::TopFrontCenter, true, 0.5, true, 0.5 }, // TOP_FRONT_CENTER
+                              { DepthPositions::TopFront, true, 0.25, true, 0.75 },     // TOP_FRONT_RIGHT
+                              { DepthPositions::TopBack, true, 1.0, false, 0.0 },       // TOP_BACK_LEFT
+                              { DepthPositions::TopBackCenter, true, 0.5, true, 0.5 },  // TOP_BACK_CENTER
+                              { DepthPositions::TopBack, false, 0.0, true, 1.0 }        // TOP_ BACK_RIGHT
+                         }
+                    };
+               }
+             
+             void InternalMultiChannelMixerSourceConverter::computeMixingCoefficients()
+               {
+                  int mask = 1;
+                  int idxChannel =0;
+                  constexpr int maxDepthPositions = toUnderlying(DepthPositions::NbDepthPositions);
+                  std::array<bool, maxDepthPositions> filledDepthPositions;
+                  int nbDepthPositions = 0;
+                  std::fill(filledDepthPositions.begin(), filledDepthPositions.end(), false);
+                  
+                  for(size_t i=0; i<2; ++i)
+                    {
+                       _coefficients[i].resize(_channels.size(), 0.0);
+                    }
+                  
+                  for(auto& descriptor : channelDescriptors)
+                    {
+                       if((_channelMask & mask) != 0)
+                         {
+                            auto depthPosition = toUnderlying(descriptor.depthPosition);
+                            if(!filledDepthPositions[depthPosition])
+                              {
+                                 ++nbDepthPositions;
+                                 filledDepthPositions[depthPosition] = true;
+                              }
+                            if(descriptor.left) 
+                              {
+                                 _coefficients[toUnderlying(ChannelId::Left)][idxChannel] = descriptor.defaultLeftCoefficient;
+                              }
+                            if(descriptor.right)
+                              {
+                                 _coefficients[toUnderlying(ChannelId::Right)][idxChannel] = descriptor.defaultRightCoefficient;
+                              }
+                            ++idxChannel;
+                         }
+                       mask <<= 1;
+                    }
+                  
+                  for(size_t i=0; i<_channels.size(); ++i)
+                    {
+                       _coefficients[toUnderlying(ChannelId::Left)][i] /= nbDepthPositions;
+                       _coefficients[toUnderlying(ChannelId::Right)][i] /= nbDepthPositions;
+                    }
+                  std::cout << "after computeMixingCoefficients" << std::endl;
+               }
+             
+             double InternalMultiChannelMixerSourceConverter::mix(int idxOutBuffer, size_t idxSample) const
+               {
+                  double sample = 0.0;
+                  auto& coefficients = _coefficients.at(idxOutBuffer);
+                  for(size_t i=0; i<_channels.size(); ++i)
+                    {
+                       auto& view = _channelsViews[i];
+                       sample += coefficients[i] * view[idxSample];
+                    }
+                  return sample;
                }
              
              MultiChannelMixerBase::MultiChannelMixerBase(InternalMultiChannelMixerSourceConverter::sptr src, ChannelId channel)
@@ -105,7 +202,7 @@ namespace mods
                     {
                      public:
                        explicit make_unique_enabler(const InternalMultiChannelMixerSourceConverter::sptr& src)
-                         : MultiChannelMixerBase(src, ChannelId::RIGHT)
+                         : MultiChannelMixerBase(src, ChannelId::Right)
                            {
                            }
                        
@@ -130,8 +227,8 @@ namespace mods
                }
           } // namespace impl
         
-        MultiChannelMixer::MultiChannelMixer(std::vector<WavConverter::ptr> channels)
-          : MultiChannelMixerBase(std::make_shared<impl::InternalMultiChannelMixerSourceConverter>(std::move(channels)), impl::ChannelId::LEFT),
+        MultiChannelMixer::MultiChannelMixer(std::vector<WavConverter::ptr> channels, u32 channelMask)
+          : MultiChannelMixerBase(std::make_shared<impl::InternalMultiChannelMixerSourceConverter>(std::move(channels), channelMask), impl::ChannelId::Left),
           _right(buildRightChannel())
             {
             }

@@ -25,7 +25,7 @@ namespace mods
              RWBuffer() = delete;
              RWBuffer(const RWBuffer&) = default;
              RWBuffer(RWBuffer&&) noexcept = default;
-             RWBuffer& operator=(const RWBuffer&) = delete;
+             RWBuffer& operator=(const RWBuffer&) = default;
              RWBuffer& operator=(RWBuffer&&) noexcept = default;
              ~RWBuffer() = default;
              

@@ -10,7 +10,7 @@ namespace mods
         class MultiChannelMixer : public impl::MultiChannelMixerBase
           {
            public:
-             MultiChannelMixer(std::vector<WavConverter::ptr> channels);
+             MultiChannelMixer(std::vector<WavConverter::ptr> channels, u32 channelMask);
              
              MultiChannelMixer() = delete;
              MultiChannelMixer(const MultiChannelMixer&) = delete;
