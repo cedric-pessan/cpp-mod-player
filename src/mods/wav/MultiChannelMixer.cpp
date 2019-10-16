@@ -64,18 +64,17 @@ namespace mods
                     }
                   
                   size_t toRead = len / sizeof(double);
-                  int read = 0;
+                  size_t read = 0;
                   auto idxBuffer = toUnderlying(outChannel);
                   auto outView = buf->slice<double>(0, toRead);
-                  auto out = *buf;
                   
-                  while(!_unconsumedBuffers.at(idxBuffer).empty() && read < len)
+                  while(!_unconsumedBuffers.at(idxBuffer).empty() && read < toRead)
                     {
-                       u8 value = _unconsumedBuffers.at(idxBuffer).front();
-                       out[read++] = value;
+                       double value = _unconsumedBuffers.at(idxBuffer).front();
+                       outView[read++] = value;
                        _unconsumedBuffers.at(idxBuffer).pop_front();
                     }
-                  if(read < len)
+                  if(read < toRead)
                     {
                        auto remainsToRead = toRead - read;
                        ensureChannelBuffersSizes(remainsToRead);
@@ -175,7 +174,6 @@ namespace mods
                        _coefficients[toUnderlying(ChannelId::Left)][i] /= nbDepthPositions;
                        _coefficients[toUnderlying(ChannelId::Right)][i] /= nbDepthPositions;
                     }
-                  std::cout << "after computeMixingCoefficients" << std::endl;
                }
              
              double InternalMultiChannelMixerSourceConverter::mix(int idxOutBuffer, size_t idxSample) const
