@@ -407,7 +407,7 @@ namespace mods
                      case 16:
                        for(int i=0; i<nbChannels; ++i)
                          {
-                            floatChannels.push_back(std::make_unique<ToDoubleConverter<float>>(std::move(resampledChannels[i])));
+                            floatChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(resampledChannels[i])));
                          }
                        break;
                      default:
