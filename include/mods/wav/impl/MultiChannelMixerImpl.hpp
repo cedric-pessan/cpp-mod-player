@@ -62,7 +62,7 @@ namespace mods
                 public:
                   using sptr = std::shared_ptr<InternalMultiChannelMixerSourceConverter>;
                   
-                  InternalMultiChannelMixerSourceConverter(std::vector<WavConverter::ptr> src, u32 channelMask);
+                  InternalMultiChannelMixerSourceConverter(std::vector<WavConverter::ptr> channels, u32 channelMask);
                   
                   InternalMultiChannelMixerSourceConverter() = delete;
                   InternalMultiChannelMixerSourceConverter(const InternalMultiChannelMixerSourceConverter&) = delete;

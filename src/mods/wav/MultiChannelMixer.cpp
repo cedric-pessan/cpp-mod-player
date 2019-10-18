@@ -35,7 +35,7 @@ namespace mods
                   for(size_t i=0; i<_channels.size(); ++i)
                     {
                        _channelsBuffers[i] = allocateNewTempBuffer(&_channelsVec[i], len * sizeof(double));
-                       _channelsViews[i] = _channelsBuffers[i].slice<double>(0, len);
+                       _channelsViews[i] = _channelsBuffers[i].readOnlyslice<double>(0, len);
                     }
                }
              
@@ -130,20 +130,20 @@ namespace mods
                               { DepthPositions::TopBack, false, 0.0, true, 1.0 }        // TOP_ BACK_RIGHT
                          }
                     };
-               }
+               } // namespace
              
              void InternalMultiChannelMixerSourceConverter::computeMixingCoefficients()
                {
-                  int mask = 1;
+                  u32 mask = 1;
                   int idxChannel =0;
                   constexpr int maxDepthPositions = toUnderlying(DepthPositions::NbDepthPositions);
-                  std::array<bool, maxDepthPositions> filledDepthPositions;
+                  std::array<bool, maxDepthPositions> filledDepthPositions {};
                   int nbDepthPositions = 0;
                   std::fill(filledDepthPositions.begin(), filledDepthPositions.end(), false);
                   
                   for(size_t i=0; i<2; ++i)
                     {
-                       _coefficients[i].resize(_channels.size(), 0.0);
+                       _coefficients.at(i).resize(_channels.size(), 0.0);
                     }
                   
                   for(auto& descriptor : channelDescriptors)
@@ -151,10 +151,10 @@ namespace mods
                        if((_channelMask & mask) != 0)
                          {
                             auto depthPosition = toUnderlying(descriptor.depthPosition);
-                            if(!filledDepthPositions[depthPosition])
+                            if(!filledDepthPositions.at(depthPosition))
                               {
                                  ++nbDepthPositions;
-                                 filledDepthPositions[depthPosition] = true;
+                                 filledDepthPositions.at(depthPosition) = true;
                               }
                             if(descriptor.left) 
                               {
@@ -166,7 +166,7 @@ namespace mods
                               }
                             ++idxChannel;
                          }
-                       mask <<= 1;
+                       mask <<= 1u;
                     }
                   
                   for(size_t i=0; i<_channels.size(); ++i)

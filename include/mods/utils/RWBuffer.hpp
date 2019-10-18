@@ -36,6 +36,12 @@ namespace mods
                     return this->template buildSlice<TBuf, T2, T*>(_buf, offset, len);
                  }
              
+             template<typename T2>
+               const RBuffer<T2> readOnlyslice(size_t offset, size_t len)
+                 {
+                    return RBuffer<T>::template slice<T2>(offset, len);
+                 }
+             
              reference operator[](size_type pos)
                {
                   return *(_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
