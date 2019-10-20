@@ -486,6 +486,17 @@ namespace mods
                     channels->push_back(std::make_unique<ReaderWavConverter<5,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
                     break;
                     
+                  case 8:
+                    channels->push_back(std::make_unique<ReaderWavConverter<0,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<1,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<2,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<3,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<4,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<5,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<6,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<7,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    break;
+                    
                   default:
                     std::cout << "WavConverter: unsupported number of channels for demux stage:" << nbChannels << std::endl;
                  }
