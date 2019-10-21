@@ -135,7 +135,7 @@ namespace mods
              void InternalMultiChannelMixerSourceConverter::computeMixingCoefficients()
                {
                   u32 mask = 1;
-                  int idxChannel =0;
+                  size_t idxChannel =0;
                   constexpr int maxDepthPositions = toUnderlying(DepthPositions::NbDepthPositions);
                   std::array<bool, maxDepthPositions> filledDepthPositions {};
                   int nbDepthPositions = 0;
@@ -149,6 +149,39 @@ namespace mods
                   for(auto& descriptor : channelDescriptors)
                     {
                        if((_channelMask & mask) != 0)
+                         {
+                            auto depthPosition = toUnderlying(descriptor.depthPosition);
+                            if(!filledDepthPositions.at(depthPosition))
+                              {
+                                 ++nbDepthPositions;
+                                 filledDepthPositions.at(depthPosition) = true;
+                              }
+                            if(descriptor.left) 
+                              {
+                                 _coefficients[toUnderlying(ChannelId::Left)][idxChannel] = descriptor.defaultLeftCoefficient;
+                              }
+                            if(descriptor.right)
+                              {
+                                 _coefficients[toUnderlying(ChannelId::Right)][idxChannel] = descriptor.defaultRightCoefficient;
+                              }
+                            ++idxChannel;
+                            if(idxChannel >= _channels.size())
+                              {
+                                 break;
+                              }
+                         }
+                       mask <<= 1u;
+                    }
+                  
+                  // loop that assigns remaining channels
+                  mask = 1;
+                  for(auto& descriptor : channelDescriptors)
+                    {
+                       if(idxChannel >= _channels.size())
+                         {
+                            break;
+                         }
+                       if((_channelMask & mask) == 0) // free output
                          {
                             auto depthPosition = toUnderlying(descriptor.depthPosition);
                             if(!filledDepthPositions.at(depthPosition))
