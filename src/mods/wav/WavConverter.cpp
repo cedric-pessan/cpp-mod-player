@@ -371,6 +371,13 @@ namespace mods
                     }
                   break;
                   
+                case 48000:
+                  for(int i = 0; i < nbChannels; ++i)
+                    {
+                       resampledChannels.push_back(std::make_unique<ResampleConverter<48000, 44100>>(std::move(upscaledChannels[i])));
+                    }
+                  break;
+                  
                 default:
                   std::cout << "WavConverter: unsupported frequency: " << frequency << std::endl;
                }
@@ -411,6 +418,12 @@ namespace mods
                          }
                        break;
                      default:
+                     case -1:
+                       for(int i=0; i<nbChannels; ++i)
+                         {
+                            floatChannels.push_back(std::move(resampledChannels[i]));
+                         }
+                       break;
                        std::cout << "WavConverter: unsupported bits per sample in surround mixer:" << resampledBitsPerSample << std::endl;
                     }
                   resampledBitsPerSample = -1;
