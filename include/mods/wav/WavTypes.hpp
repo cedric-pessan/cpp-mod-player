@@ -201,6 +201,22 @@ namespace mods
                   return std::string(static_cast<const char*>(listTypeID), sizeof(listTypeID));
                }
           };
+        
+        struct PeakHeader 
+          {
+           public:
+             ChunkHeader chunk;
+             
+           private:
+             u32le version;
+             u32le timestamp;
+          };
+        
+        struct PPeakHeader
+          {
+             float value;
+             u32le position;
+          };
 #pragma pack(pop)
      } // namespace wav
 } // namespace mods

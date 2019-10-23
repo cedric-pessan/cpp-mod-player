@@ -88,6 +88,16 @@ namespace mods
                   static const std::string CUE = "cue ";
                   return CUE;
                }
+             const std::string& getPEAK()
+               {
+                  static const std::string PEAK = "PEAK";
+                  return PEAK;
+               }
+             const std::string& getADTL()
+               {
+                  static const std::string ADTL = "adtl";
+                  return ADTL;
+               }
           } // namespace
         
         WavReader::WavReader(const std::string& filename)
@@ -110,6 +120,7 @@ namespace mods
                optional<Format> optFmt;
                optional<RBuffer<FactHeader>> optFactHeader;
                optional<RBuffer<u8>> optData;
+               double peak = 1.0;
                
                size_t offset = 0;
                while(offset < riffBuffer.size())
@@ -146,6 +157,10 @@ namespace mods
                            {
                               parseInfoList(listHeader, riffBuffer, offset, description);
                            }
+                         else if(listHeader->getListTypeID() == getADTL())
+                           {
+                              parseAdtl();
+                           }
                          else
                            {
                               std::stringstream ss;
@@ -160,6 +175,11 @@ namespace mods
                     else if(chunkHeader->getChunkID() == getCUE())
                       {
                          readCue();
+                      }
+                    else if(chunkHeader->getChunkID() == getPEAK())
+                      {
+                         int nbChannels = optFmt.has_value() ? (*optFmt).getNumChannels() : 0;
+                         peak = readPeak(chunkHeader, riffBuffer, offset, nbChannels);
                       }
                     else
                       {
@@ -181,7 +201,8 @@ namespace mods
                auto& fmt = *optFmt;
                auto& data = *optData;
                _statCollector = std::make_shared<StatCollector>();
-               _converter = WavConverter::buildConverter(data, fmt.getBitsPerSample(), fmt.getBitsPerContainer(), fmt.getNumChannels(), fmt.getSampleRate(), _statCollector, fmt.getAudioFormat(), fmt.getChannelMask());
+               _converter = WavConverter::buildConverter(data, fmt.getBitsPerSample(), fmt.getBitsPerContainer(), fmt.getNumChannels(), fmt.getSampleRate(), 
+                                                         _statCollector, fmt.getAudioFormat(), fmt.getChannelMask(), peak);
                _length = data.size();
                
                buildInfo(fmt.getBitsPerSample(), fmt.getNumChannels(), fmt.getSampleRate(), description.str(), fmt.getAudioFormat());
@@ -349,6 +370,40 @@ namespace mods
         void WavReader::readCue() const
           {
              // no need to read cue until we handle play lists
+          }
+        
+        void WavReader::parseAdtl() const
+          {
+             // no need to read adtl until we handle play lists and cue
+          }
+        
+        double WavReader::readPeak(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                 const mods::utils::RBuffer<u8>& riffBuffer,
+                                 size_t offset,
+                                 int nbChannels) const
+          {
+             if(nbChannels == 0)
+               {
+                  std::cout << "Peak chunk defined before number of channels is known" << std::endl;
+               }
+             
+             checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
+                       chunkHeader->getChunkSize() == sizeof(PeakHeader) - sizeof(ChunkHeader) + nbChannels * sizeof(PPeakHeader), "Incomplete Peak chunk");
+             
+             auto peak = riffBuffer.slice<PeakHeader>(offset, 1);
+             auto ppeak = riffBuffer.slice<PPeakHeader>(offset + sizeof(PeakHeader), nbChannels);
+             
+             float maxPeak = 0.0;
+             
+             for(int i=0; i<nbChannels; ++i)
+               {
+                  if(ppeak[i].value > maxPeak)
+                    {
+                       maxPeak = ppeak[i].value;
+                    }
+               }
+             
+             return maxPeak;
           }
         
         void WavReader::parseInfoList(const mods::utils::RBuffer<ListHeader>& listHeader,

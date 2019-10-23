@@ -18,7 +18,7 @@ namespace mods
            public:
              using ptr = std::unique_ptr<WavConverter>;
              
-             static ptr buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, StatCollector::sptr statCollector, WavAudioFormat codec, u32 channelMask);
+             static ptr buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, StatCollector::sptr statCollector, WavAudioFormat codec, u32 channelMask, double peak);
              
              WavConverter() = default;
              virtual ~WavConverter() = default;

@@ -25,7 +25,8 @@ namespace mods
    namespace wav
      {
         // static
-        WavConverter::ptr WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, StatCollector::sptr statCollector, WavAudioFormat codec, u32 channelMask)
+        WavConverter::ptr WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, StatCollector::sptr statCollector, WavAudioFormat codec, u32 channelMask,
+                                                       double peak)
           {
              /* pipeline:
               sampleReader
@@ -216,7 +217,7 @@ namespace mods
              switch(unpackedBitsPerSample)
                {
                 case 8:
-                  if(isResamplableByPositiveIntegerFactor(frequency)) 
+                  if(isResamplableByPositiveIntegerFactor(frequency) && peak != 1.0)
                     {
                        upscaledBitsPerSample = 16;
                        switch(codec)
@@ -265,7 +266,7 @@ namespace mods
                   break;
                   
                 case 16:
-                  if(isResamplableByPositiveIntegerFactor(frequency))
+                  if(isResamplableByPositiveIntegerFactor(frequency) && peak != 1.0)
                     {
                        for(int i = 0; i < nbChannels; ++i)
                          {
@@ -283,7 +284,7 @@ namespace mods
                   break;
                   
                 case 32:
-                  if(isResamplableByPositiveIntegerFactor(frequency))
+                  if(isResamplableByPositiveIntegerFactor(frequency) && peak != 1.0)
                     {
                        switch(codec)
                          {
@@ -337,6 +338,11 @@ namespace mods
                   
                 default:
                   std::cout << "WavConverter: unsupported bits per sample to upscale: " << unpackedBitsPerSample << std::endl;
+               }
+             
+             if(peak != 1.0)
+               {
+                  std::cout << "TODO: WavConverter: we should apply peak" << std::endl;
                }
              
              int resampledBitsPerSample = upscaledBitsPerSample;
