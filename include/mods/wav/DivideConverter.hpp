@@ -17,7 +17,7 @@ namespace mods
              DivideConverter(DivideConverter&&) = delete;
              DivideConverter& operator=(const DivideConverter&) = delete;
              DivideConverter& operator=(DivideConverter&&) = delete;
-             ~DivideConverter() = default;
+             ~DivideConverter() override = default;
              
              bool isFinished() const override;
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
