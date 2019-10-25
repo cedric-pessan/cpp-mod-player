@@ -1,6 +1,7 @@
 
 #include "mods/wav/ALawConverter.hpp"
 #include "mods/wav/ChannelCopyWavConverter.hpp"
+#include "mods/wav/DivideConverter.hpp"
 #include "mods/wav/DownscaleWavConverter.hpp"
 #include "mods/wav/FillLSBConverter.hpp"
 #include "mods/wav/FromDoubleConverter.hpp"
@@ -217,7 +218,7 @@ namespace mods
              switch(unpackedBitsPerSample)
                {
                 case 8:
-                  if(isResamplableByPositiveIntegerFactor(frequency) && peak != 1.0)
+                  if(isResamplableByPositiveIntegerFactor(frequency) && peak == 1.0)
                     {
                        upscaledBitsPerSample = 16;
                        switch(codec)
@@ -266,7 +267,7 @@ namespace mods
                   break;
                   
                 case 16:
-                  if(isResamplableByPositiveIntegerFactor(frequency) && peak != 1.0)
+                  if(isResamplableByPositiveIntegerFactor(frequency) && peak == 1.0)
                     {
                        for(int i = 0; i < nbChannels; ++i)
                          {
@@ -284,7 +285,7 @@ namespace mods
                   break;
                   
                 case 32:
-                  if(isResamplableByPositiveIntegerFactor(frequency) && peak != 1.0)
+                  if(isResamplableByPositiveIntegerFactor(frequency) && peak == 1.0)
                     {
                        switch(codec)
                          {
@@ -342,7 +343,12 @@ namespace mods
              
              if(peak != 1.0)
                {
-                  std::cout << "TODO: WavConverter: we should apply peak" << std::endl;
+                  std::vector<WavConverter::ptr> peakVec = std::move(upscaledChannels);
+                  upscaledChannels.clear();
+                  for(int i = 0; i < nbChannels; ++i)
+                    {
+                       upscaledChannels.emplace_back(std::make_unique<DivideConverter>(std::move(peakVec[i]), peak));
+                    }
                }
              
              int resampledBitsPerSample = upscaledBitsPerSample;
@@ -475,6 +481,8 @@ namespace mods
                  {
                   case 16:
                     return std::make_unique<ResamplePositiveIntegerFactor<s16, FACTOR>>(std::move(src));
+                  case -1:
+                    return std::make_unique<ResamplePositiveIntegerFactor<double, FACTOR>>(std::move(src));
                   default:
                     std::cout << "WavConverter: unsupported bits per sample for resampling with positive integer factor: " << bitsPerSample << std::endl;
                     return nullptr;
