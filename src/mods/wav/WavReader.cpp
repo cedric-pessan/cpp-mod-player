@@ -183,9 +183,7 @@ namespace mods
                       }
                     else
                       {
-                         std::stringstream ss;
-                         ss << "Unknown RIFF chunk: " << chunkHeader->getChunkID();
-                         checkInit(false, ss.str());
+                         std::cout << "Unknown RIFF chunk: " << chunkHeader->getChunkID() << std::endl;
                       }
                     
                     auto chunkSize = chunkHeader->getChunkSize();
@@ -260,12 +258,10 @@ namespace mods
                   
                 case WavAudioFormat::A_LAW:
                   checkInit(decodedFormat.getBitsPerSample() == 8, "A-Law codec needs 8 bits per sample");
-                  checkInit(extendedFmtHeader.has_value(), "A-law codec without extended fmt");
                   break;
                   
                 case WavAudioFormat::MU_LAW:
                   checkInit(decodedFormat.getBitsPerSample() == 8, "MU-Law codec needs 8 bits per sample");
-                  checkInit(extendedFmtHeader.has_value(), "MU-law codec without extended fmt");
                   break;
                   
                 case WavAudioFormat::IEEE_FLOAT:
