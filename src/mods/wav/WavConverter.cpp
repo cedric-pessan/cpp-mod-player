@@ -504,6 +504,13 @@ namespace mods
                     channels->push_back(std::make_unique<ReaderWavConverter<1,2,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
                     break;
                     
+                  case 4:
+                    channels->push_back(std::make_unique<ReaderWavConverter<0,4,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<1,4,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<2,4,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    channels->push_back(std::make_unique<ReaderWavConverter<3,4,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
+                    break;
+                    
                   case 6:
                     channels->push_back(std::make_unique<ReaderWavConverter<0,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
                     channels->push_back(std::make_unique<ReaderWavConverter<1,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));

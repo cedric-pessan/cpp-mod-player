@@ -65,6 +65,11 @@ namespace mods
    template class ReaderWavConverter<0,2,bitsPerSample>; \
    template class ReaderWavConverter<1,2,bitsPerSample>; \
                                                          \
+   template class ReaderWavConverter<0,4,bitsPerSample>; \
+   template class ReaderWavConverter<1,4,bitsPerSample>; \
+   template class ReaderWavConverter<2,4,bitsPerSample>; \
+   template class ReaderWavConverter<3,4,bitsPerSample>; \
+                                                         \
    template class ReaderWavConverter<0,6,bitsPerSample>; \
    template class ReaderWavConverter<1,6,bitsPerSample>; \
    template class ReaderWavConverter<2,6,bitsPerSample>; \
