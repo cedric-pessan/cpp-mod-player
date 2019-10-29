@@ -108,13 +108,22 @@ namespace mods
                auto headerBuffer = _fileBuffer.slice<ChunkHeader>(0, 1);
                
                checkInit(headerBuffer->getChunkID() == getRIFF(), "Not a RIFF file");
-               checkInit(_fileBuffer.size() >= headerBuffer->getChunkSize() - sizeof(ChunkHeader), "RIFF chunk not complete");
+               bool incompleteRiff = false;
+               
+               if(_fileBuffer.size() < headerBuffer->getChunkSize() - sizeof(ChunkHeader))
+                 {
+                    std::cout << "Warning: RIFF chunk not complete" << std::endl;
+                    incompleteRiff = true;
+                 }
                
                auto riffHeader = _fileBuffer.slice<RiffHeader>(0, 1);
                
                checkInit(riffHeader->getFormat() == getWAVE(), "Not a WAVE file");
                
-               auto riffBuffer = _fileBuffer.slice<u8>(sizeof(RiffHeader), riffHeader->chunk.getChunkSize() - sizeof(RiffHeader) + sizeof(ChunkHeader));
+               auto riffLength = incompleteRiff ? 
+                 _fileBuffer.size() - sizeof(RiffHeader) :
+                 riffHeader->chunk.getChunkSize() - sizeof(RiffHeader) + sizeof(ChunkHeader);
+               auto riffBuffer = _fileBuffer.slice<u8>(sizeof(RiffHeader), riffLength);
                
                using mods::utils::RBuffer;
                optional<Format> optFmt;
@@ -183,7 +192,7 @@ namespace mods
                       }
                     else
                       {
-                         std::cout << "Unknown RIFF chunk: " << chunkHeader->getChunkID() << std::endl;
+                         std::cout << "Warning: Unknown RIFF chunk: " << chunkHeader->getChunkID() << std::endl;
                       }
                     
                     auto chunkSize = chunkHeader->getChunkSize();
