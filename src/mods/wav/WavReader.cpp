@@ -286,7 +286,7 @@ namespace mods
                 default:
                     {
                        std::stringstream ss;
-                       ss << "Codec not supported: " << decodedFormat.getAudioFormatAsNumber();
+                       ss << "Codec not supported: " << std::hex << decodedFormat.getAudioFormatAsNumber() << std::dec;
                        checkInit(false, ss.str());
                     }
                }
