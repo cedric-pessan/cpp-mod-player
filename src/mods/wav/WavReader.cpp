@@ -278,6 +278,9 @@ namespace mods
                   checkInit(extendedFmtHeader.has_value(), "IEEE float codec without extended fmt");
                   break;
                   
+                case WavAudioFormat::TRUSPEECH:
+                  break;
+                  
                 case WavAudioFormat::GSM:
                   checkInit((decodedFormat.getBitsPerContainer() % 260) == 0, "Container length for GSM should be a multiple of 260");
                   checkInit(extendedFmtHeader.has_value(), "IEEE float codec without extended fmt");

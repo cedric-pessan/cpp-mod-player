@@ -11,6 +11,7 @@ namespace mods
              static const std::string IEEE_FLOAT = "IEEE FLOAT";
              static const std::string A_LAW = "A-LAW";
              static const std::string MU_LAW = "MU_LAW";
+             static const std::string TRUSPEECH = "TRUSPEECH";
              static const std::string GSM = "GSM";
              static const std::string EXTENSIBLE = "EXTENSIBLE";
              switch(fmt)
@@ -23,6 +24,8 @@ namespace mods
                   return A_LAW;
                 case WavAudioFormat::MU_LAW:
                   return MU_LAW;
+                case WavAudioFormat::TRUSPEECH:
+                  return TRUSPEECH;
                 case WavAudioFormat::GSM:
                   return GSM;
                 case WavAudioFormat::EXTENSIBLE:

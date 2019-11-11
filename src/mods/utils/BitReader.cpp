@@ -1,22 +1,22 @@
 
+#include "mods/utils/BitReader.hpp"
 #include "mods/utils/types.hpp"
-#include "mods/wav/GSMBitReader.hpp"
 
 namespace mods
 {
-   namespace wav
+   namespace utils
      {
-        GSMBitReader::GSMBitReader(const mods::utils::RBuffer<u8>& buf)
+        BitReader::BitReader(const mods::utils::RBuffer<u8>& buf)
           : _buf(buf)
             {
             }
         
-        void GSMBitReader::reset()
+        void BitReader::reset()
           {
              _position = 0;
           }
         
-        int GSMBitReader::read(size_t bits)
+        int BitReader::read(size_t bits)
           {
              u32 value = 0;
              
@@ -37,5 +37,5 @@ namespace mods
                }
              return value;
           }
-     } // namespace wav
+     } // namespace utils
 } // namespace mods

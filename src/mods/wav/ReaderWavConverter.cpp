@@ -91,6 +91,7 @@ namespace mods
         instantiateReaderWavConverter(24);
         instantiateReaderWavConverter(32);
         instantiateReaderWavConverter(64);
+        instantiateReaderWavConverter(256);
         instantiateReaderWavConverter(520);
      } // namespace wav
 } // namespace mods

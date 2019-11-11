@@ -13,6 +13,7 @@
 #include "mods/wav/ResampleConverter.hpp"
 #include "mods/wav/ResamplePositiveIntegerFactor.hpp"
 #include "mods/wav/ToDoubleConverter.hpp"
+#include "mods/wav/TruspeechDecoderConverter.hpp"
 #include "mods/wav/UnpackToTypeConverter.hpp"
 #include "mods/wav/UnsignedToSignedWavConverter.hpp"
 #include "mods/wav/UpscaleWavConverter.hpp"
@@ -45,9 +46,11 @@ namespace mods
              switch(bitsPerSample)
                {
                 case 0:
-                  if(codec != WavAudioFormat::GSM)
+                case 1:
+                  if(codec != WavAudioFormat::GSM &&
+                     codec != WavAudioFormat::TRUSPEECH)
                     {
-                       std::cout << "0 bit value is only valid for GSM codec" << std::endl;
+                       std::cout << bitsPerSample << "bits value is only valid for block codec" << std::endl;
                     }
                   break;
                   
@@ -116,6 +119,10 @@ namespace mods
                   buildDemuxStage<64>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
                   break;
                   
+                case 256:
+                  buildDemuxStage<256>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
+                  break;
+                  
                 case 520:
                   buildDemuxStage<520>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
                   break;
@@ -161,6 +168,19 @@ namespace mods
                   for(int i = 0; i < nbChannels; ++i)
                     {
                        unpackedContainerChannels.push_back(std::move(channels[i]));
+                    }
+                  break;
+                  
+                case 256:
+                  if(codec != WavAudioFormat::TRUSPEECH)
+                    {
+                       std::cout << "WavConverter:: 256 container only supported with TRUSPEECH" << std::endl;
+                    }
+                  unpackedBitsPerContainer = bitsPerContainer = 16;
+                  bitsPerSample = 16;
+                  for(int i=0; i < nbChannels; ++i)
+                    {
+                       unpackedContainerChannels.push_back(std::make_unique<TruspeechDecoderConverter>(std::move(channels[i])));
                     }
                   break;
                   

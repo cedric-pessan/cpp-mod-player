@@ -49,7 +49,6 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/FillLSBConverter.cpp
                          src/mods/wav/Format.cpp
                          src/mods/wav/FromDoubleConverter.cpp
-                         src/mods/wav/GSMBitReader.cpp
                          src/mods/wav/GSMDecoderConverter.cpp
                          src/mods/wav/MuLawConverter.cpp
                          src/mods/wav/MultiChannelMixer.cpp
@@ -59,12 +58,14 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/ResamplePositiveIntegerFactor.cpp
                          src/mods/wav/StatCollector.cpp
                          src/mods/wav/ToDoubleConverter.cpp
+                         src/mods/wav/TruspeechDecoderConverter.cpp
                          src/mods/wav/UnpackToTypeConverter.cpp
                          src/mods/wav/UnsignedToSignedWavConverter.cpp
                          src/mods/wav/UpscaleWavConverter.cpp
                          src/mods/wav/WavConverter.cpp
                          src/mods/wav/WavReader.cpp
                          src/mods/wav/WavTypes.cpp
+                         src/mods/utils/BitReader.cpp
                          src/mods/utils/FileUtils.cpp
                          src/mods/utils/RBufferBackend.cpp
                          src/mods/utils/RWBufferBackend.cpp
