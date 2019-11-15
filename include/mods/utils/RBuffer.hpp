@@ -4,6 +4,7 @@
 #include "RBufferBackend.hpp"
 
 #include <iostream>
+#include <cassert>
 
 namespace mods
 {
@@ -51,6 +52,7 @@ namespace mods
              
              const_reference operator[](size_type pos) const
                {
+                  assert(check(pos < _len, "out of bound RBuffer[]"));
                   return *(_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                }
              
@@ -134,18 +136,19 @@ namespace mods
                }
              
            private:
-             void check(bool condition, const std::string& description) const
+             RBufferBackend::sptr _backend;
+             const T* _buf;
+             
+           protected:
+             bool check(bool condition, const std::string& description) const
                {
                   if(!condition)
                     {
                        throw std::out_of_range(description);
                     }
+                  return true;
                }
              
-             RBufferBackend::sptr _backend;
-             const T* _buf;
-             
-           protected:
              RBuffer(RBufferBackend::sptr backend, size_t offset, size_t len)
                : _backend(std::move(backend)),
                _buf(static_cast<const T*>(static_cast<const void*>(RBufferBackend::Attorney::getBuffer(*_backend) + offset))), // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)

@@ -44,6 +44,7 @@ namespace mods
              
              reference operator[](size_type pos)
                {
+                  assert(this->template check(pos < this->template _len, "out of bound RWBuffer"));
                   return *(_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                }
              
