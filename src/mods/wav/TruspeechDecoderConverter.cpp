@@ -32,6 +32,7 @@ namespace mods
                auto len = backArray.size();
                auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
                auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len * sizeof(typename ARRAY::value_type), std::move(deleter));
+               std::cout << "this is where interesting stuffs happen" << std::endl;
                return mods::utils::RWBuffer<u8>(buffer).slice<typename ARRAY::value_type>(0, len);
             }
         
@@ -69,6 +70,30 @@ namespace mods
           {
              _src->read(&_encodedBuffer, TRUSPEECH_FRAME_HEADER_SIZE);
              _bitReader.reset();
+             
+             _bitRate = _bitReader.read(1) != 0 ? BitRate::Low : BitRate::High;
+             _vad = _bitReader.read(1) != 0 ? VoiceActive::No : VoiceActive::Yes;
+             
+             _vad = VoiceActive::Yes;
+             _bitRate = BitRate::Low;
+             
+             if(_vad == VoiceActive::No)
+               {
+                  std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame() vad" << std::endl;
+               }
+             else
+               {
+                  if(_bitRate == BitRate::High)
+                    std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame() not vad, high bitrate" << std::endl;
+                  else
+                    {
+                       std::cout << "before slicing subframe" << std::endl;
+                       auto subframe = _encodedBuffer.slice<u8>(1, LOW_BITRATE_FRAME_SIZE-1);
+                       _src->read(&subframe, LOW_BITRATE_FRAME_SIZE-1);
+                       
+                       std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame() not vad, low bitrate" << std::endl;
+                    }
+               }
              
              std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame()" << std::endl;
           }

@@ -39,12 +39,25 @@ namespace mods
              mods::utils::RWBuffer<u8>::const_iterator _itDecodedBuffer;
              
              constexpr static int TRUSPEECH_FRAME_HEADER_SIZE = 1;
-             constexpr static int HIGH_BITRATE_FRAME_SIZE = 25;
+             constexpr static int LOW_BITRATE_FRAME_SIZE = 20;
+             constexpr static int HIGH_BITRATE_FRAME_SIZE = 24;
              
              std::array<u8, HIGH_BITRATE_FRAME_SIZE> _encodedArray;
              mods::utils::RWBuffer<u8> _encodedBuffer;
              
              mods::utils::BitReader _bitReader;
+             
+             enum struct BitRate
+               {
+                  Low, High
+               };
+             enum struct VoiceActive
+               {
+                  No, Yes
+               };
+             
+             BitRate _bitRate;
+             VoiceActive _vad;
           };
      } // namespace wav
 } // namespace mods
