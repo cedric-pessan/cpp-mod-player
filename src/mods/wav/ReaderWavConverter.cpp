@@ -33,20 +33,24 @@ namespace mods
                  {
                     if(_it < _end) 
                       {
-                         for(int b=0; b<BYTESPERCONTAINER; ++b)
+                         for(; _currentByte<BYTESPERCONTAINER && (i + _currentByte) < len; ++_currentByte)
                            {
                               if(_it < _end)
                                 {
-                                   out[i+b] = *_it;
+                                   out[i+_currentByte] = *_it;
                                    ++_it;
                                    ++bytesRead;
                                 }
                               else
                                 {
-                                   out[i+b] = _defaultValue;
+                                   out[i+_currentByte] = _defaultValue;
                                 }
                            }
-                         _it += (NBCHANNELS-1) * BYTESPERCONTAINER;
+                         if(_currentByte == BYTESPERCONTAINER) 
+                           {
+                              _it += (NBCHANNELS-1) * BYTESPERCONTAINER;
+                              _currentByte = 0;
+                           }
                       }
                     else
                       {

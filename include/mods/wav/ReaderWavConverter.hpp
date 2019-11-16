@@ -30,6 +30,7 @@ namespace mods
              const mods::utils::RBuffer<u8> _buffer;
              mods::utils::RBuffer<u8>::const_iterator _it;
              mods::utils::RBuffer<u8>::const_iterator _end;
+             int _currentByte = 0;
              
              u8 _defaultValue;
              StatCollector::sptr _statCollector;
