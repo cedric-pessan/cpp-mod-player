@@ -27,13 +27,13 @@ namespace mods
         template<int CH, int NBCHANNELS, int BITSPERCONTAINER>
           void ReaderWavConverter<CH, NBCHANNELS, BITSPERCONTAINER>::read(mods::utils::RWBuffer<u8>* buf, int len)
             {
-               size_t bytesRead = 0;
+               int bytesRead = 0;
                auto& out = *buf;
                for(int i=0; i<len; i+=BYTESPERCONTAINER)
                  {
                     if(_it < _end) 
                       {
-                         for(; _currentByte<BYTESPERCONTAINER && (i + _currentByte) < len; ++_currentByte)
+                         for(; _currentByte<BYTESPERCONTAINER && bytesRead < len; ++_currentByte)
                            {
                               if(_it < _end)
                                 {
