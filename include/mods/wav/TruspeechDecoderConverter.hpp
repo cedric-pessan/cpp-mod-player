@@ -30,6 +30,7 @@ namespace mods
                static mods::utils::RWBuffer<typename ARRAY::value_type> initializeArrayRWBuffer(ARRAY& backArray);
              
              void decodeTruspeechFrame();
+             void readLowBitrateParameters();
              
              WavConverter::ptr _src;
              
@@ -58,6 +59,28 @@ namespace mods
              
              BitRate _bitRate;
              VoiceActive _vad;
+             
+             int _lpc;
+             int _acl0;
+             int _acl1;
+             int _acl2;
+             int _acl3;
+             int _gain0;
+             int _gain1;
+             int _gain2;
+             int _gain3;
+             int _grid0;
+             int _grid1;
+             int _grid2;
+             int _grid3;
+             int _pos0;
+             int _pos1;
+             int _pos2;
+             int _pos3;
+             int _psig0;
+             int _psig1;
+             int _psig2;
+             int _psig3;
           };
      } // namespace wav
 } // namespace mods

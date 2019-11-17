@@ -32,7 +32,6 @@ namespace mods
                auto len = backArray.size();
                auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
                auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len * sizeof(typename ARRAY::value_type), std::move(deleter));
-               std::cout << "this is where interesting stuffs happen" << std::endl;
                return mods::utils::RWBuffer<u8>(buffer).slice<typename ARRAY::value_type>(0, len);
             }
         
@@ -74,9 +73,6 @@ namespace mods
              _bitRate = _bitReader.read(1) != 0 ? BitRate::Low : BitRate::High;
              _vad = _bitReader.read(1) != 0 ? VoiceActive::No : VoiceActive::Yes;
              
-             _vad = VoiceActive::Yes;
-             _bitRate = BitRate::Low;
-             
              if(_vad == VoiceActive::No)
                {
                   std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame() vad" << std::endl;
@@ -87,15 +83,39 @@ namespace mods
                     std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame() not vad, high bitrate" << std::endl;
                   else
                     {
-                       std::cout << "before slicing subframe" << std::endl;
-                       auto subframe = _encodedBuffer.slice<u8>(1, LOW_BITRATE_FRAME_SIZE-1);
-                       _src->read(&subframe, LOW_BITRATE_FRAME_SIZE-1);
+                       auto subframe = _encodedBuffer.slice<u8>(TRUSPEECH_FRAME_HEADER_SIZE, LOW_BITRATE_FRAME_SIZE-TRUSPEECH_FRAME_HEADER_SIZE);
+                       _src->read(&subframe, LOW_BITRATE_FRAME_SIZE-TRUSPEECH_FRAME_HEADER_SIZE);
                        
-                       std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame() not vad, low bitrate" << std::endl;
+                       readLowBitrateParameters();
                     }
                }
              
              std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame()" << std::endl;
+          }
+        
+        void TruspeechDecoderConverter::readLowBitrateParameters()
+          {
+             _lpc = _bitReader.read(24);
+             _acl0 = _bitReader.read(7);
+             _acl1 = _bitReader.read(2);
+             _acl2 = _bitReader.read(7);
+             _acl3 = _bitReader.read(2);
+             _gain0 = _bitReader.read(12);
+             _gain1 = _bitReader.read(12);
+             _gain2 = _bitReader.read(12);
+             _gain3 = _bitReader.read(12);
+             _grid0 = _bitReader.read(1);
+             _grid1 = _bitReader.read(1);
+             _grid2 = _bitReader.read(1);
+             _grid3 = _bitReader.read(1);
+             _pos0 = _bitReader.read(12);
+             _pos1 = _bitReader.read(12);
+             _pos2 = _bitReader.read(12);
+             _pos3 = _bitReader.read(12);
+             _psig0 = _bitReader.read(4);
+             _psig1 = _bitReader.read(4);
+             _psig2 = _bitReader.read(4);
+             _psig3 = _bitReader.read(4);
           }
      } // namespace wav
 } // namespace mods
