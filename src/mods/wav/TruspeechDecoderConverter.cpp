@@ -7,23 +7,14 @@ namespace mods
      {
         TruspeechDecoderConverter::TruspeechDecoderConverter(WavConverter::ptr src)
           : _src(std::move(src)),
-          _destinationBuffer(allocateNewTempBuffer(0)),
-          _decodedBuffer(_destinationBuffer.slice<u8>(0,0)),
+          _decodedArray {},
+          _decodedBuffer(initializeArrayRWBuffer(_decodedArray)),
           _itDecodedBuffer(_decodedBuffer.RBuffer<u8>::end()),
           _encodedArray {},
           _encodedBuffer(initializeArrayRWBuffer(_encodedArray)),
           _bitReader(_encodedBuffer)
             {
             }
-        
-        mods::utils::RWBuffer<u8> TruspeechDecoderConverter::allocateNewTempBuffer(size_t len)
-          {
-             _tempVec.resize(len);
-             u8* ptr = _tempVec.data();
-             auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-             auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
-             return mods::utils::RWBuffer<u8>(buffer);
-          }
         
         template<typename ARRAY>
           mods::utils::RWBuffer<typename ARRAY::value_type> TruspeechDecoderConverter::initializeArrayRWBuffer(ARRAY& backArray)
@@ -67,33 +58,19 @@ namespace mods
         
         void TruspeechDecoderConverter::decodeTruspeechFrame() 
           {
-             _src->read(&_encodedBuffer, TRUSPEECH_FRAME_HEADER_SIZE);
+             _src->read(&_encodedBuffer, TRUSPEECH_ENCODED_FRAME_SIZE);
              _bitReader.reset();
              
-             _bitRate = _bitReader.read(1) != 0 ? BitRate::Low : BitRate::High;
-             _vad = _bitReader.read(1) != 0 ? VoiceActive::No : VoiceActive::Yes;
-             
-             if(_vad == VoiceActive::No)
-               {
-                  std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame() vad" << std::endl;
-               }
-             else
-               {
-                  if(_bitRate == BitRate::High)
-                    std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame() not vad, high bitrate" << std::endl;
-                  else
-                    {
-                       auto subframe = _encodedBuffer.slice<u8>(TRUSPEECH_FRAME_HEADER_SIZE, LOW_BITRATE_FRAME_SIZE-TRUSPEECH_FRAME_HEADER_SIZE);
-                       _src->read(&subframe, LOW_BITRATE_FRAME_SIZE-TRUSPEECH_FRAME_HEADER_SIZE);
-                       
-                       readLowBitrateParameters();
-                    }
-               }
+             readParameters();
              
              std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame()" << std::endl;
+             for(int i=0; i<32; ++i)
+               {
+                  _decodedBuffer[i] = _encodedBuffer[i];
+               }
           }
         
-        void TruspeechDecoderConverter::readLowBitrateParameters()
+        void TruspeechDecoderConverter::readParameters()
           {
              _lpc = _bitReader.read(24);
              _acl0 = _bitReader.read(7);
