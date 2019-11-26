@@ -1,6 +1,10 @@
 
 #include "mods/wav/TruspeechDecoderConverter.hpp"
 
+/*
+ * based on ffmpeg source algorithm
+ */
+
 namespace mods
 {
    namespace wav
@@ -63,6 +67,8 @@ namespace mods
              
              readParameters();
              
+             correlateFilter();
+             
              std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame()" << std::endl;
              for(int i=0; i<32; ++i)
                {
@@ -72,27 +78,51 @@ namespace mods
         
         void TruspeechDecoderConverter::readParameters()
           {
-             _lpc = _bitReader.read(24);
-             _acl0 = _bitReader.read(7);
-             _acl1 = _bitReader.read(2);
-             _acl2 = _bitReader.read(7);
-             _acl3 = _bitReader.read(2);
-             _gain0 = _bitReader.read(12);
-             _gain1 = _bitReader.read(12);
-             _gain2 = _bitReader.read(12);
-             _gain3 = _bitReader.read(12);
-             _grid0 = _bitReader.read(1);
-             _grid1 = _bitReader.read(1);
-             _grid2 = _bitReader.read(1);
-             _grid3 = _bitReader.read(1);
-             _pos0 = _bitReader.read(12);
-             _pos1 = _bitReader.read(12);
-             _pos2 = _bitReader.read(12);
-             _pos3 = _bitReader.read(12);
-             _psig0 = _bitReader.read(4);
-             _psig1 = _bitReader.read(4);
-             _psig2 = _bitReader.read(4);
-             _psig3 = _bitReader.read(4);
+             _vector[7] = _bitReader.read(3);
+             _vector[6] = _bitReader.read(3);
+             _vector[5] = _bitReader.read(3);
+             _vector[4] = _bitReader.read(4);
+             _vector[3] = _bitReader.read(4);
+             _vector[2] = _bitReader.read(4);
+             _vector[1] = _bitReader.read(5);
+             _vector[0] = _bitReader.read(5);
+             
+             _flag = _bitReader.read(1) != 0;
+             
+             _offset1[0] = _bitReader.read(4) << 4;
+             _offset2[3] = _bitReader.read(7);
+             _offset2[2] = _bitReader.read(7);
+             _offset2[1] = _bitReader.read(7);
+             _offset2[0] = _bitReader.read(7);
+             
+             _offset1[1] = _bitReader.read(4);
+             _pulseval[1] = _bitReader.read(14);
+             _pulseval[0] = _bitReader.read(14);
+             
+             _offset1[1] |= _bitReader.read(4) << 4;
+             _pulseval[3] = _bitReader.read(14);
+             _pulseval[2] = _bitReader.read(14);
+             
+             _offset1[0] |= _bitReader.read(1);
+             _pulsepos[0] = _bitReader.read(27);
+             _pulseoff[0] = _bitReader.read(4);
+             
+             _offset1[0] |= _bitReader.read(1) << 1;
+             _pulsepos[1] = _bitReader.read(27);
+             _pulseoff[1] = _bitReader.read(4);
+             
+             _offset1[0] |= _bitReader.read(1) << 2;
+             _pulsepos[2] = _bitReader.read(27);
+             _pulseoff[2] = _bitReader.read(4);
+             
+             _offset1[0] |= _bitReader.read(1) << 3;
+             _pulsepos[3] = _bitReader.read(27);
+             _pulseoff[3] = _bitReader.read(4);
+          }
+        
+        void TruspeechDecoderConverter::correlateFilter()
+          {
+             std::cout << "TODO: TruspeechDecoderConverter::correlateFilter()" << std::endl;
           }
      } // namespace wav
 } // namespace mods

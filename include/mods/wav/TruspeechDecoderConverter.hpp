@@ -30,6 +30,7 @@ namespace mods
              
              void decodeTruspeechFrame();
              void readParameters();
+             void correlateFilter();
              
              WavConverter::ptr _src;
              
@@ -47,27 +48,14 @@ namespace mods
              
              mods::utils::BitReader _bitReader;
              
-             int _lpc;
-             int _acl0;
-             int _acl1;
-             int _acl2;
-             int _acl3;
-             int _gain0;
-             int _gain1;
-             int _gain2;
-             int _gain3;
-             int _grid0;
-             int _grid1;
-             int _grid2;
-             int _grid3;
-             int _pos0;
-             int _pos1;
-             int _pos2;
-             int _pos3;
-             int _psig0;
-             int _psig1;
-             int _psig2;
-             int _psig3;
+             // parameters
+             s16 _vector[8];
+             bool _flag;
+             s32 _offset1[2];
+             s32 _offset2[4];
+             s32 _pulseval[4];
+             s32 _pulsepos[4];
+             s32 _pulseoff[4];
           };
      } // namespace wav
 } // namespace mods

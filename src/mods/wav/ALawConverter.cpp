@@ -42,8 +42,9 @@ namespace mods
         
         s16 ALawConverter::aLawTransform(s8 value) const
           {
+             using mods::utils::at;
              u8 v = static_cast<u8>(value);
-             return _lookupTable.at(v);
+             return at(_lookupTable, v);
           }
         
         void ALawConverter::fillLookupTable()

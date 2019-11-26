@@ -42,8 +42,9 @@ namespace mods
         
         s16 MuLawConverter::muLawTransform(s8 value) const
           {
+             using mods::utils::at;
              u8 v = static_cast<u8>(value);
-             return _lookupTable.at(v);
+             return at(_lookupTable, v);
           }
         
         void MuLawConverter::fillLookupTable()

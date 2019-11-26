@@ -4,6 +4,7 @@
 #include "endianness.hpp"
 #include "mods/utils/nativeEndian.hpp"
 
+#include <cassert>
 #include <cstdint>
 #include <iostream>
 
@@ -109,5 +110,19 @@ template<typename E>
 {
    return static_cast<std::underlying_type_t<E>>(e);
 }
+
+namespace mods
+{
+   namespace utils
+     {
+        template<typename T>
+          const typename T::value_type& at(const T& a, size_t i)
+            {
+               assert(i >= 0 && i < a.size());
+               return a[i];
+            }
+          
+     } // namespace utils
+} // namespace mods
 
 #endif // MODS_UTILS_TYPES_HPP
