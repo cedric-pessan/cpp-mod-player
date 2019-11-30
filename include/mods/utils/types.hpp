@@ -119,7 +119,14 @@ namespace mods
           const typename T::value_type& at(const T& a, size_t i)
             {
                assert(i >= 0 && i < a.size());
-               return a[i];
+               return a[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            }
+        
+        template<typename T>
+          typename T::value_type& at(T& a, size_t i)
+            {
+               assert(i >= 0 && i < a.size());
+               return a[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
             }
           
      } // namespace utils

@@ -3,8 +3,8 @@
 
 #include "RBufferBackend.hpp"
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 namespace mods
 {
