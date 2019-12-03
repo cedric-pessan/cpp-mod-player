@@ -49,13 +49,17 @@ namespace mods
              mods::utils::BitReader _bitReader;
              
              // parameters
-             s16 _vector[8];
+             std::array<s16,8> _vector;
              bool _flag;
-             s32 _offset1[2];
-             s32 _offset2[4];
-             s32 _pulseval[4];
-             s32 _pulsepos[4];
-             s32 _pulseoff[4];
+             std::array<s32,2> _offset1;
+             std::array<s32,4> _offset2;
+             std::array<s32,4> _pulseval;
+             std::array<s32,4> _pulsepos;
+             std::array<s32,4> _pulseoff;
+             
+             // tmps
+             std::array<s16,8> _correlatedVector;
+             s32 _filtVal = 0;
           };
      } // namespace wav
 } // namespace mods
