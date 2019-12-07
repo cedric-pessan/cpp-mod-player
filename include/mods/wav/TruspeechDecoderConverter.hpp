@@ -31,6 +31,7 @@ namespace mods
              void decodeTruspeechFrame();
              void readParameters();
              void correlateFilter();
+             void filtersMerge();
              
              WavConverter::ptr _src;
              
