@@ -32,15 +32,20 @@ namespace mods
              void readParameters();
              void correlateFilter();
              void filtersMerge();
+             void applyTwoPointFilter(int subframe);
+             void placePulses(int subframe);
+             void updateFilters(int subframe);
+             void synth(int subframe);
              
              WavConverter::ptr _src;
              
-             constexpr static int TRUSPEECH_DECODED_FRAME_SIZE = 240;
+             constexpr static int TRUSPEECH_DECODED_FRAME_SIZE = 240 * 2;
              
              std::vector<u8> _tempVec;
              std::array<u8, TRUSPEECH_DECODED_FRAME_SIZE> _decodedArray;
              mods::utils::RWBuffer<u8> _decodedBuffer;
              mods::utils::RWBuffer<u8>::const_iterator _itDecodedBuffer;
+             std::array<mods::utils::RWBuffer<s16>, 4> _subframes;
              
              constexpr static int TRUSPEECH_ENCODED_FRAME_SIZE = 32;
              
@@ -59,8 +64,17 @@ namespace mods
              std::array<s32,4> _pulseoff;
              
              // tmps
-             std::array<s16,8> _correlatedVector;
+             using CorrelatedVector = std::array<s16,8>;
+             std::array<CorrelatedVector,2> _correlatedVectors;
+             int _currentCorrelatedVector = 0;
              s32 _filtVal = 0;
+             
+             std::array<s16, 32> _filters;
+             std::array<s32, 146> _filterBuffer;
+             std::array<s16, 60> _newVector;
+             std::array<s16, 8> _tmp1;
+             std::array<s16, 8> _tmp2;
+             std::array<s16, 8> _tmp3;
           };
      } // namespace wav
 } // namespace mods

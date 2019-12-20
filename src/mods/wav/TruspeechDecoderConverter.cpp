@@ -14,6 +14,13 @@ namespace mods
           _decodedArray {},
           _decodedBuffer(initializeArrayRWBuffer(_decodedArray)),
           _itDecodedBuffer(_decodedBuffer.RBuffer<u8>::end()),
+          _subframes 
+          {
+             _decodedBuffer.slice<s16>(0,    60),
+             _decodedBuffer.slice<s16>(60*2, 60),
+             _decodedBuffer.slice<s16>(120*2,60),
+             _decodedBuffer.slice<s16>(180*2,60)
+          },
           _encodedArray {},
           _encodedBuffer(initializeArrayRWBuffer(_encodedArray)),
           _bitReader(_encodedBuffer),
@@ -23,7 +30,13 @@ namespace mods
           _pulseval {},
           _pulsepos {},
           _pulseoff {},
-          _correlatedVector {}
+          _correlatedVectors {},
+          _filters {},
+          _filterBuffer {},
+          _newVector {},
+          _tmp1 {},
+          _tmp2 {},
+          _tmp3 {}
           {
           }
         
@@ -77,11 +90,17 @@ namespace mods
              correlateFilter();
              filtersMerge();
              
-             std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame()" << std::endl;
-             for(int i=0; i<32; ++i)
+             for(int i=0; i<4; ++i)
                {
-                  _decodedBuffer[i] = _encodedBuffer[i];
+                  applyTwoPointFilter(i);
+                  placePulses(i);
+                  updateFilters(i);
+                  synth(i);
                }
+             
+             _currentCorrelatedVector = 1 - _currentCorrelatedVector;
+             
+             std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame()" << std::endl;
           }
         
         namespace
@@ -139,6 +158,93 @@ namespace mods
                {
                   0x7F3B, 0x7E78, 0x7DB6, 0x7CF5, 0x7C35, 0x7B76, 0x7AB8, 0x79FC 
                };
+             
+             using Order2Coeffs = std::array<s16, 2>;
+             constexpr std::array<Order2Coeffs, 25> order2Coeffs
+               {{
+                  { s16(0xED2F), s16(0x5239) },
+                  { s16(0x54F1), s16(0xE4A9) },
+                  { s16(0x2620), s16(0xEE3E) },
+                  { s16(0x09D6), s16(0x2C40) },
+                  { s16(0xEFB5), s16(0x2BE0) },
+                  
+                  { s16(0x3FE1), s16(0x3339) },
+                  { s16(0x442F), s16(0xE6FE) },
+                  { s16(0x4458), s16(0xF9DF) },
+                  { s16(0xF231), s16(0x43DB) },
+                  { s16(0x3DB0), s16(0xF705) },
+                  
+                  { s16(0x4F7B), s16(0xFEFB) },
+                  { s16(0x26AD), s16(0x0CDC) },
+                  { s16(0x33C2), s16(0x0739) },
+                  { s16(0x12BE), s16(0x43A2) },
+                  { s16(0x1BDF), s16(0x1F3E) },
+                  
+                  { s16(0x0211), s16(0x0796) },
+                  { s16(0x2AEB), s16(0x163F) },
+                  { s16(0x050D), s16(0x3A38) },
+                  { s16(0x0D1E), s16(0x0D78) },
+                  { s16(0x150F), s16(0x3346) },
+                  
+                  { s16(0x38A4), s16(0x0B7D) },
+                  { s16(0x2D5D), s16(0x1FDF) },
+                  { s16(0x19B7), s16(0x2822) },
+                  { s16(0x0D99), s16(0x1F12) },
+                  { s16(0x194C), s16(0x0CE6) }
+               }};
+             
+             constexpr std::array<s16,64> pulseScales 
+               {                  
+                  s16(0x0002), s16(0x0006), s16(0xFFFE), s16(0xFFFA),
+                  s16(0x0004), s16(0x000C), s16(0xFFFC), s16(0xFFF4),
+                  s16(0x0006), s16(0x0012), s16(0xFFFA), s16(0xFFEE),
+                  s16(0x000A), s16(0x001E), s16(0xFFF6), s16(0xFFE2),
+                  s16(0x0010), s16(0x0030), s16(0xFFF0), s16(0xFFD0),
+                  s16(0x0019), s16(0x004B), s16(0xFFE7), s16(0xFFB5),
+                  s16(0x0028), s16(0x0078), s16(0xFFD8), s16(0xFF88),
+                  s16(0x0040), s16(0x00C0), s16(0xFFC0), s16(0xFF40),
+                  s16(0x0065), s16(0x012F), s16(0xFF9B), s16(0xFED1),
+                  s16(0x00A1), s16(0x01E3), s16(0xFF5F), s16(0xFE1D),
+                  s16(0x0100), s16(0x0300), s16(0xFF00), s16(0xFD00),
+                  s16(0x0196), s16(0x04C2), s16(0xFE6A), s16(0xFB3E),
+                  s16(0x0285), s16(0x078F), s16(0xFD7B), s16(0xF871),
+                  s16(0x0400), s16(0x0C00), s16(0xFC00), s16(0xF400),
+                  s16(0x0659), s16(0x130B), s16(0xF9A7), s16(0xECF5),
+                  s16(0x0A14), s16(0x1E3C), s16(0xF5EC), s16(0xE1C4)
+               };
+             
+             constexpr std::array<s16,120> pulseValues
+               {
+                  0x0E46, 0x0CCC, 0x0B6D, 0x0A28, 0x08FC, 0x07E8, 0x06EB, 0x0604,
+                    0x0532, 0x0474, 0x03C9, 0x0330, 0x02A8, 0x0230, 0x01C7, 0x016C,
+                    0x011E, 0x00DC, 0x00A5, 0x0078, 0x0054, 0x0038, 0x0023, 0x0014,
+                    0x000A, 0x0004, 0x0001, 0x0000, 0x0000, 0x0000,
+                  
+                    0x0196, 0x017A, 0x015F, 0x0145, 0x012C, 0x0114, 0x00FD, 0x00E7,
+                    0x00D2, 0x00BE, 0x00AB, 0x0099, 0x0088, 0x0078, 0x0069, 0x005B,
+                    0x004E, 0x0042, 0x0037, 0x002D, 0x0024, 0x001C, 0x0015, 0x000F,
+                    0x000A, 0x0006, 0x0003, 0x0001, 0x0000, 0x0000,
+                    
+                    0x001D, 0x001C, 0x001B, 0x001A, 0x0019, 0x0018, 0x0017, 0x0016,
+                    0x0015, 0x0014, 0x0013, 0x0012, 0x0011, 0x0010, 0x000F, 0x000E,
+                    0x000D, 0x000C, 0x000B, 0x000A, 0x0009, 0x0008, 0x0007, 0x0006,
+                    0x0005, 0x0004, 0x0003, 0x0002, 0x0001, 0x0000,
+                    
+                    0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001,
+                    0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001,
+                    0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001,
+                    0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001
+               };
+             
+             constexpr std::array<s16,8> decay_35_64
+               {
+                  0x4666, 0x26B8, 0x154C, 0x0BB6, 0x0671, 0x038B, 0x01F3, 0x0112
+               };
+             
+             constexpr std::array<s16,8> decay_3_4
+               {
+                  0x6000, 0x4800, 0x3600, 0x2880, 0x1E60, 0x16C8, 0x1116, 0x0CD1
+               };
           } // namespace
         
         void TruspeechDecoderConverter::readParameters()
@@ -192,22 +298,23 @@ namespace mods
              using mods::utils::at;
              
              std::array<s16,8> tmp;
+             auto& correlatedVector = at(_correlatedVectors, _currentCorrelatedVector);
              
              for(int i=0; i<8; ++i)
                {
                   if(i > 0)
                     {
-                       std::copy(tmp.begin(), tmp.begin() + i, _correlatedVector.begin());
+                       std::copy(tmp.begin(), tmp.begin() + i, correlatedVector.begin());
                        for(int j=0; j<i; ++j)
                          {
-                            at(_correlatedVector,j) += (at(tmp, i - j -1) * at(_vector,i) + 0x4000) >> 15;
+                            at(correlatedVector,j) += (at(tmp, i - j -1) * at(_vector,i) + 0x4000) >> 15;
                          }
                     }
-                  at(_correlatedVector,i) = (8 - at(_vector,i)) >> 3;
+                  at(correlatedVector,i) = (8 - at(_vector,i)) >> 3;
                }
              for(int i=0; i<8; ++i)
                {
-                  at(_correlatedVector,i) = (at(_correlatedVector,i) * at(decay_994_1000,i)) >> 15;
+                  at(correlatedVector,i) = (at(correlatedVector,i) * at(decay_994_1000,i)) >> 15;
                }
              
              _filtVal = at(_vector,0);
@@ -215,7 +322,199 @@ namespace mods
         
         void TruspeechDecoderConverter::filtersMerge()
           {
-             std::cout << "TruspeechDecoderConverter::filtersMerge()" << std::endl;
+             using mods::utils::at;
+             
+             auto& previousCorrelatedVector = at(_correlatedVectors, 1 - _currentCorrelatedVector);
+             auto& correlatedVector = at(_correlatedVectors, _currentCorrelatedVector);
+             
+             if(!_flag)
+               {
+                  for(int i=0; i<8; ++i)
+                    {
+                       at(_filters, i)   = at(previousCorrelatedVector, i);
+                       at(_filters, i+8) = at(previousCorrelatedVector, i);
+                    }
+               }
+             else
+               {
+                  for(int i=0; i<8; ++i)
+                    {
+                       at(_filters, i) = (at(correlatedVector, i) * 21846 + at(previousCorrelatedVector, i) * 10923 + 16384) >> 15;
+                       at(_filters, i) = (at(correlatedVector, i) * 10923 + at(previousCorrelatedVector, i) * 21846 + 16384) >> 15;
+                    }
+               }
+             
+             for(int i=0; i<8; ++i)
+               {
+                  at(_filters, i) = at(correlatedVector, i);
+                  at(_filters, i) = at(correlatedVector, i);
+               }
+          }
+        
+        void TruspeechDecoderConverter::applyTwoPointFilter(int subframe)
+          {
+             using mods::utils::at;
+             
+             std::array<s16, 146 + 60> tmp;
+             
+             int t = at(_offset2, subframe);
+             if(t == 127)
+               std::cout << "TODO: TruspeechDecoderConverter::applyTwoPointFilter() offset saturation" << std::endl;
+             for(int i=0; i<146; ++i)
+               {
+                  at(tmp,i) = at(_filterBuffer,i);
+               }
+             s32 off = (t / 25) + at(_offset1, subframe >> 1) + 18;
+             off = mods::utils::clamp(off, 0, 145);
+             auto it0 = tmp.begin() + (145 - off);
+             auto it1 = tmp.begin() + 146;
+             auto& filter = at(order2Coeffs, t % 25);
+             for(int i=0; i<60; ++i,++it1)
+               {
+                  t = (*it0 * at(filter,0) + *(it0+1) * at(filter,1) + 0x2000) >> 14;
+                  ++it0;
+                  at(_newVector, i) = t;
+                  *it1 = t;
+               }
+          }
+        
+        void TruspeechDecoderConverter::placePulses(int subframe)
+          {
+             using mods::utils::at;
+             std::array<s16, 7> tmp;
+             
+             auto& buf = at(_subframes, subframe);
+             
+             std::fill(buf.begin(), buf.end(), 0);
+             for(int i=0; i<7; ++i)
+               {
+                  auto t = at(_pulseval, subframe) & 3;
+                  at(_pulseval, subframe) >>= 2;
+                  at(tmp, 6-i) = at(pulseScales, at(_pulseoff, subframe) * 4 + t);
+               }
+             
+             int coef = at(_pulsepos, subframe) >> 15;
+             auto it1 = pulseValues.begin() + 30;
+             auto it2 = tmp.begin();
+             for(int i=0, j=3; (i < 30) && (j > 0); ++i)
+               {
+                  auto t = *it1;
+                  ++it1;
+                  if(coef >= t)
+                    {
+                       coef -= t;
+                    }
+                  else
+                    {
+                       buf[i] = *it2;
+                       ++it2;
+                       it1 += 30;
+                       --j;
+                    }
+               }
+             coef = at(_pulsepos, subframe) & 0x7FFF;
+             it1 = pulseValues.begin();
+             for(int i=30, j=4; (i < 60) && (j > 0); ++i)
+               {
+                  auto t = *it1;
+                  ++it1;
+                  if(coef >= t)
+                    {
+                       coef -= t;
+                    }
+                  else
+                    {
+                       buf[i] = *it2;
+                       ++it2;
+                       it1 += 30;
+                       --j;
+                    }
+               }
+          }
+        
+        void TruspeechDecoderConverter::updateFilters(int subframe)
+          {
+             using mods::utils::at;
+             
+             auto& buf = at(_subframes, subframe);
+             
+             std::move(_filterBuffer.begin() + 60, _filterBuffer.end(), _filterBuffer.begin());
+             for(int i=0; i<60; ++i)
+               {
+                  at(_filterBuffer, i + 86) = buf[i] + at(_newVector,i) - (at(_newVector,i) >> 3);
+                  buf[i] += at(_newVector,i);
+               }
+          }
+        
+        void TruspeechDecoderConverter::synth(int subframe)
+          {
+             using mods::utils::at;
+             
+             auto& buf = at(_subframes, subframe);
+             std::array<int, 8> t;
+             
+             auto* tmp = &_tmp1;
+             auto it = _filters.begin() + subframe * 8;
+             for(int i=0; i<60; ++i)
+               {
+                  int sum = 0;
+                  for(int k=0; k<8; ++k)
+                    {
+                       sum += at(*tmp, k) * (u32)*(it + k);
+                    }
+                  sum = buf[i] + ((sum + 0x800) >> 12);
+                  buf[i] = mods::utils::clamp(sum, -0x7FFE, 0x7FFE);
+                  for(int k=7; k>0; --k)
+                    {
+                       at(*tmp, k) = at(*tmp, k-1);
+                    }
+                  at(*tmp, 0) = buf[i];
+               }
+             
+             for(int i=0; i<8; ++i)
+               {
+                  at(t, i) = (at(decay_35_64, i) * *(it + i)) >> 15;
+               }
+             
+             tmp = &_tmp2;
+             for(int i=0; i<60; ++i)
+               {
+                  int sum = 0;
+                  for(int k=0; k<8; ++k)
+                    {
+                       sum += at(*tmp, k) * at(t, k);
+                    }
+                  for(int k=7; k>0; --k)
+                    {
+                       at(*tmp, k) = at(*tmp, k-1);
+                    }
+                  at(*tmp, 0) = buf[i];
+                  buf[i] += (-sum) >> 12;
+               }
+             
+             for(int i=0; i<8; ++i)
+               {
+                  at(t, i) = (at(decay_3_4, i) * *(it + i)) >> 15;
+               }
+             
+             tmp = &_tmp3;
+             for(int i=0; i<60; ++i)
+               {
+                  int sum = buf[i] * (1 << 12);
+                  for(int k=0; k<8; ++k)
+                    {
+                       sum += at(*tmp, k) * at(t, k);
+                    }
+                  for(int k=7; k>0; --k)
+                    {
+                       at(*tmp, k) = at(*tmp, k-1);
+                    }
+                  at(*tmp, 0) = mods::utils::clamp((sum + 0x800) >> 12, -0x7FFE, 0x7FFE);
+                  
+                  sum = ((at(*tmp, 1) * (_filtVal - (_filtVal >> 2))) >> 4) + sum;
+                  sum = sum - (sum >> 3);
+                  buf[i] = mods::utils::clamp((sum + 0x800) >> 12, -0x7FFE, 0x7FFE);
+               }
           }
         
      } // namespace wav

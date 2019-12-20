@@ -128,7 +128,20 @@ namespace mods
                assert(i >= 0 && i < a.size());
                return a[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
             }
-          
+        
+        template<typename T>
+          constexpr const T& clamp(const T& v, const T& lo, const T& hi)
+            {
+               if(v < lo)
+                 {
+                    return lo;
+                 }
+               if(v > hi)
+                 {
+                    return hi;
+                 }
+               return v;
+            }
      } // namespace utils
 } // namespace mods
 
