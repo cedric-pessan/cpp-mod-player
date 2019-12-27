@@ -304,7 +304,7 @@ namespace mods
                {
                   if(i > 0)
                     {
-                       std::copy(tmp.begin(), tmp.begin() + i, correlatedVector.begin());
+		       std::copy(correlatedVector.begin(), correlatedVector.begin() + i, tmp.begin());
                        for(int j=0; j<i; ++j)
                          {
                             at(correlatedVector,j) += (at(tmp, i - j -1) * at(_vector,i) + 0x4000) >> 15;
