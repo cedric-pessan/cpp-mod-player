@@ -99,8 +99,6 @@ namespace mods
                }
              
              _currentCorrelatedVector = 1 - _currentCorrelatedVector;
-             
-             std::cout << "TODO: TruspeechDecoderConverter::decodeTruspeechFrame()" << std::endl;
           }
         
         namespace
@@ -340,14 +338,14 @@ namespace mods
                   for(int i=0; i<8; ++i)
                     {
                        at(_filters, i) = (at(correlatedVector, i) * 21846 + at(previousCorrelatedVector, i) * 10923 + 16384) >> 15;
-                       at(_filters, i) = (at(correlatedVector, i) * 10923 + at(previousCorrelatedVector, i) * 21846 + 16384) >> 15;
+                       at(_filters, i+8) = (at(correlatedVector, i) * 10923 + at(previousCorrelatedVector, i) * 21846 + 16384) >> 15;
                     }
                }
              
              for(int i=0; i<8; ++i)
                {
-                  at(_filters, i) = at(correlatedVector, i);
-                  at(_filters, i) = at(correlatedVector, i);
+                  at(_filters, i+16) = at(correlatedVector, i);
+                  at(_filters, i+24) = at(correlatedVector, i);
                }
           }
         
@@ -361,7 +359,6 @@ namespace mods
              if(t == 127)
 	       {
 		  std::fill(_newVector.begin(), _newVector.end(), 0);
-		  std::cout << "TODO: TruspeechDecoderConverter::applyTwoPointFilter() offset saturation" << std::endl;
 		  return;
 	       }
              for(int i=0; i<146; ++i)
