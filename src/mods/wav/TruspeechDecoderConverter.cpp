@@ -359,7 +359,11 @@ namespace mods
              
              int t = at(_offset2, subframe);
              if(t == 127)
-               std::cout << "TODO: TruspeechDecoderConverter::applyTwoPointFilter() offset saturation" << std::endl;
+	       {
+		  std::fill(_newVector.begin(), _newVector.end(), 0);
+		  std::cout << "TODO: TruspeechDecoderConverter::applyTwoPointFilter() offset saturation" << std::endl;
+		  return;
+	       }
              for(int i=0; i<146; ++i)
                {
                   at(tmp,i) = at(_filterBuffer,i);

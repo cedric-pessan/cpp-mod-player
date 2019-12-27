@@ -52,7 +52,7 @@ namespace mods
              std::array<u8, TRUSPEECH_ENCODED_FRAME_SIZE> _encodedArray;
              mods::utils::RWBuffer<u8> _encodedBuffer;
              
-             mods::utils::BitReader _bitReader;
+             mods::utils::BitReader<mods::utils::ByteSwap::U32, mods::utils::BitOrder::MsbToLsb> _bitReader;
              
              // parameters
              std::array<s16,8> _vector;

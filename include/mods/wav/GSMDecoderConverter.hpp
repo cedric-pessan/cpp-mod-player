@@ -63,7 +63,7 @@ namespace mods
              mods::utils::RWBuffer<u8> _encodedBuffer;
              
              bool _evenFrame = true;
-             mods::utils::BitReader _bitReader;
+             mods::utils::BitReader<mods::utils::ByteSwap::None, mods::utils::BitOrder::LsbToMsb> _bitReader;
              
              std::array<GSMInt16, 8> _LARc;
              

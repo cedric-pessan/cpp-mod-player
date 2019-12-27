@@ -7,7 +7,20 @@ namespace mods
 {
    namespace utils
      {
-        class BitReader
+	enum struct ByteSwap
+	  {
+	     None,
+	       U32
+	  };
+	
+	enum struct BitOrder
+	  {
+	     LsbToMsb,
+	       MsbToLsb
+	  };
+	
+	template<ByteSwap BYTESWAP, BitOrder BITORDER>
+	  class BitReader
           {
            public:
              explicit BitReader(const mods::utils::RBuffer<u8>& buf);
