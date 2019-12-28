@@ -321,6 +321,13 @@ namespace mods
                                  upscaledChannels.push_back(std::move(unpackedSampleChannels[i]));
                               }
                             break;
+			  case WavAudioFormat::IEEE_FLOAT:
+			    upscaledBitsPerSample = -1;
+			    for(int i = 0; i < nbChannels; ++i)
+			      {
+				 upscaledChannels.push_back(std::make_unique<ToDoubleConverter<float>>(std::move(unpackedSampleChannels[i])));
+			      }
+			    break;
                           default:
                             std::cout << "WavConverter: unsuported codec in upscale stage for 32 bits sample (integer factor resampling)" << std::endl;
                          }

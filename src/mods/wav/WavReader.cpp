@@ -275,7 +275,6 @@ namespace mods
                   
                 case WavAudioFormat::IEEE_FLOAT:
                   checkInit(decodedFormat.getBitsPerSample() == 32 || decodedFormat.getBitsPerSample() == 64, "IEEE float codec needs 32 or 64 bits per sample");
-                  checkInit(extendedFmtHeader.has_value(), "IEEE float codec without extended fmt");
                   break;
                   
                 case WavAudioFormat::TRUSPEECH:
@@ -283,7 +282,7 @@ namespace mods
                   
                 case WavAudioFormat::GSM:
                   checkInit((decodedFormat.getBitsPerContainer() % 260) == 0, "Container length for GSM should be a multiple of 260");
-                  checkInit(extendedFmtHeader.has_value(), "IEEE float codec without extended fmt");
+                  checkInit(extendedFmtHeader.has_value(), "GSM codec without extended fmt");
                   break;
                   
                 default:
