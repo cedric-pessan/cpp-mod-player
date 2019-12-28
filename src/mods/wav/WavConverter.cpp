@@ -243,6 +243,12 @@ namespace mods
                        upscaledBitsPerSample = 16;
                        switch(codec)
                          {
+			  case WavAudioFormat::A_LAW:
+			    for(int i = 0; i < nbChannels; ++i)
+			      {
+				 upscaledChannels.push_back(std::make_unique<ALawConverter>(std::move(unpackedSampleChannels[i])));
+			      }
+			    break;
                           case WavAudioFormat::PCM:
                             for(int i = 0; i < nbChannels; ++i)
                               {
@@ -381,6 +387,13 @@ namespace mods
                        resampledChannels.push_back(std::make_unique<ResampleConverter<8000, 44100>>(std::move(upscaledChannels[i])));
                     }
                   break;
+		  
+		case 11025:
+		  for(int i = 0; i < nbChannels; ++i)
+		    {
+		       resampledChannels.push_back(buildResamplePositiveIntegerFactor<4>(resampledBitsPerSample, std::move(upscaledChannels[i])));
+		    }
+		  break;
                   
                 case 22000:
                   for(int i = 0; i < nbChannels; ++i)

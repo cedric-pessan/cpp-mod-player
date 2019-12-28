@@ -47,5 +47,8 @@ namespace mods
         
         template class ResamplePositiveIntegerFactor<s16, 2>;
         template class ResamplePositiveIntegerFactor<double, 2>;
+	
+	template class ResamplePositiveIntegerFactor<s16, 4>;
+        template class ResamplePositiveIntegerFactor<double, 4>;
      } // namespace wav
 } // namespace mods
