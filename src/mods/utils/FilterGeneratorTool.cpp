@@ -26,7 +26,8 @@ namespace mods
                {
                     { 22000, 2, 22000 * ConstFraction(22000,44100).reduce().getDenominator(), 1545 }, // 22kHz -> 44100Hz
                     { 8000, 2, 8000 * ConstFraction(8000,44100).reduce().getDenominator(), 1545 }, // 8kHz -> 44100Hz
-                    { 44100, 2, 48000 * ConstFraction(48000,44100).reduce().getDenominator(), 1401 } // 48kHz -> 44100Hz
+                    { 44100, 2, 48000 * ConstFraction(48000,44100).reduce().getDenominator(), 1401 }, // 48kHz -> 44100Hz
+		    { 10000, 2, 10000 * ConstFraction(10000,44100).reduce().getDenominator(), 1401 } // 10kHz -> 44100Hz
                };
              return lowPassParams;
           }

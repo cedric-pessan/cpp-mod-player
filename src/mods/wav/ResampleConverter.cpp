@@ -215,5 +215,6 @@ namespace mods
         template class ResampleConverter<22000, 44100>;
         template class ResampleConverter<8000, 44100>;
         template class ResampleConverter<48000, 44100>;
+	template class ResampleConverter<10000, 44100>;
      } // namespace wav
 } // namespace mods

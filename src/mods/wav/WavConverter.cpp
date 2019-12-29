@@ -395,6 +395,13 @@ namespace mods
                     }
                   break;
 		  
+		case 10000:
+		  for(int i = 0; i < nbChannels; ++i)
+		    {
+		       resampledChannels.push_back(std::make_unique<ResampleConverter<10000, 44100>>(std::move(upscaledChannels[i])));
+		    }
+		  break;
+		  
 		case 11025:
 		  for(int i = 0; i < nbChannels; ++i)
 		    {
