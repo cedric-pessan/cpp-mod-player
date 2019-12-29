@@ -13,6 +13,7 @@ namespace mods
                IEEE_FLOAT = 0x0003,
                A_LAW = 0x0006,
                MU_LAW = 0x0007,
+	       DVI_ADPCM = 0x0011,
                TRUSPEECH = 0x0022,
                GSM = 0x0031,
                EXTENSIBLE = 0xFFFE

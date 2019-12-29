@@ -3,8 +3,10 @@
 #include "mods/wav/ChannelCopyWavConverter.hpp"
 #include "mods/wav/DivideConverter.hpp"
 #include "mods/wav/DownscaleWavConverter.hpp"
+#include "mods/wav/DVIADPCMDecoderConverter.hpp"
 #include "mods/wav/FillLSBConverter.hpp"
 #include "mods/wav/FromDoubleConverter.hpp"
+#include "mods/wav/GenericResampleConverter.hpp"
 #include "mods/wav/GSMDecoderConverter.hpp"
 #include "mods/wav/MuLawConverter.hpp"
 #include "mods/wav/MultiChannelMixer.hpp"
@@ -53,6 +55,13 @@ namespace mods
                        std::cout << bitsPerSample << "bits value is only valid for block codec" << std::endl;
                     }
                   break;
+		  
+		case 4:
+		  if(codec != WavAudioFormat::DVI_ADPCM)
+		    {
+		       std::cout << "4 bits value is only valid for DVI/ADPCM codec" << std::endl;
+		    }
+		  break;
                   
                 case 8:
                   if(codec == WavAudioFormat::A_LAW)
@@ -126,6 +135,10 @@ namespace mods
                 case 520:
                   buildDemuxStage<520>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
                   break;
+		  
+		case 4096:
+		  buildDemuxStage<4096>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
+		  break;
                   
                 default:
                   std::cout << "WavConverter: unsupported " << bitsPerContainer << " bits per container for demux stage" << std::endl;
@@ -196,6 +209,19 @@ namespace mods
                        unpackedContainerChannels.push_back(std::make_unique<GSMDecoderConverter>(std::move(channels[i])));
                     }
                   break;
+		  
+		case 4096:
+		  if(codec != WavAudioFormat::DVI_ADPCM)
+		    {
+		       std::cout << "WavConverter: 4096 container should be DVI/ADPCM codec" << std::endl;
+		    }
+		  unpackedBitsPerContainer = bitsPerContainer = 16;
+		  bitsPerSample = 16;
+		  for(int i=0; i < nbChannels; ++i)
+		    {
+		       unpackedContainerChannels.push_back(std::make_unique<DVIADPCMDecoderConverter>(std::move(channels[i])));
+		    }
+		  break;
                   
                 default:
                   std::cout << "WavConverter: unsupported " << bitsPerContainer << " bits per container for unpacking container stage" << std::endl;
@@ -438,7 +464,11 @@ namespace mods
                   break;
                   
                 default:
-                  std::cout << "WavConverter: unsupported frequency: " << frequency << std::endl;
+                  std::cout << "WARNING: WavConverter: non standard frequency: " << frequency << ", using generic resampler" << std::endl;
+		  for(int i = 0; i < nbChannels; ++i)
+		    {
+		       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i])));
+		    }
                }
              
              ptr mixedLeft;
