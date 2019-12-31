@@ -20,7 +20,7 @@ namespace mods
              ConstFraction(const ConstFraction&) = delete;
              ConstFraction(ConstFraction&&) = default;
              ConstFraction& operator=(const ConstFraction&) = delete;
-             ConstFraction& operator=(ConstFraction&&) = delete;
+             ConstFraction& operator=(ConstFraction&&) = default;
              ~ConstFraction() = default;
              
              constexpr ConstFraction reduce() const

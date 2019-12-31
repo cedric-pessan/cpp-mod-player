@@ -467,7 +467,7 @@ namespace mods
                   std::cout << "WARNING: WavConverter: non standard frequency: " << frequency << ", using generic resampler" << std::endl;
 		  for(int i = 0; i < nbChannels; ++i)
 		    {
-		       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i])));
+		       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i]), frequency, 44100));
 		    }
                }
              

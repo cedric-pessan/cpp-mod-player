@@ -67,8 +67,11 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/WavConverter.cpp
                          src/mods/wav/WavReader.cpp
                          src/mods/wav/WavTypes.cpp
+			 src/mods/utils/Band.cpp
                          src/mods/utils/BitReader.cpp
                          src/mods/utils/FileUtils.cpp
+			 src/mods/utils/FirFilterDesigner.cpp
+			 src/mods/utils/integerFactorization.cpp
                          src/mods/utils/RBufferBackend.cpp
                          src/mods/utils/RWBufferBackend.cpp
                          ${SRCS_UNIX}

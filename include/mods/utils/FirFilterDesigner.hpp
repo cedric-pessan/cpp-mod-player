@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "mods/utils/Band.hpp"
@@ -14,6 +15,8 @@ namespace mods
         class FirFilterDesigner
           {
            public:
+	     using ptr = std::unique_ptr<FirFilterDesigner>;
+	     
              explicit FirFilterDesigner(std::vector<Band> bands);
              
              FirFilterDesigner() = delete;

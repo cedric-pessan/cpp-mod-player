@@ -1,7 +1,8 @@
 #ifndef MODS_WAV_GENERICRESAMPLECONVERTER_HPP
 #define MODS_WAV_GENERICRESAMPLECONVERTER_HPP
 
-/*#include "mods/utils/ConstFraction.hpp"*/
+#include "mods/utils/ConstFraction.hpp"
+#include "mods/utils/FirFilterDesigner.hpp"
 #include "mods/wav/WavConverter.hpp"
 
 namespace mods
@@ -11,7 +12,7 @@ namespace mods
 	class GenericResampleConverter : public WavConverter
           {
            public:
-             explicit GenericResampleConverter(WavConverter::ptr src);
+             explicit GenericResampleConverter(WavConverter::ptr src, int inFrequency, int outFrequency);
              
              GenericResampleConverter() = delete;
              GenericResampleConverter(const GenericResampleConverter&) = delete;
@@ -24,6 +25,35 @@ namespace mods
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
              
            private:
+	     class ResampleSpec
+	       {
+		public:
+		  ResampleSpec(int inputFrequency, int outputFrequency);
+		  
+		  ResampleSpec() = delete;
+		  ResampleSpec(const ResampleSpec&) = default;
+		  ResampleSpec(ResampleSpec&&) = delete;
+		  ResampleSpec& operator=(const ResampleSpec&) = delete;
+		  ResampleSpec& operator=(ResampleSpec&&) = delete;
+		  ~ResampleSpec() = default;
+		  
+		  int getInputFrequency() const;
+		  int getOutputFrequency() const;
+		  
+		private:
+		  int _inputFrequency;
+		  int _outputFrequency;
+	       };
+	     
+	     static std::unique_ptr<GenericResampleConverter> buildResampleStage(std::vector<ResampleSpec> specsStack, WavConverter::ptr src);
+	     
+	   protected:
+	     GenericResampleConverter(std::vector<ResampleSpec> specsStack, WavConverter::ptr src);
+	     
+	   private:
+	     void init(std::vector<ResampleSpec> specsStack, WavConverter::ptr src);
+	     std::vector<ResampleSpec> buildSpecs(int inFrequency, int outFrequency);
+	     
              /*double getNextDecimatedSample();
              void updateHistory();
              void removeFromHistory();
@@ -34,27 +64,22 @@ namespace mods
              mods::utils::RWBuffer<u8> initBuffer();*/
              
              WavConverter::ptr _src;
-             /*int _zerosToNextInterpolatedSample = 0;
+             /*int _zerosToNextInterpolatedSample = 0;*/
              
-             constexpr static mods::utils::ConstFraction getResampleFraction()
-               {
-                  return mods::utils::ConstFraction(InFrequency, OutFrequency).reduce();
-               }
-             constexpr static int getDecimationFactor()
+	     mods::utils::ConstFraction _resampleFraction = mods::utils::ConstFraction(1,1);
+	     
+             const mods::utils::ConstFraction& getResampleFraction() const;
+             /*constexpr static int getDecimationFactor()
                {
                   return getResampleFraction().getNumerator();
-               }
-             constexpr static int getInterpolationFactor()
-               {
-                  return getResampleFraction().getDenominator();
-               }
-             using FilterType = mods::utils::LowPassFilter<std::min(InFrequency, OutFrequency), 2, InFrequency * getInterpolationFactor()>;
-             constexpr static int _numTaps = FilterType::taps.size();
+               }*/
+             int getInterpolationFactor() const;
+	     mods::utils::FirFilterDesigner::ptr _designer;
              
-             std::array<u8, _numTaps * sizeof(double)> _inputArray;
+             /*std::array<u8, _numTaps * sizeof(double)> _inputArray;
              mods::utils::RWBuffer<u8> _inputBuffer;
              mods::utils::RWBuffer<double> _inputBufferAsDouble;
-             size_t _currentSample = _numTaps;
+             size_t _currentSample = _numTaps;*/
              
              struct SampleWithZeros
                {
@@ -74,7 +99,11 @@ namespace mods
              class History
                {
                 public:
-                  History() = default;
+		  using ptr = std::unique_ptr<History>;
+		  
+		  History(int numTaps);
+		  
+                  History() = delete;
                   History(const History&) = delete;
                   History(History&&) = delete;
                   History& operator=(const History&) = delete;
@@ -82,16 +111,18 @@ namespace mods
                   ~History() = default;
                   
                   void push_back(const SampleWithZeros& sampleWithZeros);
-                  SampleWithZeros& front();
-                  void pop_front();
+                  /*SampleWithZeros& front();
+                  void pop_front();*/
                   bool isEmpty() const;
-                  const SampleWithZeros& getSample(size_t i) const;
+                  /*const SampleWithZeros& getSample(size_t i) const;*/
                   
                 private:
-                  std::array<SampleWithZeros, _numTaps> _array = {};
+		  std::vector<SampleWithZeros> _v;
                   size_t _begin = 0;
                   size_t _end = 0;
-               } _history;*/
+               };
+	     
+	     History::ptr _history;
           };
      } // namespace wav
 } // namespace mods
