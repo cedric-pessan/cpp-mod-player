@@ -49,7 +49,7 @@ namespace mods
 	     int inFrequency = spec.getInputFrequency();
 	     int outFrequency = spec.getOutputFrequency();
 	     
-	     std::cout << "compute resampler from " << inFrequency << "Hz to " << outFrequency << std::endl;
+	     std::cout << "compute resampler from " << inFrequency << "Hz to " << outFrequency << "Hz" << std::endl;
 	     
 	     _resampleFraction = mods::utils::ConstFraction(inFrequency, outFrequency).reduce();
 	     

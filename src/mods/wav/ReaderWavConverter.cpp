@@ -28,22 +28,23 @@ namespace mods
           void ReaderWavConverter<CH, NBCHANNELS, BITSPERCONTAINER>::read(mods::utils::RWBuffer<u8>* buf, int len)
             {
                int bytesRead = 0;
+	       int bytesWritten = 0;
                auto& out = *buf;
-               for(int i=0; i<len; i+=BYTESPERCONTAINER)
-                 {
+	       while(bytesWritten < len)
+		 {
                     if(_it < _end) 
                       {
-                         for(; _currentByte<BYTESPERCONTAINER && bytesRead < len; ++_currentByte)
+                         for(; _currentByte<BYTESPERCONTAINER && bytesWritten < len; ++_currentByte)
                            {
                               if(_it < _end)
                                 {
-                                   out[i+_currentByte] = *_it;
+                                   out[bytesWritten++] = *_it;
                                    ++_it;
                                    ++bytesRead;
                                 }
                               else
                                 {
-                                   out[i+_currentByte] = _defaultValue;
+                                   out[bytesWritten++] = _defaultValue;
                                 }
                            }
                          if(_currentByte == BYTESPERCONTAINER) 
@@ -54,9 +55,9 @@ namespace mods
                       }
                     else
                       {
-                         for(int b=0; b<BYTESPERCONTAINER; ++b)
+                         for(int b=0; b<BYTESPERCONTAINER && bytesWritten < len; ++b)
                            {
-                              out[i+b] = _defaultValue;
+                              out[bytesWritten++] = _defaultValue;
                            }
                       }
                  }

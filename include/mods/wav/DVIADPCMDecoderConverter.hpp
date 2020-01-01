@@ -24,6 +24,8 @@ namespace mods
 	     
 	   private:
 	     WavConverter::ptr _src;
+	     
+	     bool _sampleAvailable = false;
 	  };
      } // namespace wav
 } // namespace mods
