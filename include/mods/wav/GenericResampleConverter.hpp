@@ -54,32 +54,29 @@ namespace mods
 	     void init(std::vector<ResampleSpec> specsStack, WavConverter::ptr src);
 	     std::vector<ResampleSpec> buildSpecs(int inFrequency, int outFrequency);
 	     
-             /*double getNextDecimatedSample();
+             double getNextDecimatedSample();
              void updateHistory();
              void removeFromHistory();
              void addToHistory();
              double calculateInterpolatedSample() const;
              double getNextSample();
              bool nextSampleExists();
-             mods::utils::RWBuffer<u8> initBuffer();*/
+             mods::utils::RWBuffer<u8> initBuffer();
              
              WavConverter::ptr _src;
-             /*int _zerosToNextInterpolatedSample = 0;*/
+             int _zerosToNextInterpolatedSample = 0;
              
 	     mods::utils::ConstFraction _resampleFraction = mods::utils::ConstFraction(1,1);
 	     
              const mods::utils::ConstFraction& getResampleFraction() const;
-             /*constexpr static int getDecimationFactor()
-               {
-                  return getResampleFraction().getNumerator();
-               }*/
+             int getDecimationFactor() const;
              int getInterpolationFactor() const;
 	     mods::utils::FirFilterDesigner::ptr _designer;
              
-             /*std::array<u8, _numTaps * sizeof(double)> _inputArray;
+             std::vector<u8> _inputVec;
              mods::utils::RWBuffer<u8> _inputBuffer;
              mods::utils::RWBuffer<double> _inputBufferAsDouble;
-             size_t _currentSample = _numTaps;*/
+             size_t _currentSample;
              
              struct SampleWithZeros
                {
@@ -111,10 +108,10 @@ namespace mods
                   ~History() = default;
                   
                   void push_back(const SampleWithZeros& sampleWithZeros);
-                  /*SampleWithZeros& front();
-                  void pop_front();*/
+                  SampleWithZeros& front();
+                  void pop_front();
                   bool isEmpty() const;
-                  /*const SampleWithZeros& getSample(size_t i) const;*/
+                  const SampleWithZeros& getSample(size_t i) const;
                   
                 private:
 		  std::vector<SampleWithZeros> _v;

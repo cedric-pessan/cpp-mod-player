@@ -22,7 +22,7 @@ namespace mods
                  {
                  }
              
-             RWBuffer() = delete;
+             RWBuffer() = default;
              RWBuffer(const RWBuffer&) = default;
              RWBuffer(RWBuffer&&) noexcept = default;
              RWBuffer& operator=(const RWBuffer&) = default;

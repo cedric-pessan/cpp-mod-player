@@ -25,6 +25,7 @@ namespace mods
                  {
                  }
              
+	     RBuffer() = default;
              RBuffer(const RBuffer&) = default;
              RBuffer(RBuffer&&) noexcept = default;
              
