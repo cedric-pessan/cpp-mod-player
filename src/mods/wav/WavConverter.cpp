@@ -417,14 +417,16 @@ namespace mods
                 case 8000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       resampledChannels.push_back(std::make_unique<ResampleConverter<8000, 44100>>(std::move(upscaledChannels[i])));
+                       //resampledChannels.push_back(std::make_unique<ResampleConverter<8000, 44100>>(std::move(upscaledChannels[i])));
+                       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i]), 8000, 44100));
                     }
                   break;
 		  
 		case 10000:
 		  for(int i = 0; i < nbChannels; ++i)
 		    {
-		       resampledChannels.push_back(std::make_unique<ResampleConverter<10000, 44100>>(std::move(upscaledChannels[i])));
+		       //resampledChannels.push_back(std::make_unique<ResampleConverter<10000, 44100>>(std::move(upscaledChannels[i])));
+                       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i]), 10000, 44100));
 		    }
 		  break;
 		  
@@ -438,7 +440,8 @@ namespace mods
                 case 22000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       resampledChannels.push_back(std::make_unique<ResampleConverter<22000, 44100>>(std::move(upscaledChannels[i])));
+                       //resampledChannels.push_back(std::make_unique<ResampleConverter<22000, 44100>>(std::move(upscaledChannels[i])));
+                       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i]), 22000, 44100));
                     }
                   break;
                   
@@ -459,7 +462,8 @@ namespace mods
                 case 48000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       resampledChannels.push_back(std::make_unique<ResampleConverter<48000, 44100>>(std::move(upscaledChannels[i])));
+                       //resampledChannels.push_back(std::make_unique<ResampleConverter<48000, 44100>>(std::move(upscaledChannels[i])));
+                       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i]), 48000, 44100));
                     }
                   break;
                   

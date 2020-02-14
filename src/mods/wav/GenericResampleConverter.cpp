@@ -53,13 +53,34 @@ namespace mods
 	     
 	     double cutoffFrequency = std::min(inFrequency, outFrequency) / 2.0;
 	     double sampleFrequency = static_cast<double>(inFrequency) * static_cast<double>(getInterpolationFactor());
+             
+             double transitionWidth = 0.0;
+             int numTaps = 0;
+             do
+               {
+                  transitionWidth += 50;
+                  double delta = transitionWidth / sampleFrequency;
+                  numTaps = 3.3 / delta;
+//                  std::cout << "transitionWidth:" << transitionWidth << ", numTaps: " << numTaps << ", sampleFrequency: " << sampleFrequency << std::endl;
+               }
+             while(numTaps > 100);
+             if((numTaps & 1) == 0) ++numTaps;
+             numTaps += 1500;
 	     
 	     std::vector<mods::utils::Band> bands;
 	     bands.emplace_back(0.0, cutoffFrequency, 1.0, 5.0, sampleFrequency);
-	     bands.emplace_back(cutoffFrequency + 50, sampleFrequency / 2.0, 0.0, -40.0, sampleFrequency);
+	     bands.emplace_back(cutoffFrequency + 50/*transitionWidth*/, sampleFrequency / 2.0, 0.0, -40.0, sampleFrequency);
+             
+             std::cout << "sample frequency of filter:" << sampleFrequency << std::endl;
 	     
-	     _designer = std::make_unique<mods::utils::FirFilterDesigner>(bands);
-	     _designer->optimizeFilter(1401);
+	     _designer = std::make_unique</*mods::utils::FirFilterDesigner*/FakeDesigner>(/*bands*/ sampleFrequency, cutoffFrequency);
+             _designer->displayProgress();
+	     _designer->optimizeFilter(1401/*numTaps*/);
+             /*std::cout << "resampler coefficients: " << _resampleFraction.getNumerator() << " / " << _resampleFraction.getDenominator() << std::endl;
+             if(_resampleFraction.getNumerator() > 10 || _resampleFraction.getDenominator() > 10)
+               _designer->optimizeFilter(1401);
+             else
+               _designer->optimizeFilter(101);*/
 	     
 	     auto& taps = _designer->getTaps();
 	     _history = std::make_unique<History>(taps.size());
@@ -76,9 +97,10 @@ namespace mods
 	     
 	     _currentSample = taps.size();
 	     
-	     _inputVec.resize(taps.size() * sizeof(double));
+	     //_inputVec.resize((taps.size() * sizeof(double) / getInterpolationFactor())+sizeof(double));
+             _inputVec.resize(((taps.size() / getInterpolationFactor())+1) * sizeof(double));
 	     _inputBuffer = initBuffer();
-	     _inputBufferAsDouble = _inputBuffer.slice<double>(0, taps.size());
+	     _inputBufferAsDouble = _inputBuffer.slice<double>(0, _inputVec.size() / sizeof(double));
 	  }
 	
 	std::vector<GenericResampleConverter::ResampleSpec> GenericResampleConverter::buildSpecs(int inFrequency, int outFrequency)
@@ -90,15 +112,18 @@ namespace mods
 	     auto interpolationFactors = mods::utils::integerFactorization(globalInterpolationFactor);
 	     auto decimationFactors = mods::utils::integerFactorization(globalDecimationFactor);
 	     
-	     while(interpolationFactors.size() < decimationFactors.size())
+	     /*while(interpolationFactors.size() < decimationFactors.size())
 	       {
 		  interpolationFactors.push_back(1);
 	       }
 	     while(decimationFactors.size() < interpolationFactors.size())
 	       {
 		  decimationFactors.push_back(1);
-	       }
+	       }*/
 	     
+             for(auto f : interpolationFactors) std::cout << "interp: " << f << std::endl;
+             for(auto f : decimationFactors) std::cout << "decim: " << f << std::endl;
+             
 	     std::sort(interpolationFactors.begin(), interpolationFactors.end());
 	     std::sort(decimationFactors.begin(), decimationFactors.end());
 	     
@@ -106,10 +131,12 @@ namespace mods
 	     auto itDecimation = decimationFactors.begin();
 	     
 	     std::vector<ResampleSpec> specs;
+             specs.emplace_back(inFrequency, outFrequency); // bypass everything
+             return specs;
 	     
 	     int currentFrequency = inFrequency;
 	     
-	     while((itInterpolation != interpolationFactors.rend()) ||
+	     /*while((itInterpolation != interpolationFactors.rend()) ||
 		   (itDecimation != decimationFactors.end()))
 	       {
 		  int nextFrequency = currentFrequency * *itInterpolation;
@@ -125,7 +152,22 @@ namespace mods
 		    {
 		       ++itDecimation;
 		    }
-	       }
+	       }*/
+             //specs.emplace_back(inFrequency, outFrequency);
+             while(itInterpolation != interpolationFactors.rend())
+               {
+                  int nextFrequency = currentFrequency * *itInterpolation;
+                  specs.emplace_back(currentFrequency, nextFrequency);
+                  currentFrequency = nextFrequency;
+                  ++itInterpolation;
+               }
+             while(itDecimation != decimationFactors.end())
+               {
+                  int nextFrequency = currentFrequency / *itDecimation;
+                  specs.emplace_back(currentFrequency, nextFrequency);
+                  currentFrequency = nextFrequency;
+                  ++itDecimation;
+               }
 	     
 	     return specs;
 	  }
@@ -206,7 +248,20 @@ namespace mods
 	       {
 		  if(toAdd <= _zerosToNextInterpolatedSample)
 		    {
-		       _history->push_back(SampleWithZeros(0.0, toAdd-1));
+                       bool merged = false;
+                       if(!_history->isEmpty())
+                         {
+                            auto& latestElement = _history->back();
+                            if(latestElement.sample == 0.0)
+                              {
+                                 latestElement.numberOfZeros += toAdd;
+                                 merged = true;
+                              }
+                         }
+                       if(!merged)
+                         {
+                            _history->push_back(SampleWithZeros(0.0, toAdd-1));
+                         }
 		       _zerosToNextInterpolatedSample -= toAdd;
 		       toAdd = 0;
 		    }
@@ -279,7 +334,8 @@ namespace mods
             }
 	
 	GenericResampleConverter::History::History(int numTaps)
-	  : _v(numTaps)
+	  : _v(numTaps),
+          _zeros(0.0, 0)
 	    {
 	    }
         
@@ -292,6 +348,20 @@ namespace mods
                }
              
 	     return _v[_begin];
+          }
+        
+        GenericResampleConverter::SampleWithZeros& GenericResampleConverter::History::back()
+          {
+             if(_begin == _end)
+               {
+                  static SampleWithZeros zero(0.0, 0);
+                  return zero;
+               }
+             if(_end == 0)
+               {
+                  return _v[_v.size()-1];
+               }
+             return _v[_end-1];
           }
         
 	void GenericResampleConverter::History::pop_front()
@@ -322,12 +392,17 @@ namespace mods
              return _begin == _end;
           }
         
-	const GenericResampleConverter::SampleWithZeros& GenericResampleConverter::History::getSample(size_t i) const
+	const GenericResampleConverter::SampleWithZeros& GenericResampleConverter::History::getSample(size_t i)
           {
              size_t idx = _begin + i;
              if(idx >= _v.size())
                {
                   idx -= _v.size();
+               }
+             if(idx >= _end)
+               {
+                  _zeros.numberOfZeros = 1000000; // Large number for fast interpolation of zeros (zeros are skipped)
+                  return _zeros;
                }
 	     return _v[idx];
           }
