@@ -270,7 +270,21 @@ namespace mods
 		       if(nextSampleExists())
 			 {
 			    double sample = getNextSample();
-			    _history->push_back(SampleWithZeros(sample, _zerosToNextInterpolatedSample));
+                            bool merged = false;
+                            if(!_history->isEmpty())
+                              {
+                                 auto& latestElement = _history->back();
+                                 if(latestElement.sample == 0.0)
+                                   {
+                                      latestElement.numberOfZeros += (1 + _zerosToNextInterpolatedSample);
+                                      latestElement.sample = sample;
+                                      merged = true;
+                                   }
+                              }
+                            if(!merged)
+                              {
+                                 _history->push_back(SampleWithZeros(sample, _zerosToNextInterpolatedSample));
+                              }
 			    toAdd -= (_zerosToNextInterpolatedSample + 1);
 			    _zerosToNextInterpolatedSample = getInterpolationFactor() - 1;
 			 } else {
