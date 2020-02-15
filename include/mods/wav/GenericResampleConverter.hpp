@@ -217,37 +217,8 @@ namespace mods
              
              bool isFinished() const override;
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
-             
-           private:
-	     class ResampleSpec
-	       {
-		public:
-		  ResampleSpec(int inputFrequency, int outputFrequency);
-		  
-		  ResampleSpec() = delete;
-		  ResampleSpec(const ResampleSpec&) = default;
-		  ResampleSpec(ResampleSpec&&) = delete;
-		  ResampleSpec& operator=(const ResampleSpec&) = delete;
-		  ResampleSpec& operator=(ResampleSpec&&) = delete;
-		  ~ResampleSpec() = default;
-		  
-		  int getInputFrequency() const;
-		  int getOutputFrequency() const;
-		  
-		private:
-		  int _inputFrequency;
-		  int _outputFrequency;
-	       };
-	     
-	     static std::unique_ptr<GenericResampleConverter> buildResampleStage(std::vector<ResampleSpec> specsStack, WavConverter::ptr src);
-	     
-	   protected:
-	     GenericResampleConverter(std::vector<ResampleSpec> specsStack, WavConverter::ptr src);
 	     
 	   private:
-	     void init(std::vector<ResampleSpec> specsStack, WavConverter::ptr src);
-	     std::vector<ResampleSpec> buildSpecs(int inFrequency, int outFrequency);
-	     
              double getNextDecimatedSample();
              void updateHistory();
              void removeFromHistory();
