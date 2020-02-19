@@ -22,11 +22,6 @@ namespace mods
 	     _designer = std::make_unique</*mods::utils::FirFilterDesigner*/FakeDesigner>(/*bands*/ sampleFrequency, cutoffFrequency);
              _designer->displayProgress();
 	     _designer->optimizeFilter(1401/*numTaps*/);
-             /*std::cout << "resampler coefficients: " << _resampleFraction.getNumerator() << " / " << _resampleFraction.getDenominator() << std::endl;
-             if(_resampleFraction.getNumerator() > 10 || _resampleFraction.getDenominator() > 10)
-               _designer->optimizeFilter(1401);
-             else
-               _designer->optimizeFilter(101);*/
 	     
 	     auto& taps = _designer->getTaps();
 	     _history = std::make_unique<History>(taps.size());

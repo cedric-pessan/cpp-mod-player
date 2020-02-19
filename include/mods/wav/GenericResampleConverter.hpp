@@ -1,6 +1,7 @@
 #ifndef MODS_WAV_GENERICRESAMPLECONVERTER_HPP
 #define MODS_WAV_GENERICRESAMPLECONVERTER_HPP
 
+#include "mods/utils/ChebyshevPolynom.hpp"
 #include "mods/utils/ConstFraction.hpp"
 #include "mods/utils/FirFilterDesigner.hpp"
 #include "mods/wav/WavConverter.hpp"
@@ -77,28 +78,9 @@ namespace mods
                     8.04490411014108831608E-1
                };
              
-             template<size_t N>
-               double evalChebyshev(double x, const std::array<double, N>& coefficients)
-                 {
-                    auto it = coefficients.begin();
-                    auto b0 = *it;
-                    ++it;
-                    
-                    double b1 = 0.0;
-                    double b2 = 0.0;
-                    
-                    for(;it != coefficients.end(); ++it)
-                      {
-                         b2 = b1;
-                         b1 = b0;
-                         b0 = x * b1 - b2 + *it;
-                      }
-                    
-                    return 0.5 * (b0 - b2);
-                 }
-             
              double i0(double x)
                {
+                  namespace chebyshev = mods::utils::chebyshevPolynom;
                   if(x < 0)
                     {
                        return i0(-x);
@@ -106,10 +88,10 @@ namespace mods
                   if(x <= 8.0)
                     {
                        double y = (x / 2.0) - 2.0;
-                       return std::exp(x) * evalChebyshev(y, i0_0_8_coefficients);
+                       return std::exp(x) * chebyshev::eval(y, i0_0_8_coefficients);
                     }
                   
-                  return std::exp(x) * evalChebyshev(32.0 / x - 2.0, i0_8_infinity_coefficients) / std::sqrt(x);
+                  return std::exp(x) * chebyshev::eval(32.0 / x - 2.0, i0_8_infinity_coefficients) / std::sqrt(x);
                }
           }
         
