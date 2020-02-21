@@ -68,6 +68,7 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/WavReader.cpp
                          src/mods/wav/WavTypes.cpp
 			 src/mods/utils/Band.cpp
+                         src/mods/utils/bessel.cpp
                          src/mods/utils/BitReader.cpp
                          src/mods/utils/FileUtils.cpp
 			 src/mods/utils/FirFilterDesigner.cpp
