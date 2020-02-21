@@ -27,28 +27,14 @@ namespace mods
              
              void optimizeFilter(int numTaps)
                {
-                  /*std::ifstream f("/home/cedric/projects/testfilter/kaiser/coefficients.txt");
-                  std::string line;
-                  while(std::getline(f, line))
-                    {
-                       double d = std::stod(line, nullptr);
-                       _taps.push_back(d);
-                    }
-                  return;*/
-                  
                   double A = 40.0;
                   double transitionWidth = 50.0;
                   double niquist = _sampleFrequency / 2.0;
                   double deltaOmega = transitionWidth / niquist * M_PI;
-                  //double M = ((A - 7.95) / (2.285 * deltaOmega)) + 1;
                   int M = static_cast<int>(((A - 7.95) / (2.285 * deltaOmega)) + 0.5);
                   if((M&1) == 0) ++M;
-                  std::cout << "M=" << M << std::endl;
                   
-                  /*for(int i=0; i<M; ++i)
-                    _taps.push_back(1.0 / static_cast<double>(M));*/
-                  
-                  double wc = _cutOff / (_sampleFrequency /*/ 2.0*/);
+                  double wc = _cutOff / (_sampleFrequency);
                   
                   for(int i=0; i<M; ++i)
                     {
@@ -61,12 +47,6 @@ namespace mods
                             _taps.push_back(std::sin(2.0*M_PI*wc*(i-M/2)) / (M_PI*(i-(M/2))));
                          }
                     }
-                  
-                  // blackman window
-                  /*for(int i=0; i<M; ++i)
-                    {
-                       _taps[i] *= 0.5 + 0.5 * std::cos(2.0 * M_PI * (double)(i-M/2) / M);
-                    }*/
                   
                   // kaiser window
                   
@@ -81,6 +61,7 @@ namespace mods
                        beta = 0.5842 * std::pow(A - 21, 0.4) + 0.07886 * (A - 21);
                     }
                   
+                  // compujte and apply kaiser window
                   double alpha = M / 2;
                   for(int i=0; i<M; ++i)
                     {
