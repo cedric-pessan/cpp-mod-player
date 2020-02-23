@@ -17,7 +17,8 @@ namespace mods
            public:
 	     using ptr = std::unique_ptr<FirFilterDesigner>;
 	     
-             explicit FirFilterDesigner(std::vector<Band> bands);
+             //explicit FirFilterDesigner(std::vector<Band> bands);
+	     FirFilterDesigner(int sampleFrequency, double cutOff);
              
              FirFilterDesigner() = delete;
              FirFilterDesigner(const FirFilterDesigner&) = delete;
@@ -26,13 +27,13 @@ namespace mods
              FirFilterDesigner& operator=(FirFilterDesigner&&) = delete;
              ~FirFilterDesigner() = default;
              
-             void optimizeFilter(int desiredTaps);
-             void displayProgress();
+             void optimizeFilter();
+             //void displayProgress();
              
              const std::vector<double>& getTaps() const;
              
            private:
-             double getLinearFreq(double w) const;
+             /*double getLinearFreq(double w) const;
              void initFrequencies();
              double getDesiredGain(double w) const;
              bool isInLimits(double w) const;
@@ -95,7 +96,12 @@ namespace mods
              std::list<Extremum> _allExtrema;
              
              double makeAlternating(double firstOneSign, std::list<Extremum>* candidates) const;
-             double calcMaxError(std::list<Extremum>* extrema) const;
+             double calcMaxError(std::list<Extremum>* extrema) const;*/
+	     
+	     double _sampleFrequency;
+	     double _cutOff;
+	     
+	     std::vector<double> _taps;
           };
      } // namespace utils
 } // namespace mods

@@ -17,7 +17,7 @@ namespace mods
 	     
 	     std::vector<mods::utils::Band> bands;
 	     bands.emplace_back(0.0, cutoffFrequency, 1.0, 5.0, sampleFrequency);
-	     bands.emplace_back(cutoffFrequency + 50/*transitionWidth*/, sampleFrequency / 2.0, 0.0, -40.0, sampleFrequency);
+	     bands.emplace_back(cutoffFrequency + 50, sampleFrequency / 2.0, 0.0, -40.0, sampleFrequency);
 	     
 	     _designer = std::make_unique</*mods::utils::FirFilterDesigner*/FakeDesigner>(/*bands*/ sampleFrequency, cutoffFrequency);
              _designer->displayProgress();

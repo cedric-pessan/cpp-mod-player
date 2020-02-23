@@ -23,6 +23,7 @@ include_directories(${SDL_INCLUDE_DIR}
 configure_file(include/mods/utils/nativeEndian.hpp.in include/mods/utils/nativeEndian.hpp)
 
 add_executable(filter_generator src/mods/utils/Band.cpp
+                                src/mods/utils/bessel.cpp
                                 src/mods/utils/FilterGeneratorTool.cpp
                                 src/mods/utils/FirFilterDesigner.cpp
                                 src/mods/utils/RBufferBackend.cpp)
