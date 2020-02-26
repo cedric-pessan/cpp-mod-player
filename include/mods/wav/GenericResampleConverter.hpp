@@ -12,78 +12,6 @@ namespace mods
 {
    namespace wav
      {
-         class FakeDesigner
-          {
-           public:
-             FakeDesigner(int sampleFrequency, int cutOff)
-               : _sampleFrequency(sampleFrequency),
-               _cutOff(cutOff)
-               {
-               }
-             
-             void displayProgress()
-               {
-               }
-             
-             void optimizeFilter(int numTaps)
-               {
-                  double A = 40.0;
-                  double transitionWidth = 50.0;
-                  double niquist = _sampleFrequency / 2.0;
-                  double deltaOmega = transitionWidth / niquist * M_PI;
-                  int M = static_cast<int>(((A - 7.95) / (2.285 * deltaOmega)) + 0.5);
-                  if((M&1) == 0) ++M;
-                  
-                  double wc = _cutOff / (_sampleFrequency);
-                  
-                  for(int i=0; i<M; ++i)
-                    {
-                       if((i-(M/2)) == 0)
-                         {
-                            _taps.push_back(wc * 2.0);
-                         }
-                       else
-                         {
-                            _taps.push_back(std::sin(2.0*M_PI*wc*(i-M/2)) / (M_PI*(i-(M/2))));
-                         }
-                    }
-                  
-                  // kaiser window
-                  
-                  // compute beta parameter
-                  double beta = 0.0;
-                  if(A > 50)
-                    {
-                       beta = 0.1102 * (A - 8.7);
-                    }
-                  else if(A > 21)
-                    {
-                       beta = 0.5842 * std::pow(A - 21, 0.4) + 0.07886 * (A - 21);
-                    }
-                  
-                  // compujte and apply kaiser window
-                  double alpha = M / 2;
-                  for(int i=0; i<M; ++i)
-                    {
-                       namespace bessel = mods::utils::bessel;
-                       double kaiserValue = bessel::i0(beta * std::sqrt(1 - std::pow((i - alpha) / alpha, 2.0))) / bessel::i0(beta);
-                       
-                       _taps[i] *= kaiserValue;
-                    }
-               }
-             
-             const std::vector<double>& getTaps() const
-               {
-                  return _taps;
-               }
-             
-           private:
-             std::vector<double> _taps;
-             
-             double _sampleFrequency;
-             double _cutOff;
-          };
-        
 	class GenericResampleConverter : public WavConverter
           {
            public:
@@ -117,8 +45,7 @@ namespace mods
              const mods::utils::ConstFraction& getResampleFraction() const;
              int getDecimationFactor() const;
              int getInterpolationFactor() const;
-	     //mods::utils::FirFilterDesigner::ptr _designer;
-             std::unique_ptr<FakeDesigner> _designer;
+	     mods::utils::FirFilterDesigner::ptr _designer;
              
              std::vector<u8> _inputVec;
              mods::utils::RWBuffer<u8> _inputBuffer;

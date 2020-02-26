@@ -19,9 +19,8 @@ namespace mods
 	     bands.emplace_back(0.0, cutoffFrequency, 1.0, 5.0, sampleFrequency);
 	     bands.emplace_back(cutoffFrequency + 50, sampleFrequency / 2.0, 0.0, -40.0, sampleFrequency);
 	     
-	     _designer = std::make_unique</*mods::utils::FirFilterDesigner*/FakeDesigner>(/*bands*/ sampleFrequency, cutoffFrequency);
-             _designer->displayProgress();
-	     _designer->optimizeFilter(1401/*numTaps*/);
+	     _designer = std::make_unique<mods::utils::FirFilterDesigner>(/*bands*/ sampleFrequency, cutoffFrequency);
+	     _designer->optimizeFilter();
 	     
 	     auto& taps = _designer->getTaps();
 	     _history = std::make_unique<History>(taps.size());
