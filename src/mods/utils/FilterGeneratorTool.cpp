@@ -79,8 +79,7 @@ namespace mods
              bands.emplace_back(0.0, cutoffFrequency, 1.0, 5.0, param.sampleFrequency);
              bands.emplace_back(cutoffFrequency + 50, param.sampleFrequency/2, 0.0, -40.0, param.sampleFrequency);
              FirFilterDesigner fir(/*bands*/param.sampleFrequency, cutoffFrequency);
-             //fir.displayProgress();
-             fir.optimizeFilter(/*param.numTaps*/);
+             fir.optimizeFilter();
              auto& taps = fir.getTaps();
              
              out << "    template<>" << std::endl;
