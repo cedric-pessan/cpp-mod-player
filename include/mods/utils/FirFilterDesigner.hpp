@@ -6,8 +6,6 @@
 #include <memory>
 #include <vector>
 
-#include "mods/utils/Band.hpp"
-
 namespace mods
 {
    namespace utils

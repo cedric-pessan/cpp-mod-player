@@ -15,10 +15,6 @@ namespace mods
 	     double cutoffFrequency = std::min(inFrequency, outFrequency) / 2.0;
 	     double sampleFrequency = static_cast<double>(inFrequency) * static_cast<double>(getInterpolationFactor());
 	     
-	     std::vector<mods::utils::Band> bands;
-	     bands.emplace_back(0.0, cutoffFrequency, 1.0, 5.0, sampleFrequency);
-	     bands.emplace_back(cutoffFrequency + 50, sampleFrequency / 2.0, 0.0, -40.0, sampleFrequency);
-	     
 	     _designer = std::make_unique<mods::utils::FirFilterDesigner>(sampleFrequency, cutoffFrequency);
 	     _designer->optimizeFilter();
 	     
