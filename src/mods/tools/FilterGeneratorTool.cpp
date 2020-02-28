@@ -10,7 +10,7 @@
 
 namespace mods
 {
-   namespace utils
+   namespace tools
      {
         struct LowPassParam
           {
@@ -22,6 +22,7 @@ namespace mods
         
         std::vector<LowPassParam> getLowPassParams()
           {
+             using mods::utils::ConstFraction;
              static std::vector<LowPassParam> lowPassParams
                {
                     { 22000, 2, 22000 * ConstFraction(22000,44100).reduce().getDenominator(), 1545 }, // 22kHz -> 44100Hz
@@ -75,7 +76,7 @@ namespace mods
         void generateLowPassFilter(const LowPassParam& param, std::ofstream& out, std::ofstream& outcpp)
           {
              double cutoffFrequency = param.cutoffFrequency / static_cast<double>(param.cutoffFrequencyDivider);
-             FirFilterDesigner fir(/*bands*/param.sampleFrequency, cutoffFrequency);
+             mods::utils::FirFilterDesigner fir(param.sampleFrequency, cutoffFrequency);
              fir.optimizeFilter();
              auto& taps = fir.getTaps();
              
@@ -153,7 +154,7 @@ namespace mods
              out << "#endif // " << moduleName << std::endl;
              out.close();
           }
-     } // namespace utils
+     } // namespace tools
 } // namespace mods
 
 int main(int argc, char** argv)
@@ -168,6 +169,6 @@ int main(int argc, char** argv)
    auto argBuffer = std::make_shared<mods::utils::RBufferBackend>(argvp, argc * sizeof(char*), std::move(deleter));
    const mods::utils::RBuffer<char*> args(argBuffer);
    
-   mods::utils::generateFilters(args[1], args[2]);
+   mods::tools::generateFilters(args[1], args[2]);
    return 0;
 }
