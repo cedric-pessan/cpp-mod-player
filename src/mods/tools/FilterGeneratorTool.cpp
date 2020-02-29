@@ -17,7 +17,6 @@ namespace mods
              int cutoffFrequency;
              int cutoffFrequencyDivider;
              int sampleFrequency;
-             int numTaps;
           };
         
         std::vector<LowPassParam> getLowPassParams()
@@ -25,10 +24,10 @@ namespace mods
              using mods::utils::ConstFraction;
              static std::vector<LowPassParam> lowPassParams
                {
-                    { 22000, 2, 22000 * ConstFraction(22000,44100).reduce().getDenominator(), 1545 }, // 22kHz -> 44100Hz
-                    { 8000, 2, 8000 * ConstFraction(8000,44100).reduce().getDenominator(), 1545 }, // 8kHz -> 44100Hz
-                    { 44100, 2, 48000 * ConstFraction(48000,44100).reduce().getDenominator(), 1401 }, // 48kHz -> 44100Hz
-		    { 10000, 2, 10000 * ConstFraction(10000,44100).reduce().getDenominator(), 1401 } // 10kHz -> 44100Hz
+                    { 22000, 2, 22000 * ConstFraction(22000,44100).reduce().getDenominator() }, // 22kHz -> 44100Hz
+                    { 8000, 2, 8000 * ConstFraction(8000,44100).reduce().getDenominator() }, // 8kHz -> 44100Hz
+                    { 44100, 2, 48000 * ConstFraction(48000,44100).reduce().getDenominator() }, // 48kHz -> 44100Hz
+		    { 10000, 2, 10000 * ConstFraction(10000,44100).reduce().getDenominator() } // 10kHz -> 44100Hz
                };
              return lowPassParams;
           }
@@ -76,6 +75,7 @@ namespace mods
         void generateLowPassFilter(const LowPassParam& param, std::ofstream& out, std::ofstream& outcpp)
           {
              double cutoffFrequency = param.cutoffFrequency / static_cast<double>(param.cutoffFrequencyDivider);
+             std::cout << "Generate " << cutoffFrequency << "Hz low pass filter on a " << param.sampleFrequency << "Hz sampling rate" << std::endl;
              mods::utils::FirFilterDesigner fir(param.sampleFrequency, cutoffFrequency);
              fir.optimizeFilter();
              auto& taps = fir.getTaps();
