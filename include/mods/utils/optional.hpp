@@ -9,7 +9,7 @@ namespace mods
     * very basic optional class to be removed once we can switch to c++17
     */
    
-   template<typename T> 
+   template<typename T>
      class optional
      {
       public:

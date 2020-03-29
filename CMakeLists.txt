@@ -50,7 +50,6 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/FillLSBConverter.cpp
                          src/mods/wav/Format.cpp
                          src/mods/wav/FromDoubleConverter.cpp
-			 src/mods/wav/GenericResampleConverter.cpp
                          src/mods/wav/GSMDecoderConverter.cpp
                          src/mods/wav/MuLawConverter.cpp
                          src/mods/wav/MultiChannelMixer.cpp
@@ -71,7 +70,6 @@ add_executable(modreader src/main.cpp
                          src/mods/utils/BitReader.cpp
                          src/mods/utils/FileUtils.cpp
 			 src/mods/utils/FirFilterDesigner.cpp
-			 src/mods/utils/integerFactorization.cpp
                          src/mods/utils/RBufferBackend.cpp
                          src/mods/utils/RWBufferBackend.cpp
                          ${SRCS_UNIX}

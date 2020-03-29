@@ -14,7 +14,7 @@ namespace mods
           _decodedArray {},
           _decodedBuffer(initializeArrayRWBuffer(_decodedArray)),
           _itDecodedBuffer(_decodedBuffer.RBuffer<u8>::end()),
-          _subframes 
+          _subframes
           {
              _decodedBuffer.slice<s16>(0,    60),
              _decodedBuffer.slice<s16>(60*2, 60),
@@ -80,7 +80,7 @@ namespace mods
                }
           }
         
-        void TruspeechDecoderConverter::decodeTruspeechFrame() 
+        void TruspeechDecoderConverter::decodeTruspeechFrame()
           {
              _src->read(&_encodedBuffer, TRUSPEECH_ENCODED_FRAME_SIZE);
              _bitReader.reset();

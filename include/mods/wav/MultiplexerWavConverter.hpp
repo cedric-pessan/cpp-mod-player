@@ -16,9 +16,9 @@ namespace mods
              
              MultiplexerWavConverter() = delete;
              MultiplexerWavConverter(const MultiplexerWavConverter&) = delete;
-             MultiplexerWavConverter(const MultiplexerWavConverter&&) = delete;
+             MultiplexerWavConverter(MultiplexerWavConverter&&) = delete;
              MultiplexerWavConverter& operator=(const MultiplexerWavConverter&) = delete;
-             MultiplexerWavConverter& operator=(const MultiplexerWavConverter&&) = delete;
+             MultiplexerWavConverter& operator=(MultiplexerWavConverter&&) = delete;
              ~MultiplexerWavConverter() override = default;
              
              bool isFinished() const override;

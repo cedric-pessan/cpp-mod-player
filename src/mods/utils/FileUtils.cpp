@@ -35,9 +35,9 @@ namespace mods
                        
                        FileReaderDeleter() = delete;
                        FileReaderDeleter(const FileReaderDeleter&) = delete;
-                       FileReaderDeleter(const FileReaderDeleter&&) = delete;
+                       FileReaderDeleter(FileReaderDeleter&&) = delete;
                        FileReaderDeleter& operator=(const FileReaderDeleter&) = delete;
-                       FileReaderDeleter& operator=(const FileReaderDeleter&&) = delete;
+                       FileReaderDeleter& operator=(FileReaderDeleter&&) = delete;
                        
                      private:
                        std::vector<u8> _v;

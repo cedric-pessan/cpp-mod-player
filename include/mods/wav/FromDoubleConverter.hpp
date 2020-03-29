@@ -3,8 +3,6 @@
 
 #include "mods/wav/WavConverter.hpp"
 
-#include <limits>
-
 namespace mods
 {
    namespace wav

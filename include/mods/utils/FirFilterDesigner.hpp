@@ -1,9 +1,6 @@
 #ifndef MODS_UTILS_FIRFILTERDESIGNER_HPP
 #define MODS_UTILS_FIRFILTERDESIGNER_HPP
 
-#include <functional>
-#include <list>
-#include <memory>
 #include <vector>
 
 namespace mods
@@ -13,22 +10,20 @@ namespace mods
         class FirFilterDesigner
           {
            public:
-	     using ptr = std::unique_ptr<FirFilterDesigner>;
-	     
 	     FirFilterDesigner(int sampleFrequency, double cutOff);
              
              FirFilterDesigner() = delete;
-             FirFilterDesigner(const FirFilterDesigner&) = delete;
-             FirFilterDesigner(FirFilterDesigner&&) = delete;
+             FirFilterDesigner(const FirFilterDesigner&) = default;
+             FirFilterDesigner(FirFilterDesigner&&) = default;
              FirFilterDesigner& operator=(const FirFilterDesigner&) = delete;
              FirFilterDesigner& operator=(FirFilterDesigner&&) = delete;
              ~FirFilterDesigner() = default;
              
-             void optimizeFilter();
-             
              const std::vector<double>& getTaps() const;
              
            private:
+             void optimizeFilter();
+             
 	     double _sampleFrequency;
 	     double _cutOff;
 	     

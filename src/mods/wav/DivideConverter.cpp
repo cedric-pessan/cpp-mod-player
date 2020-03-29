@@ -1,6 +1,8 @@
 
 #include "mods/wav/DivideConverter.hpp"
 
+#include <iostream>
+
 namespace mods
 {
    namespace wav

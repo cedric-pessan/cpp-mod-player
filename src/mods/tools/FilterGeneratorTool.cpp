@@ -19,7 +19,7 @@ namespace mods
              int sampleFrequency;
           };
         
-        std::vector<LowPassParam> getLowPassParams()
+        const std::vector<LowPassParam> getLowPassParams()
           {
              using mods::utils::ConstFraction;
              static std::vector<LowPassParam> lowPassParams
@@ -34,19 +34,28 @@ namespace mods
         
         std::string generateModuleName(const std::string& filename)
           {
+             std::string unixFilename = filename;
+             for(auto& c : unixFilename)
+               {
+                  if(c == '\\')
+                    {
+                       c = '/';
+                    }
+               }
+             
              size_t pos = 0;
              size_t incPos;
-             while((incPos = filename.find("include/", pos+1)) != std::string::npos)
+             while((incPos = unixFilename.find("include/", pos+1)) != std::string::npos)
                {
                   pos = incPos;
                }
              
-             if(pos != 0 || filename.find("include/") == 0)
+             if(pos != 0 || unixFilename.find("include/") == 0)
                {
                   pos += std::string("include/").size();
                }
              
-             std::string module = filename.substr(pos);
+             std::string module = unixFilename.substr(pos);
              for(auto& c : module)
                {
                   c = ::toupper(c);
@@ -77,7 +86,6 @@ namespace mods
              double cutoffFrequency = param.cutoffFrequency / static_cast<double>(param.cutoffFrequencyDivider);
              std::cout << "Generate " << cutoffFrequency << "Hz low pass filter on a " << param.sampleFrequency << "Hz sampling rate" << std::endl;
              mods::utils::FirFilterDesigner fir(param.sampleFrequency, cutoffFrequency);
-             fir.optimizeFilter();
              auto& taps = fir.getTaps();
              
              out << "    template<>" << std::endl;
@@ -104,7 +112,7 @@ namespace mods
                   outcpp << "     " << taps[i];
                }
              outcpp << std::endl;
-             outcpp << "    };" << std::endl;;
+             outcpp << "    };" << std::endl;
           }
         
         void generateFilters(const std::string& headerFilename, const std::string& cppFilename)

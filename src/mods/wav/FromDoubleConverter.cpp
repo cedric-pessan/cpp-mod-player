@@ -1,6 +1,9 @@
 
 #include "mods/wav/FromDoubleConverter.hpp"
 
+#include <iostream>
+#include <limits>
+
 namespace mods
 {
    namespace wav

@@ -3,6 +3,7 @@
 #include "mods/utils/FileUtils.hpp"
 #include "mods/utils/optional.hpp"
 #include "mods/wav/WavReader.hpp"
+#include "mods/wav/WavTypes.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -208,7 +209,7 @@ namespace mods
                auto& fmt = *optFmt;
                auto& data = *optData;
                _statCollector = std::make_shared<StatCollector>();
-               _converter = WavConverter::buildConverter(data, fmt.getBitsPerSample(), fmt.getBitsPerContainer(), fmt.getNumChannels(), fmt.getSampleRate(), 
+               _converter = WavConverter::buildConverter(data, fmt.getBitsPerSample(), fmt.getBitsPerContainer(), fmt.getNumChannels(), fmt.getSampleRate(),
                                                          _statCollector, fmt.getAudioFormat(), fmt.getChannelMask(), peak);
                _length = data.size();
                
@@ -390,9 +391,9 @@ namespace mods
           }
         
         double WavReader::readPeak(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                                 const mods::utils::RBuffer<u8>& riffBuffer,
-                                 size_t offset,
-                                 int nbChannels) const
+                                   const mods::utils::RBuffer<u8>& riffBuffer,
+                                   size_t offset,
+                                   int nbChannels) const
           {
              if(nbChannels == 0)
                {
@@ -402,7 +403,6 @@ namespace mods
              checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
                        chunkHeader->getChunkSize() == sizeof(PeakHeader) - sizeof(ChunkHeader) + nbChannels * sizeof(PPeakHeader), "Incomplete Peak chunk");
              
-             auto peak = riffBuffer.slice<PeakHeader>(offset, 1);
              auto ppeak = riffBuffer.slice<PPeakHeader>(offset + sizeof(PeakHeader), nbChannels);
              
              float maxPeak = 0.0;

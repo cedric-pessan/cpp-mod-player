@@ -1,6 +1,8 @@
 
 #include "mods/wav/UnpackToTypeConverter.hpp"
 
+#include <iostream>
+
 namespace mods
 {
    namespace wav

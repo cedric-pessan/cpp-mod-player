@@ -27,9 +27,9 @@ namespace mods
                            }
                        UnixMapperDeleter() = delete;
                        UnixMapperDeleter(const UnixMapperDeleter&) = delete;
-                       UnixMapperDeleter(const UnixMapperDeleter&&) = delete;
+                       UnixMapperDeleter(UnixMapperDeleter&&) = delete;
                        UnixMapperDeleter& operator=(const UnixMapperDeleter&) = delete;
-                       UnixMapperDeleter& operator=(const UnixMapperDeleter&&) = delete;
+                       UnixMapperDeleter& operator=(UnixMapperDeleter&&) = delete;
                        ~UnixMapperDeleter() override
                          {
                             ::munmap(_ptr, _length);

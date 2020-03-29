@@ -1,6 +1,7 @@
 
 #include "mods/wav/ALawConverter.hpp"
 
+#include <iostream>
 #include <limits>
 
 namespace mods

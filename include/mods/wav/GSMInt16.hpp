@@ -2,6 +2,7 @@
 #define MODS_WAV_GSMINT16_HPP
 
 #include "mods/utils/arithmeticShifter.hpp"
+#include "mods/utils/types.hpp"
 
 namespace mods
 {
@@ -124,7 +125,7 @@ namespace mods
                   return *this;
                }
              
-             GSMInt16& operator--() 
+             GSMInt16& operator--()
                {
                   auto res = *this - 1;
                   _value = res._value;

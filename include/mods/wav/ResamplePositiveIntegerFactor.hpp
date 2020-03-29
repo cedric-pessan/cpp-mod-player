@@ -15,9 +15,9 @@ namespace mods
              
              ResamplePositiveIntegerFactor() = delete;
              ResamplePositiveIntegerFactor(const ResamplePositiveIntegerFactor&) = delete;
-             ResamplePositiveIntegerFactor(const ResamplePositiveIntegerFactor&&) = delete;
+             ResamplePositiveIntegerFactor(ResamplePositiveIntegerFactor&&) = delete;
              ResamplePositiveIntegerFactor& operator=(const ResamplePositiveIntegerFactor&) = delete;
-             ResamplePositiveIntegerFactor& operator=(const ResamplePositiveIntegerFactor&&) = delete;
+             ResamplePositiveIntegerFactor& operator=(ResamplePositiveIntegerFactor&&) = delete;
              ~ResamplePositiveIntegerFactor() override = default;
              
              bool isFinished() const override;

@@ -1,36 +1,43 @@
 
 #include "mods/wav/ResampleConverter.hpp"
 
+#include <iostream>
+
 namespace mods
 {
    namespace wav
      {
-        template<int InFrequency, int OutFrequency>
-          ResampleConverter<InFrequency, OutFrequency>::ResampleConverter(WavConverter::ptr src)
+        template<typename PARAMETERS>
+          ResampleConverter<PARAMETERS>::ResampleConverter(WavConverter::ptr src, PARAMETERS resampleParameters)
             : _src(std::move(src)),
+          _resampleParameters(std::move(resampleParameters)),
+          _inputVec(((_resampleParameters.getNumTaps() / _resampleParameters.getInterpolationFactor())+1) * sizeof(double)),
           _inputBuffer(initBuffer()),
-          _inputBufferAsDouble(_inputBuffer.slice<double>(0, _numTaps))
+          _inputBufferAsDouble(_inputBuffer.slice<double>(0, _inputVec.size() / sizeof(double))),
+          _currentSample(_resampleParameters.getNumTaps()),
+          _history(_resampleParameters.getNumTaps())
             {
-               _history.push_back(SampleWithZeros(0.0,_numTaps-1));
+               using impl::SampleWithZeros;
+               _history.push_back(SampleWithZeros(0.0, _resampleParameters.getNumTaps()-1));
             }
         
-        template<int InFrequency, int OutFrequency>
-          mods::utils::RWBuffer<u8> ResampleConverter<InFrequency, OutFrequency>::initBuffer()
+        template<typename PARAMETERS>
+          mods::utils::RWBuffer<u8> ResampleConverter<PARAMETERS>::initBuffer()
           {
-             u8* ptr = _inputArray.data();
+             u8* ptr = _inputVec.data();
              auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-             auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, _numTaps * sizeof(double), std::move(deleter));
+             auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, _inputVec.size(), std::move(deleter));
              return mods::utils::RWBuffer<u8>(buffer);
           }
         
-        template<int InFrequency, int OutFrequency>
-          bool ResampleConverter<InFrequency, OutFrequency>::isFinished() const
+        template<typename PARAMETERS>
+          bool ResampleConverter<PARAMETERS>::isFinished() const
           {
              return _src->isFinished() && _history.isEmpty();
           }
         
-        template<int InFrequency, int OutFrequency>
-          void ResampleConverter<InFrequency, OutFrequency>::read(mods::utils::RWBuffer<u8>* buf, int len)
+        template<typename PARAMETERS>
+          void ResampleConverter<PARAMETERS>::read(mods::utils::RWBuffer<u8>* buf, int len)
             {
                if((len % sizeof(double)) != 0)
                  {
@@ -47,24 +54,24 @@ namespace mods
                  }
             }
         
-        template<int InFrequency, int OutFrequency>
-          double ResampleConverter<InFrequency, OutFrequency>::getNextDecimatedSample()
+        template<typename PARAMETERS>
+          double ResampleConverter<PARAMETERS>::getNextDecimatedSample()
             {
                updateHistory();
                return calculateInterpolatedSample();
             }
         
-        template<int InFrequency, int OutFrequency>
-          void ResampleConverter<InFrequency, OutFrequency>::updateHistory()
+        template<typename PARAMETERS>
+          void ResampleConverter<PARAMETERS>::updateHistory()
             {
                removeFromHistory();
                addToHistory();
             }
         
-        template<int InFrequency, int OutFrequency>
-          void ResampleConverter<InFrequency, OutFrequency>::removeFromHistory()
+        template<typename PARAMETERS>
+          void ResampleConverter<PARAMETERS>::removeFromHistory()
             {
-               int toRemove = getDecimationFactor();
+               int toRemove = _resampleParameters.getDecimationFactor();
                while(toRemove > 0)
                  {
                     auto& oldestElement = _history.front();
@@ -90,15 +97,30 @@ namespace mods
                  }
             }
         
-        template<int InFrequency, int OutFrequency>
-          void ResampleConverter<InFrequency, OutFrequency>::addToHistory()
+        template<typename PARAMETERS>
+          void ResampleConverter<PARAMETERS>::addToHistory()
             {
-               int toAdd = getDecimationFactor();
+               using impl::SampleWithZeros;
+               
+               int toAdd = _resampleParameters.getDecimationFactor();
                while(toAdd > 0)
                  {
                     if(toAdd <= _zerosToNextInterpolatedSample)
                       {
-                         _history.push_back(SampleWithZeros(0.0, toAdd-1));
+                         bool merged = false;
+                         if(!_history.isEmpty())
+                           {
+                              auto& latestElement = _history.back();
+                              if(latestElement.sample == 0.0)
+                                {
+                                   latestElement.numberOfZeros += toAdd;
+                                   merged = true;
+                                }
+                           }
+                         if(!merged)
+                           {
+                              _history.push_back(SampleWithZeros(0.0, toAdd-1));
+                           }
                          _zerosToNextInterpolatedSample -= toAdd;
                          toAdd = 0;
                       }
@@ -107,9 +129,23 @@ namespace mods
                          if(nextSampleExists())
                            {
                               double sample = getNextSample();
-                              _history.push_back(SampleWithZeros(sample, _zerosToNextInterpolatedSample));
+                              bool merged = false;
+                              if(!_history.isEmpty())
+                                {
+                                   auto& latestElement = _history.back();
+                                   if(latestElement.sample == 0.0)
+                                     {
+                                        latestElement.numberOfZeros += (1 + _zerosToNextInterpolatedSample);
+                                        latestElement.sample = sample;
+                                        merged = true;
+                                     }
+                                }
+                              if(!merged)
+                                {
+                                   _history.push_back(SampleWithZeros(sample, _zerosToNextInterpolatedSample));
+                                }
                               toAdd -= (_zerosToNextInterpolatedSample + 1);
-                              _zerosToNextInterpolatedSample = getInterpolationFactor() - 1;
+                              _zerosToNextInterpolatedSample = _resampleParameters.getInterpolationFactor() - 1;
                            } else {
                               toAdd = 0;
                            }
@@ -117,104 +153,160 @@ namespace mods
                  }
             }
         
-        template<int InFrequency, int OutFrequency>
-          double ResampleConverter<InFrequency, OutFrequency>::calculateInterpolatedSample() const
+        template<typename PARAMETERS>
+          double ResampleConverter<PARAMETERS>::calculateInterpolatedSample()
           {
              double sample = 0.0;
              int idxSampleWithZeros = 0;
-             for(int i = 0; i < _numTaps; ++i) 
+             auto interpolationFactor = _resampleParameters.getInterpolationFactor();
+             for(int i = 0; i < _resampleParameters.getNumTaps(); ++i) 
                {
                   auto& sampleWithZeros = _history.getSample(idxSampleWithZeros++);
                   i += sampleWithZeros.numberOfZeros;
-                  if(i < _numTaps) 
+                  if(i < _resampleParameters.getNumTaps()) 
                     {
-                       sample += sampleWithZeros.sample * getInterpolationFactor() * (FilterType::taps.at(i));
+                       sample += sampleWithZeros.sample * interpolationFactor * _resampleParameters.getTap(i);
                     }
                }
              return sample;
           }
         
-        template<int InFrequency, int OutFrequency>
-          double ResampleConverter<InFrequency, OutFrequency>::getNextSample()
+        template<typename PARAMETERS>
+          double ResampleConverter<PARAMETERS>::getNextSample()
           {
              if(_currentSample >= _inputBufferAsDouble.size())
                {
-                  _src->read(&_inputBuffer, _inputArray.size());
+                  _src->read(&_inputBuffer, _inputVec.size());
                   _currentSample = 0;
                }
              return _inputBufferAsDouble[_currentSample++];
           }
         
-        template<int InFrequency, int OutFrequency>
-          bool ResampleConverter<InFrequency, OutFrequency>::nextSampleExists()
+        template<typename PARAMETERS>
+          bool ResampleConverter<PARAMETERS>::nextSampleExists() const
             {
                return _currentSample < _inputBufferAsDouble.size() || !_src->isFinished();
             }
         
-        template<int InFrequency, int OutFrequency>
-          ResampleConverter<InFrequency, OutFrequency>::ResampleConverter::SampleWithZeros::SampleWithZeros(double sample, int zeros)
-            : numberOfZeros(zeros),
-          sample(sample)
-            {
-            }
-        
-        template<int InFrequency, int OutFrequency>
-          typename ResampleConverter<InFrequency, OutFrequency>::SampleWithZeros& ResampleConverter<InFrequency, OutFrequency>::History::front()
+        namespace impl
           {
-             if(_begin == _end)
+             SampleWithZeros::SampleWithZeros(double sample, int zeros)
+               : numberOfZeros(zeros),
+               sample(sample)
+                 {
+                 }
+             
+             History::History(int numTaps)
+               : _v(numTaps),
+               _zeros(0.0, 0)
+                 {
+                 }
+             
+             SampleWithZeros& History::front()
                {
-                  static SampleWithZeros zero(0.0, 0);
-                  return zero;
+                  if(_begin == _end)
+                    {
+                       static SampleWithZeros zero(0.0, 0);
+                       return zero;
+                    }
+                  
+                  return _v[_begin];
                }
              
-             return _array.at(_begin);
-          }
-        
-        template<int InFrequency, int OutFrequency>
-          void ResampleConverter<InFrequency, OutFrequency>::History::pop_front()
-          {
-             if(_begin == _end)
+             SampleWithZeros& History::back()
                {
-                  return;
+                  if(_begin == _end)
+                    {
+                       static SampleWithZeros zero(0.0, 0);
+                       return zero;
+                    }
+                  if(_end == 0)
+                    {
+                       return _v[_v.size()-1];
+                    }
+                  return _v[_end-1];
                }
-             ++_begin;
-             if(_begin == _array.size())
+             
+             void History::pop_front()
                {
-                  _begin = 0;
+                  if(_begin == _end)
+                    {
+                       return;
+                    }
+                  ++_begin;
+                  if(_begin == _v.size())
+                    {
+                       _begin = 0;
+                    }
                }
-          }
+             
+             void History::push_back(const SampleWithZeros& sampleWithZeros)
+               {
+                  _v[_end] = sampleWithZeros;
+                  ++_end;
+                  if(_end == _v.size())
+                    {
+                       _end = 0;
+                    }
+               }
+             
+             bool History::isEmpty() const
+               {
+                  return _begin == _end;
+               }
+             
+             const SampleWithZeros& History::getSample(size_t i)
+               {
+                  size_t idx = _begin + i;
+                  if(idx >= _v.size())
+                    {
+                       idx -= _v.size();
+                    }
+                  if(idx >= _end)
+                    {
+                       _zeros.numberOfZeros = 1000000; // Large number for fast interpolation of zeros (zeros are skipped)
+                       return _zeros;
+                    }
+                  return _v[idx];
+               }
+          } // namespace impl
         
-        template<int InFrequency, int OutFrequency>
-          void ResampleConverter<InFrequency, OutFrequency>::History::push_back(const SampleWithZeros& sampleWithZeros)
+        DynamicResampleParameters::DynamicResampleParameters(int inFrequency, int outFrequency)
+          : _resampleFraction(mods::utils::ConstFraction(inFrequency, outFrequency).reduce()),
+          _designer(static_cast<double>(inFrequency) * static_cast<double>(getInterpolationFactor()), // sampleFrequency
+                    std::min(inFrequency, outFrequency) / 2.0) // cutoffFrequency
             {
-               _array.at(_end) = sampleWithZeros;
-               ++_end;
-               if(_end == _array.size())
-                 {
-                    _end = 0;
-                 }
             }
         
-        template<int InFrequency, int OutFrequency>
-          bool ResampleConverter<InFrequency, OutFrequency>::History::isEmpty() const
+        int DynamicResampleParameters::getNumTaps() const
           {
-             return _begin == _end;
+             return _designer.getTaps().size();
           }
         
-        template<int InFrequency, int OutFrequency>
-          const typename ResampleConverter<InFrequency, OutFrequency>::SampleWithZeros& ResampleConverter<InFrequency, OutFrequency>::History::getSample(size_t i) const
+        const mods::utils::ConstFraction& DynamicResampleParameters::getResampleFraction() const
           {
-             size_t idx = _begin + i;
-             if(idx >= _array.size())
-               {
-                  idx -= _array.size();
-               }
-             return _array.at(idx);
+             return _resampleFraction;
           }
         
-        template class ResampleConverter<22000, 44100>;
-        template class ResampleConverter<8000, 44100>;
-        template class ResampleConverter<48000, 44100>;
-	template class ResampleConverter<10000, 44100>;
+        int DynamicResampleParameters::getInterpolationFactor() const
+          {
+             return getResampleFraction().getDenominator();
+          }
+        
+        int DynamicResampleParameters::getDecimationFactor() const
+          {
+             return getResampleFraction().getNumerator();
+          }
+        
+        double DynamicResampleParameters::getTap(size_t i) const
+          {
+             return _designer.getTaps()[i];
+          }
+        
+        template class ResampleConverter<StaticResampleParameters<22000, 44100>>;
+        template class ResampleConverter<StaticResampleParameters<8000, 44100>>;
+        template class ResampleConverter<StaticResampleParameters<48000, 44100>>;
+	template class ResampleConverter<StaticResampleParameters<10000, 44100>>;
+        template class ResampleConverter<DynamicResampleParameters>;
      } // namespace wav
 } // namespace mods

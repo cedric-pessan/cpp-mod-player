@@ -4,7 +4,6 @@
 #include "RBufferBackend.hpp"
 
 #include <cassert>
-#include <iostream>
 
 namespace mods
 {
@@ -25,7 +24,7 @@ namespace mods
                  {
                  }
              
-	     RBuffer() = default;
+	     RBuffer() = delete;
              RBuffer(const RBuffer&) = default;
              RBuffer(RBuffer&&) noexcept = default;
              

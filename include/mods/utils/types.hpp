@@ -6,7 +6,7 @@
 
 #include <cassert>
 #include <cstdint>
-#include <iostream>
+#include <type_traits>
 
 using u8 = uint8_t;
 using u16 = uint16_t;
@@ -32,9 +32,9 @@ template<Endianness endianness>
    
    u16leImpl() = delete;
    u16leImpl(const u16leImpl&) = delete;
-   u16leImpl(const u16leImpl&&) = delete;
+   u16leImpl(u16leImpl&&) = delete;
    u16leImpl& operator=(const u16leImpl&) = delete;
-   u16leImpl& operator=(const u16leImpl&&) = delete;
+   u16leImpl& operator=(u16leImpl&&) = delete;
    ~u16leImpl() = delete;
 };
 
@@ -52,9 +52,9 @@ template<>
    
    u16leImpl() = delete;
    u16leImpl(const u16leImpl&) = delete;
-   u16leImpl(const u16leImpl&&) = delete;
+   u16leImpl(u16leImpl&&) = delete;
    u16leImpl& operator=(const u16leImpl&) = delete;
-   u16leImpl& operator=(const u16leImpl&&) = delete;
+   u16leImpl& operator=(u16leImpl&&) = delete;
    ~u16leImpl() = delete;
 };
 
@@ -75,9 +75,9 @@ template<Endianness endianness>
    
    u32leImpl() = delete;
    u32leImpl(const u32leImpl&) = delete;
-   u32leImpl(const u32leImpl&&) = delete;
+   u32leImpl(u32leImpl&&) = delete;
    u32leImpl& operator=(const u32leImpl&) = delete;
-   u32leImpl& operator=(const u32leImpl&&) = delete;
+   u32leImpl& operator=(u32leImpl&&) = delete;
    ~u32leImpl() = delete;
 };
 
@@ -95,9 +95,9 @@ template<>
    
    u32leImpl() = delete;
    u32leImpl(const u32leImpl&) = delete;
-   u32leImpl(const u32leImpl&&) = delete;
+   u32leImpl(u32leImpl&&) = delete;
    u32leImpl& operator=(const u32leImpl&) = delete;
-   u32leImpl& operator=(const u32leImpl&&) = delete;
+   u32leImpl& operator=(u32leImpl&&) = delete;
    ~u32leImpl() = delete;
 };
 #pragma pack(pop)
@@ -116,14 +116,14 @@ namespace mods
    namespace utils
      {
         template<typename T>
-          const typename T::value_type& at(const T& a, size_t i)
+          const typename T::value_type& at(const T& a, std::size_t i)
             {
                assert(i >= 0 && i < a.size());
                return a[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
             }
         
         template<typename T>
-          typename T::value_type& at(T& a, size_t i)
+          typename T::value_type& at(T& a, std::size_t i)
             {
                assert(i >= 0 && i < a.size());
                return a[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)

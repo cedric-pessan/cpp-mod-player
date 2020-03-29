@@ -1,6 +1,8 @@
 
 #include "mods/wav/DownscaleWavConverter.hpp"
 
+#include <iostream>
+
 namespace mods
 {
    namespace wav

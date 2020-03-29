@@ -2,11 +2,11 @@
 #include "mods/ModuleReader.hpp"
 #include "mods/SoundPlayer.hpp"
 #include "mods/utils/RBuffer.hpp"
+#include "mods/utils/types.hpp"
 
 #include <algorithm>
 #include <iostream>
 #include <memory>
-#include <vector>
 
 namespace
 {

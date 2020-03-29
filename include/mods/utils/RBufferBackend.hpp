@@ -3,7 +3,6 @@
 
 #include "types.hpp"
 
-#include <iostream>
 #include <memory>
 
 namespace mods
@@ -25,9 +24,9 @@ namespace mods
                   virtual ~Deleter() = default;
                   
                   Deleter(const Deleter&) = delete;
-                  Deleter(const Deleter&&) = delete;
+                  Deleter(Deleter&&) = delete;
                   Deleter& operator=(const Deleter&) = delete;
-                  Deleter& operator=(const Deleter&&) = delete;
+                  Deleter& operator=(Deleter&&) = delete;
                };
              
              class EmptyDeleter : public Deleter
@@ -37,9 +36,9 @@ namespace mods
                   ~EmptyDeleter() override = default;
                   
                   EmptyDeleter(const EmptyDeleter&) = delete;
-                  EmptyDeleter(const EmptyDeleter&&) = delete;
+                  EmptyDeleter(EmptyDeleter&&) = delete;
                   EmptyDeleter& operator=(const EmptyDeleter&) = delete;
-                  EmptyDeleter& operator=(const EmptyDeleter&&) = delete;
+                  EmptyDeleter& operator=(EmptyDeleter&&) = delete;
                };
              
              RBufferBackend(const u8* buf, size_t length, Deleter::ptr deleter);
@@ -47,9 +46,9 @@ namespace mods
              
              RBufferBackend() = delete;
              RBufferBackend(const RBufferBackend&) = delete;
-             RBufferBackend(const RBufferBackend&&) = delete;
+             RBufferBackend(RBufferBackend&&) = delete;
              RBufferBackend& operator=(const RBufferBackend&) = delete;
-             RBufferBackend& operator=(const RBufferBackend&&) = delete;
+             RBufferBackend& operator=(RBufferBackend&&) = delete;
              
            private:
              const u8* _buf;
@@ -62,9 +61,9 @@ namespace mods
                 public:
                   Attorney() = delete;
                   Attorney(const Attorney&) = delete;
-                  Attorney(const Attorney&&) = delete;
+                  Attorney(Attorney&&) = delete;
                   Attorney& operator=(const Attorney&) = delete;
-                  Attorney& operator=(const Attorney&&) = delete;
+                  Attorney& operator=(Attorney&&) = delete;
                   ~Attorney() = delete;
                   
                 private:

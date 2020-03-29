@@ -1,6 +1,8 @@
 
 #include "mods/wav/FillLSBConverter.hpp"
 
+#include <iostream>
+
 namespace mods
 {
    namespace wav
@@ -36,7 +38,6 @@ namespace mods
                int nbElems = len / sizeof(T);
                auto bufView = buf->slice<T>(0, nbElems);
                
-               std::cout << std::hex;
                for(T& v : bufView)
                  {
                     u32 tmp = v;
@@ -44,7 +45,6 @@ namespace mods
                     tmp |= ((tmp >> _shift) & _mask);
                     v = tmp;
                  }
-               std::cout << std::dec;
             }
         
         template class FillLSBConverter<s16>;

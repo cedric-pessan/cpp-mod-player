@@ -1,10 +1,10 @@
 #ifndef MODS_WAV_WAVREADER_HPP
 #define MODS_WAV_WAVREADER_HPP
 
+#include "StatCollector.hpp"
 #include "WavConverter.hpp"
 #include "mods/ModuleReader.hpp"
 #include "mods/utils/RBuffer.hpp"
-#include "mods/utils/types.hpp"
 
 namespace mods
 {
@@ -20,9 +20,9 @@ namespace mods
              
              WavReader() = delete;
              WavReader(const WavReader&) = delete;
-             WavReader(const WavReader&&) = delete;
+             WavReader(WavReader&&) = delete;
              WavReader& operator=(const WavReader&) = delete;
-             WavReader& operator=(const WavReader&&) = delete;
+             WavReader& operator=(WavReader&&) = delete;
              
              bool isFinished() const override;
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
@@ -62,7 +62,6 @@ namespace mods
                              int nbChannels) const;
              
              void buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec);
-             
              
              WavConverter::ptr _converter;
              const mods::utils::RBuffer<u8> _fileBuffer;

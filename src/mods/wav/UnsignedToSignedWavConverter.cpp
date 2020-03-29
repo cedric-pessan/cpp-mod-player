@@ -1,6 +1,8 @@
 
 #include "mods/wav/UnsignedToSignedWavConverter.hpp"
 
+#include <iostream>
+
 namespace mods
 {
    namespace wav

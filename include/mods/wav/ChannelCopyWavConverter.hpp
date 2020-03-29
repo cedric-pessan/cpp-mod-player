@@ -1,7 +1,6 @@
 #ifndef MODS_WAV_CHANNELCOPYWAVCONVERTER_HPP
 #define MODS_WAV_CHANNELCOPYWAVCONVERTER_HPP
 
-#include "mods/wav/WavConverter.hpp"
 #include "mods/wav/impl/ChannelCopyWavConverterImpl.hpp"
 
 namespace mods
@@ -15,9 +14,9 @@ namespace mods
              
              ChannelCopyWavConverter() = delete;
              ChannelCopyWavConverter(const ChannelCopyWavConverter&) = delete;
-             ChannelCopyWavConverter(const ChannelCopyWavConverter&&) = delete;
+             ChannelCopyWavConverter(ChannelCopyWavConverter&&) = delete;
              ChannelCopyWavConverter& operator=(const ChannelCopyWavConverter&) = delete;
-             ChannelCopyWavConverter& operator=(const ChannelCopyWavConverter&&) = delete;
+             ChannelCopyWavConverter& operator=(ChannelCopyWavConverter&&) = delete;
              ~ChannelCopyWavConverter() override = default;
              
              WavConverter::ptr getCopy();

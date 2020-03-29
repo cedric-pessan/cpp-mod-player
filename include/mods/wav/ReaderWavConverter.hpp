@@ -1,8 +1,6 @@
 #ifndef MODS_WAV_READERWAVCONVERTER_HPP
 #define MODS_WAV_READERWAVCONVERTER_HPP
 
-#include "mods/utils/RBuffer.hpp"
-#include "mods/utils/RWBuffer.hpp"
 #include "mods/wav/StatCollector.hpp"
 #include "mods/wav/WavConverter.hpp"
 
@@ -18,9 +16,9 @@ namespace mods
              
              ReaderWavConverter() = delete;
              ReaderWavConverter(const ReaderWavConverter&) = delete;
-             ReaderWavConverter(const ReaderWavConverter&&) = delete;
+             ReaderWavConverter(ReaderWavConverter&&) = delete;
              ReaderWavConverter& operator=(const ReaderWavConverter&) = delete;
-             ReaderWavConverter& operator=(const ReaderWavConverter&&) = delete;
+             ReaderWavConverter& operator=(ReaderWavConverter&&) = delete;
              ~ReaderWavConverter() override = default;
              
              bool isFinished() const override;

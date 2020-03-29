@@ -1,6 +1,8 @@
 
 #include "mods/wav/DVIADPCMDecoderConverter.hpp"
 
+#include <iostream>
+
 namespace mods
 {
    namespace wav

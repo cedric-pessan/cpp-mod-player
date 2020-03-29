@@ -2,10 +2,7 @@
 #include "mods/utils/bessel.hpp"
 #include "mods/utils/FirFilterDesigner.hpp"
 
-#include <algorithm>
 #include <cmath>
-#include <functional>
-#include <iostream>
 
 namespace mods
 {
@@ -15,6 +12,7 @@ namespace mods
 	  : _sampleFrequency(sampleFrequency),
 	  _cutOff(cutOff)
 	    {
+               optimizeFilter();
 	    }
 	
 	void FirFilterDesigner::optimizeFilter()

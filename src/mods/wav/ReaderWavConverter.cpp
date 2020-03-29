@@ -1,8 +1,6 @@
 
 #include "mods/wav/ReaderWavConverter.hpp"
 
-#include <iostream>
-
 namespace mods
 {
    namespace wav

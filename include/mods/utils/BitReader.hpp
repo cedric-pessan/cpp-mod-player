@@ -3,6 +3,8 @@
 
 #include "mods/utils/RBuffer.hpp"
 
+#include <cstddef>
+
 namespace mods
 {
    namespace utils

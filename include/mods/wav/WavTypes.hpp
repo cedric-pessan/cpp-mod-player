@@ -3,6 +3,8 @@
 
 #include "mods/utils/types.hpp"
 
+#include <string>
+
 namespace mods
 {
    namespace wav
@@ -204,7 +206,7 @@ namespace mods
                }
           };
         
-        struct PeakHeader 
+        struct PeakHeader
           {
            public:
              ChunkHeader chunk;

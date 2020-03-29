@@ -2,8 +2,6 @@
 #include "mods/ModuleReader.hpp"
 #include "mods/wav/WavReader.hpp"
 
-#include <iostream>
-
 namespace mods
 {
    // static

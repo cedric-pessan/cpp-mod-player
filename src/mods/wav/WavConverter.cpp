@@ -6,7 +6,6 @@
 #include "mods/wav/DVIADPCMDecoderConverter.hpp"
 #include "mods/wav/FillLSBConverter.hpp"
 #include "mods/wav/FromDoubleConverter.hpp"
-#include "mods/wav/GenericResampleConverter.hpp"
 #include "mods/wav/GSMDecoderConverter.hpp"
 #include "mods/wav/MuLawConverter.hpp"
 #include "mods/wav/MultiChannelMixer.hpp"
@@ -395,6 +394,7 @@ namespace mods
                             upscaledChannels.push_back(std::move(unpackedSampleChannels[i]));
                          }
                     }
+                  break;
                   
                 default:
                   std::cout << "WavConverter: unsupported bits per sample to upscale: " << unpackedBitsPerSample << std::endl;
@@ -417,16 +417,18 @@ namespace mods
                 case 8000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       //resampledChannels.push_back(std::make_unique<ResampleConverter<8000, 44100>>(std::move(upscaledChannels[i])));
-                       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i]), 8000, 44100));
+                       using ParamType = StaticResampleParameters<8000, 44100>;
+                       ParamType params;
+                       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
                     }
                   break;
 		  
 		case 10000:
 		  for(int i = 0; i < nbChannels; ++i)
 		    {
-		       //resampledChannels.push_back(std::make_unique<ResampleConverter<10000, 44100>>(std::move(upscaledChannels[i])));
-                       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i]), 10000, 44100));
+                       using ParamType = StaticResampleParameters<10000, 44100>;
+                       ParamType params;
+		       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
 		    }
 		  break;
 		  
@@ -440,8 +442,9 @@ namespace mods
                 case 22000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       //resampledChannels.push_back(std::make_unique<ResampleConverter<22000, 44100>>(std::move(upscaledChannels[i])));
-                       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i]), 22000, 44100));
+                       using ParamType = StaticResampleParameters<22000, 44100>;
+                       ParamType params;
+                       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
                     }
                   break;
                   
@@ -462,8 +465,9 @@ namespace mods
                 case 48000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       //resampledChannels.push_back(std::make_unique<ResampleConverter<48000, 44100>>(std::move(upscaledChannels[i])));
-                       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i]), 48000, 44100));
+                       using ParamType = StaticResampleParameters<48000, 44100>;
+                       ParamType params;
+                       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
                     }
                   break;
                   
@@ -471,7 +475,9 @@ namespace mods
                   std::cout << "WARNING: WavConverter: non standard frequency: " << frequency << ", using generic resampler" << std::endl;
 		  for(int i = 0; i < nbChannels; ++i)
 		    {
-		       resampledChannels.push_back(std::make_unique<GenericResampleConverter>(std::move(upscaledChannels[i]), frequency, 44100));
+                       using ParamType = DynamicResampleParameters;
+                       ParamType params(frequency, 44100);
+		       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
 		    }
                }
              
@@ -490,7 +496,7 @@ namespace mods
                          }
                        break;
                        
-                     case 2:                  
+                     case 2:
                        mixedLeft = std::move(resampledChannels[0]);
                        mixedRight = std::move(resampledChannels[1]);
                        break;
@@ -510,13 +516,13 @@ namespace mods
                             floatChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(resampledChannels[i])));
                          }
                        break;
-                     default:
                      case -1:
                        for(int i=0; i<nbChannels; ++i)
                          {
                             floatChannels.push_back(std::move(resampledChannels[i]));
                          }
                        break;
+                     default:
                        std::cout << "WavConverter: unsupported bits per sample in surround mixer:" << resampledBitsPerSample << std::endl;
                     }
                   resampledBitsPerSample = -1;

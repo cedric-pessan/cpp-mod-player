@@ -15,9 +15,9 @@ namespace mods
              StatCollector() = default;
              
              StatCollector(const StatCollector&) = delete;
-             StatCollector(const StatCollector&&) = delete;
+             StatCollector(StatCollector&&) = delete;
              StatCollector& operator=(const StatCollector&) = delete;
-             StatCollector& operator=(const StatCollector&&) = delete;
+             StatCollector& operator=(StatCollector&&) = delete;
              ~StatCollector() = default;
              
              size_t getBytesRead() const;

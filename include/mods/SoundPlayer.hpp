@@ -24,9 +24,9 @@ namespace mods
         
         SoundPlayer() = delete;
         SoundPlayer(const SoundPlayer&) = delete;
-        SoundPlayer(const SoundPlayer&&) = delete;
+        SoundPlayer(SoundPlayer&&) = delete;
         SoundPlayer& operator=(const SoundPlayer&) = delete;
-        SoundPlayer& operator=(const SoundPlayer&&) = delete;
+        SoundPlayer& operator=(SoundPlayer&&) = delete;
         
         void play(ModuleReader::ptr reader);
         
@@ -52,14 +52,14 @@ namespace mods
           {
            public:
              explicit SoundPlayerInitException(std::string reason);
-             SoundPlayerInitException(const SoundPlayerInitException&) noexcept;
+             SoundPlayerInitException(const SoundPlayerInitException&) noexcept = delete;
              SoundPlayerInitException(SoundPlayerInitException&&) = default;
              ~SoundPlayerInitException() override = default;
              const char* what() const noexcept override;
              
              SoundPlayerInitException() = delete;
              SoundPlayerInitException& operator=(const SoundPlayerInitException&) = delete;
-             SoundPlayerInitException& operator=(const SoundPlayerInitException&&) = delete;
+             SoundPlayerInitException& operator=(SoundPlayerInitException&&) = delete;
              
            private:
              std::string _reason;

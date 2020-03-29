@@ -1,6 +1,8 @@
 
 #include "mods/wav/MultiChannelMixer.hpp"
 
+#include <iostream>
+
 namespace mods
 {
    namespace wav
@@ -107,7 +109,7 @@ namespace mods
                        double defaultRightCoefficient;
                     };
                   
-                  std::array<ChannelDescriptor, toUnderlying(ChannelTypes::NbChannelTypes)> channelDescriptors 
+                  std::array<ChannelDescriptor, toUnderlying(ChannelTypes::NbChannelTypes)> channelDescriptors
                     {
                          {
                               { DepthPositions::Front, true, 1.0, false, 0.0 },         // FRONT_LEFT

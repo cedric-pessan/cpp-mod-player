@@ -1,8 +1,8 @@
 #ifndef MODS_WAV_WAVCONVERTER_HPP
 #define MODS_WAV_WAVCONVERTER_HPP
 
-#include "mods/utils/RBuffer.hpp"
 #include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/StatCollector.hpp"
 #include "mods/wav/WavTypes.hpp"
 
@@ -27,9 +27,9 @@ namespace mods
              virtual void read(mods::utils::RWBuffer<u8>* buf, int len) = 0;
              
              WavConverter(const WavConverter&) = delete;
-             WavConverter(const WavConverter&&) = delete;
+             WavConverter(WavConverter&&) = delete;
              WavConverter& operator=(const WavConverter&) = delete;
-             WavConverter& operator=(const WavConverter&&) = delete;
+             WavConverter& operator=(WavConverter&&) = delete;
              
            private:
              template<int FACTOR>

@@ -1,8 +1,6 @@
 
 #include "mods/wav/ChannelCopyWavConverter.hpp"
 
-#include <iostream>
-
 namespace mods
 {
    namespace wav
@@ -51,7 +49,7 @@ namespace mods
                _id(id)
                  {
                  }
-        
+             
              WavConverter::ptr ChannelCopyWavConverterSlave::buildSlave() const
                {
                   class make_unique_enabler : public ChannelCopyWavConverterSlave
@@ -64,14 +62,14 @@ namespace mods
                        
                        make_unique_enabler() = delete;
                        make_unique_enabler(const make_unique_enabler&) = delete;
-                       make_unique_enabler(const make_unique_enabler&&) = delete;
+                       make_unique_enabler(make_unique_enabler&&) = delete;
                        make_unique_enabler& operator=(const make_unique_enabler&) = delete;
-                       make_unique_enabler& operator=(const make_unique_enabler&&) = delete;
+                       make_unique_enabler& operator=(make_unique_enabler&&) = delete;
                        ~make_unique_enabler() override = default;
                     };
                   return std::make_unique<make_unique_enabler>(_src);
                }
-        
+             
              bool ChannelCopyWavConverterSlave::isFinished() const
                {
                   return _src->isFinished(_id);

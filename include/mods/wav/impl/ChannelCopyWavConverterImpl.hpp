@@ -1,7 +1,7 @@
 #ifndef MODS_WAV_IMPL_CHANNELCOPYWAVCONVERTERIMPL_HPP
 #define MODS_WAV_IMPL_CHANNELCOPYWAVCONVERTERIMPL_HPP
 
-#include "mods/utils/types.hpp"
+#include "mods/wav/WavConverter.hpp"
 
 #include <deque>
 
@@ -26,9 +26,9 @@ namespace mods
                   
                   InternalCopySourceConverter() = delete;
                   InternalCopySourceConverter(const InternalCopySourceConverter&) = delete;
-                  InternalCopySourceConverter(const InternalCopySourceConverter&&) = delete;
+                  InternalCopySourceConverter(InternalCopySourceConverter&&) = delete;
                   InternalCopySourceConverter& operator=(const InternalCopySourceConverter&) = delete;
-                  InternalCopySourceConverter& operator=(const InternalCopySourceConverter&&) = delete;
+                  InternalCopySourceConverter& operator=(InternalCopySourceConverter&&) = delete;
                   ~InternalCopySourceConverter() = default;
                   
                   bool isFinished(CopyDestId id) const;
@@ -49,9 +49,9 @@ namespace mods
                 public:
                   ChannelCopyWavConverterSlave() = delete;
                   ChannelCopyWavConverterSlave(const ChannelCopyWavConverterSlave&) = delete;
-                  ChannelCopyWavConverterSlave(const ChannelCopyWavConverterSlave&&) = delete;
+                  ChannelCopyWavConverterSlave(ChannelCopyWavConverterSlave&&) = delete;
                   ChannelCopyWavConverterSlave& operator=(const ChannelCopyWavConverterSlave&) = delete;
-                  ChannelCopyWavConverterSlave& operator=(const ChannelCopyWavConverterSlave&&) = delete;
+                  ChannelCopyWavConverterSlave& operator=(ChannelCopyWavConverterSlave&&) = delete;
                   ~ChannelCopyWavConverterSlave() override = default;
                   
                   bool isFinished() const override;
@@ -59,7 +59,7 @@ namespace mods
                   
                 protected:
                   WavConverter::ptr buildSlave() const;
-             
+                  
                 private:
                   InternalCopySourceConverter::sptr _src;
                   CopyDestId _id;

@@ -22,10 +22,10 @@ namespace mods
                  {
                  }
              
-             RWBuffer() = default;
+             RWBuffer() = delete;
              RWBuffer(const RWBuffer&) = default;
              RWBuffer(RWBuffer&&) noexcept = default;
-             RWBuffer& operator=(const RWBuffer&) = default;
+             RWBuffer& operator=(const RWBuffer&) = delete;
              RWBuffer& operator=(RWBuffer&&) noexcept = default;
              ~RWBuffer() = default;
              
@@ -63,7 +63,7 @@ namespace mods
                   iterator(const iterator&) = default;
                   iterator(iterator&&) noexcept = default;
                   iterator& operator=(const iterator&) = delete;
-                  iterator& operator=(const iterator&&) = delete;
+                  iterator& operator=(iterator&&) = delete;
                   ~iterator() = default;
                   
                   bool operator==(const iterator& obj) const
@@ -99,7 +99,7 @@ namespace mods
              
              iterator end() noexcept
                {
-                  return iterator(*this, this->template size());
+                  return iterator(*this, RBuffer<T>::size());
                }
              
            private:

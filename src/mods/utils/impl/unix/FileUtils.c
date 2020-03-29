@@ -11,7 +11,7 @@ int modsOpen(const char* pathName, int flags)
    return open(pathName, flags);
 }
 
-int modsHasMapFailed(void* ptr) 
+int modsHasMapFailed(void* ptr)
 {
    if(ptr == MAP_FAILED)
      {

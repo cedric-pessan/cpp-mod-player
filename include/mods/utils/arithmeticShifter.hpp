@@ -1,6 +1,8 @@
 #ifndef MODS_UTILS_ARITHMETICSHIFTER_HPP
 #define MODS_UTILS_ARITHMETICSHIFTER_HPP
 
+#include "mods/utils/types.hpp"
+
 namespace mods
 {
    namespace utils

@@ -41,7 +41,6 @@ namespace mods
              
              constexpr static int TRUSPEECH_DECODED_FRAME_SIZE = 240 * 2;
              
-             std::vector<u8> _tempVec;
              std::array<u8, TRUSPEECH_DECODED_FRAME_SIZE> _decodedArray;
              mods::utils::RWBuffer<u8> _decodedBuffer;
              mods::utils::RWBuffer<u8>::const_iterator _itDecodedBuffer;
@@ -56,7 +55,7 @@ namespace mods
              
              // parameters
              std::array<s16,8> _vector;
-             bool _flag;
+             bool _flag = false;
              std::array<s32,2> _offset1;
              std::array<s32,4> _offset2;
              std::array<s32,4> _pulseval;

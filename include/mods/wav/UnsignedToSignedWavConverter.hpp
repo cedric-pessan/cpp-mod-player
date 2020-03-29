@@ -15,9 +15,9 @@ namespace mods
              
              UnsignedToSignedWavConverter() = delete;
              UnsignedToSignedWavConverter(const UnsignedToSignedWavConverter&) = delete;
-             UnsignedToSignedWavConverter(const UnsignedToSignedWavConverter&&) = delete;
+             UnsignedToSignedWavConverter(UnsignedToSignedWavConverter&&) = delete;
              UnsignedToSignedWavConverter& operator=(const UnsignedToSignedWavConverter&) = delete;
-             UnsignedToSignedWavConverter& operator=(const UnsignedToSignedWavConverter&&) = delete;
+             UnsignedToSignedWavConverter& operator=(UnsignedToSignedWavConverter&&) = delete;
              ~UnsignedToSignedWavConverter() override = default;
              
              bool isFinished() const override;

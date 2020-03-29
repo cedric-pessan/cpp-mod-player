@@ -15,9 +15,9 @@ namespace mods
              
              UpscaleWavConverter() = delete;
              UpscaleWavConverter(const UpscaleWavConverter&) = delete;
-             UpscaleWavConverter(const UpscaleWavConverter&&) = delete;
+             UpscaleWavConverter(UpscaleWavConverter&&) = delete;
              UpscaleWavConverter& operator=(const UpscaleWavConverter&) = delete;
-             UpscaleWavConverter& operator=(const UpscaleWavConverter&&) = delete;
+             UpscaleWavConverter& operator=(UpscaleWavConverter&&) = delete;
              ~UpscaleWavConverter() override = default;
              
              bool isFinished() const override;

@@ -22,9 +22,9 @@ namespace mods
         using ptr = std::unique_ptr<ModuleReader>;
         
         ModuleReader(const ModuleReader&) = delete;
-        ModuleReader(const ModuleReader&&) = delete;
+        ModuleReader(ModuleReader&&) = delete;
         ModuleReader& operator=(const ModuleReader&) = delete;
-        ModuleReader& operator=(const ModuleReader&&) = delete;
+        ModuleReader& operator=(ModuleReader&&) = delete;
         virtual ~ModuleReader() = default;
         
         virtual bool isFinished() const = 0;
@@ -46,13 +46,13 @@ namespace mods
           {
            public:
              explicit ModuleReaderInitException(const std::string& reason);
-             ModuleReaderInitException(const ModuleReaderInitException&) noexcept = default;
+             ModuleReaderInitException(const ModuleReaderInitException&) noexcept = delete;
              ModuleReaderInitException(ModuleReaderInitException&&) noexcept = default;
              ~ModuleReaderInitException() override = default;
              
              ModuleReaderInitException() = delete;
              ModuleReaderInitException& operator=(const ModuleReaderInitException&) = delete;
-             ModuleReaderInitException& operator=(const ModuleReaderInitException&&) = delete;
+             ModuleReaderInitException& operator=(ModuleReaderInitException&&) = delete;
           };
      };
    

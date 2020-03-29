@@ -1,6 +1,7 @@
 
 #include "mods/wav/MuLawConverter.hpp"
 
+#include <iostream>
 #include <limits>
 
 namespace mods
