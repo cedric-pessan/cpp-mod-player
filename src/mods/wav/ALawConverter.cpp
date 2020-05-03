@@ -14,34 +14,35 @@ namespace mods
                fillLookupTable();
             }
         
-        bool ALawConverter::isFinished() const
+        auto ALawConverter::isFinished() const -> bool
           {
              return _src->isFinished();
           }
         
-        void ALawConverter::read(mods::utils::RWBuffer<u8>* buf, int len)
+        void ALawConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
           {
              if((len % sizeof(s16)) != 0)
                {
                   std::cout << "TODO: wrong buffer length in ALawConverter" << std::endl;
                }
              
-             int nbElems = len / sizeof(s16);
-             int toReadLen = nbElems * sizeof(s8);
+             size_t nbElems = len / sizeof(s16);
+             size_t toReadLen = nbElems * sizeof(s8);
              
              _src->read(buf, toReadLen);
              
              auto inView = buf->slice<s8>(0, nbElems);
              auto outView = buf->slice<s16>(0, nbElems);
              
-             for(int i = nbElems-1; i>=0; --i)
+             for(size_t i=0; i<nbElems; ++i)
                {
-                  s8 value = inView[i];
-                  outView[i] = aLawTransform(value);
+                  size_t idx = nbElems - 1 - i;
+                  s8 value = inView[idx];
+                  outView[idx] = aLawTransform(value);
                }
           }
         
-        s16 ALawConverter::aLawTransform(s8 value) const
+        auto ALawConverter::aLawTransform(s8 value) const -> s16
           {
              using mods::utils::at;
              u8 v = static_cast<u8>(value);
@@ -50,26 +51,31 @@ namespace mods
         
         void ALawConverter::fillLookupTable()
           {
+             static constexpr u32 evenBitsMask = 0x55U;
+             static constexpr u32 signMask = 0x80U;
+             
              for(u32 value=0; value<std::numeric_limits<u8>::max(); ++value)
                {
-                  u32 v = value ^ 0x55u; // invert even bits
-                  int exponent = (v >> MANTISSA_SIZE) & EXPONENT_MASK;
+                  u32 v = value ^ evenBitsMask; // invert even bits
+                  u32 exponent = (v >> MANTISSA_SIZE) & EXPONENT_MASK;
                   u32 mantissa = v & MANTISSA_MASK;
-                  bool negative = (v & 0x80u) == 0;
+                  bool negative = (v & signMask) == 0;
                   
-                  u16 dest = mantissa << 1u;
-                  dest |= 1u;
+                  u16 dest = mantissa << 1U;
+                  dest |= 1U;
                   if(exponent > 0)
                     {
-                       dest |= (1u << (MANTISSA_SIZE+1));
-                       for(int i=0; i<exponent-1; ++i)
+                       dest |= (1U << (MANTISSA_SIZE+1));
+                       for(size_t i=0; i<exponent-1; ++i)
                          {
-                            dest <<= 1u;
-                            dest |= 1u;
+                            dest <<= 1U;
+                            dest |= 1U;
                          }
                     }
-                  dest <<= 3u;
-                  dest |= static_cast<u16>(dest >> 12u) & 0x7u;
+                  dest <<= 3U;
+                  static constexpr u32 fillLsbBitsShift = 12U;
+                  static constexpr u32 fillLsbBitsMask = 0x7U;
+                  dest |= static_cast<u16>(dest >> fillLsbBitsShift) & fillLsbBitsMask;
                   
                   s16 signedDest = dest;
                   if(negative)
@@ -78,6 +84,12 @@ namespace mods
                     }
                   _lookupTable.at(value) = signedDest;
                }
+          }
+        
+        auto ALawConverter::getBitsPerSampleRequirementsString() -> std::string&
+          {
+             static std::string requirements = "A-Law converter needs 8 bits per sample";
+             return requirements;
           }
      } // namespace wav
 } // namespace mods

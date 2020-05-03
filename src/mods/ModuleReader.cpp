@@ -5,7 +5,7 @@
 namespace mods
 {
    // static
-   ModuleFormat ModuleReader::parseFormat(const std::string& format)
+   auto ModuleReader::parseFormat(const std::string& format) -> ModuleFormat
      {
         if(format == "wav")
           {
@@ -16,7 +16,7 @@ namespace mods
      }
    
    // static
-   ModuleReader::ptr ModuleReader::buildReader(ModuleFormat format, const std::string& filename)
+   auto ModuleReader::buildReader(ModuleFormat format, const std::string& filename) -> ModuleReader::ptr
      {
         ModuleReader::ptr reader;
         switch(format) 
@@ -31,7 +31,7 @@ namespace mods
         return reader;
      }
    
-   void ModuleReader::checkInit(bool condition, const std::string& description) const
+   void ModuleReader::checkInit(bool condition, const std::string& description)
      {
         if(!condition)
           {

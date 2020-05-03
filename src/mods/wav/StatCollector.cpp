@@ -10,7 +10,7 @@ namespace mods
              _value += i;
           }
         
-        size_t StatCollector::getBytesRead() const
+        auto StatCollector::getBytesRead() const -> size_t
           {
              return _value;
           }

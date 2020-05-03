@@ -16,17 +16,17 @@ namespace mods
              UnsignedToSignedWavConverter() = delete;
              UnsignedToSignedWavConverter(const UnsignedToSignedWavConverter&) = delete;
              UnsignedToSignedWavConverter(UnsignedToSignedWavConverter&&) = delete;
-             UnsignedToSignedWavConverter& operator=(const UnsignedToSignedWavConverter&) = delete;
-             UnsignedToSignedWavConverter& operator=(UnsignedToSignedWavConverter&&) = delete;
+             auto operator=(const UnsignedToSignedWavConverter&) -> UnsignedToSignedWavConverter& = delete;
+             auto operator=(UnsignedToSignedWavConverter&&) -> UnsignedToSignedWavConverter& = delete;
              ~UnsignedToSignedWavConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
-             constexpr int getOffset()
+             constexpr auto getOffset() -> int
                {
-                  return (1U << (sizeof(T) * 8)) / 2;
+                  return (1U << (sizeof(T) * BITS_IN_BYTE)) / 2;
                }
              
              WavConverter::ptr _src;

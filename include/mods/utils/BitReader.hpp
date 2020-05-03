@@ -30,13 +30,13 @@ namespace mods
              BitReader() = delete;
              BitReader(const BitReader&) = delete;
              BitReader(BitReader&&) = delete;
-             BitReader& operator=(const BitReader&) = delete;
-             BitReader& operator=(BitReader&&) = delete;
+             auto operator=(const BitReader&) -> BitReader& = delete;
+             auto operator=(BitReader&&) -> BitReader& = delete;
              ~BitReader() = default;
              
              void reset();
              
-             int read(size_t bits);
+             auto read(size_t bits) -> u32;
              
            private:
              size_t _position = 0;

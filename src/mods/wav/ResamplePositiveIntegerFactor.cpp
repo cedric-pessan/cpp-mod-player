@@ -14,13 +14,13 @@ namespace mods
               }
         
         template<typename T, int FACTOR>
-          bool ResamplePositiveIntegerFactor<T, FACTOR>::isFinished() const
+          auto ResamplePositiveIntegerFactor<T, FACTOR>::isFinished() const -> bool
           {
              return _src->isFinished();
           }
         
         template<typename T, int FACTOR>
-          void ResamplePositiveIntegerFactor<T, FACTOR>::read(mods::utils::RWBuffer<u8>* buf, int len)
+          void ResamplePositiveIntegerFactor<T, FACTOR>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
             {
                if((len % sizeof(T)*FACTOR) != 0)
                  {

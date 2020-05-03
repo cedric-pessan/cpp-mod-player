@@ -18,27 +18,24 @@ namespace mods
            public:
              using ptr = std::unique_ptr<WavConverter>;
              
-             static ptr buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, StatCollector::sptr statCollector, WavAudioFormat codec, u32 channelMask, double peak);
+             static auto buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, const StatCollector::sptr& statCollector, WavAudioFormat codec, u32 channelMask, double peak) -> ptr;
              
              WavConverter() = default;
              virtual ~WavConverter() = default;
              
-             virtual bool isFinished() const = 0;
-             virtual void read(mods::utils::RWBuffer<u8>* buf, int len) = 0;
+             virtual auto isFinished() const -> bool = 0;
+             virtual void read(mods::utils::RWBuffer<u8>* buf, size_t len) = 0;
              
              WavConverter(const WavConverter&) = delete;
              WavConverter(WavConverter&&) = delete;
-             WavConverter& operator=(const WavConverter&) = delete;
-             WavConverter& operator=(WavConverter&&) = delete;
+             auto operator=(const WavConverter&) -> WavConverter& = delete;
+             auto operator=(WavConverter&&) -> WavConverter& = delete;
              
            private:
              template<int FACTOR>
-               static ptr buildResamplePositiveIntegerFactor(int bitsPerSample, ptr src);
+               static auto buildResamplePositiveIntegerFactor(int bitsPerSample, ptr src) -> ptr;
              
-             template<int BITSPERSAMPLE>
-               static void buildDemuxStage(std::vector<WavConverter::ptr>* channels, int nbChannels, u8 defaultValue, const mods::utils::RBuffer<u8>& buffer, StatCollector::sptr statCollector);
-             
-             static bool isResamplableByPositiveIntegerFactor(int frequency);
+             static auto isResamplableByPositiveIntegerFactor(int frequency) -> bool;
           };
      } // namespace wav
 } // namespace mods

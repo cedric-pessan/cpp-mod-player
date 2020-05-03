@@ -2,39 +2,45 @@
 #define MODS_UTILS_TYPES_HPP
 
 #include "endianness.hpp"
+#include "mods/utils/PackedArray.hpp"
 #include "mods/utils/nativeEndian.hpp"
 
 #include <cassert>
+#include <climits>
 #include <cstdint>
 #include <type_traits>
 
 using u8 = uint8_t;
 using u16 = uint16_t;
 using u32 = uint32_t;
+using u64 = uint64_t;
 
 using s8 = int8_t;
 using s16 = int16_t;
 using s32 = int32_t;
+using s64 = int64_t;
+
+constexpr u32 BITS_IN_BYTE = CHAR_BIT;
 
 #pragma pack(push,1)
 template<Endianness endianness>
   class u16leImpl
 {
  private:
-   u8 _v[2];
+   mods::utils::PackedArray<u8, 2> _v;
    
  public:
    explicit operator u16() const
      {
         return static_cast<u16>(_v[0]) |
-          static_cast<u16>(static_cast<u16>(_v[1]) << 8u);
+          static_cast<u16>(static_cast<u16>(_v[1]) << BITS_IN_BYTE);
      }
    
    u16leImpl() = delete;
    u16leImpl(const u16leImpl&) = delete;
    u16leImpl(u16leImpl&&) = delete;
-   u16leImpl& operator=(const u16leImpl&) = delete;
-   u16leImpl& operator=(u16leImpl&&) = delete;
+   auto operator=(const u16leImpl&) -> u16leImpl& = delete;
+   auto operator=(u16leImpl&&) -> u16leImpl& = delete;
    ~u16leImpl() = delete;
 };
 
@@ -53,8 +59,8 @@ template<>
    u16leImpl() = delete;
    u16leImpl(const u16leImpl&) = delete;
    u16leImpl(u16leImpl&&) = delete;
-   u16leImpl& operator=(const u16leImpl&) = delete;
-   u16leImpl& operator=(u16leImpl&&) = delete;
+   auto operator=(const u16leImpl&) -> u16leImpl& = delete;
+   auto operator=(u16leImpl&&) -> u16leImpl& = delete;
    ~u16leImpl() = delete;
 };
 
@@ -62,22 +68,24 @@ template<Endianness endianness>
   class u32leImpl
 {
  private:
-   u8 _v[4];
+   mods::utils::PackedArray<u8, 4> _v;
    
  public:
    explicit operator u32() const
      {
-        return static_cast<u32>(_v[0]) |
-          (static_cast<u32>(_v[1]) << 8u) |
-          (static_cast<u32>(_v[2]) << 16u) |
-          (static_cast<u32>(_v[3]) << 24u);
+        u32 value = 0;
+        for(int i=0; i<4; ++i)
+          {
+             value |= (static_cast<u32>(_v[i]) << (BITS_IN_BYTE * i));
+          }
+        return value;
      }
    
    u32leImpl() = delete;
    u32leImpl(const u32leImpl&) = delete;
    u32leImpl(u32leImpl&&) = delete;
-   u32leImpl& operator=(const u32leImpl&) = delete;
-   u32leImpl& operator=(u32leImpl&&) = delete;
+   auto operator=(const u32leImpl&) -> u32leImpl& = delete;
+   auto operator=(u32leImpl&&) -> u32leImpl& = delete;
    ~u32leImpl() = delete;
 };
 
@@ -96,8 +104,8 @@ template<>
    u32leImpl() = delete;
    u32leImpl(const u32leImpl&) = delete;
    u32leImpl(u32leImpl&&) = delete;
-   u32leImpl& operator=(const u32leImpl&) = delete;
-   u32leImpl& operator=(u32leImpl&&) = delete;
+   auto operator=(const u32leImpl&) -> u32leImpl& = delete;
+   auto operator=(u32leImpl&&) -> u32leImpl& = delete;
    ~u32leImpl() = delete;
 };
 #pragma pack(pop)
@@ -116,21 +124,21 @@ namespace mods
    namespace utils
      {
         template<typename T>
-          const typename T::value_type& at(const T& a, std::size_t i)
+          auto at(const T& a, std::size_t i) -> const typename T::value_type&
             {
                assert(i >= 0 && i < a.size());
                return a[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
             }
         
         template<typename T>
-          typename T::value_type& at(T& a, std::size_t i)
+          auto at(T& a, std::size_t i) -> typename T::value_type&
             {
                assert(i >= 0 && i < a.size());
                return a[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
             }
         
         template<typename T>
-          constexpr const T& clamp(const T& v, const T& lo, const T& hi)
+          constexpr auto clamp(T v, T lo, T hi) -> T
             {
                if(v < lo)
                  {

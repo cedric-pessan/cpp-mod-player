@@ -1,6 +1,7 @@
 
-#include "mods/SoundPlayer.hpp"
 #include "mods/ModuleReader.hpp"
+#include "mods/SoundPlayer.hpp"
+#include "mods/StandardFrequency.hpp"
 
 #include <SDL.h>
 #include <iostream>
@@ -26,10 +27,10 @@ namespace mods
           int res = SDL_Init(SDL_INIT_AUDIO);
           checkInit(res == 0, "sdl audio subsystem could not be initialized");
           SDL_AudioSpec spec;
-          spec.freq = 44100;
+          spec.freq = toUnderlying(StandardFrequency::_44100);
           spec.format = AUDIO_S16;
           spec.channels = 2;
-          spec.samples = 1024;
+          spec.samples = _bufferSize;
           spec.callback = s_ccallback;
           spec.userdata = this;
           
@@ -43,7 +44,7 @@ namespace mods
         SDL_Quit();
      }
    
-   void SoundPlayer::checkInit(bool condition, const std::string& description) const
+   void SoundPlayer::checkInit(bool condition, const std::string& description)
      {
         if(!condition)
           {
@@ -61,7 +62,7 @@ namespace mods
         removeOldestReaderFromPlayList();
      }
    
-   const SoundPlayer::SynchronizedReader& SoundPlayer::addReaderToPlayList(ModuleReader::ptr reader)
+   auto SoundPlayer::addReaderToPlayList(ModuleReader::ptr reader) -> const SoundPlayer::SynchronizedReader&
      {
         std::lock_guard<std::mutex> lock(_playListMutex);
         SynchronizedReader r(std::move(reader), std::make_shared<std::mutex>());
@@ -123,7 +124,7 @@ namespace mods
      {
      }
    
-   const char* SoundPlayer::SoundPlayerInitException::what() const noexcept
+   auto SoundPlayer::SoundPlayerInitException::what() const noexcept -> const char*
      {
         return _reason.c_str();
      }

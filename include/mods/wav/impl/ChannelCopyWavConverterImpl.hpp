@@ -27,11 +27,11 @@ namespace mods
                   InternalCopySourceConverter() = delete;
                   InternalCopySourceConverter(const InternalCopySourceConverter&) = delete;
                   InternalCopySourceConverter(InternalCopySourceConverter&&) = delete;
-                  InternalCopySourceConverter& operator=(const InternalCopySourceConverter&) = delete;
-                  InternalCopySourceConverter& operator=(InternalCopySourceConverter&&) = delete;
+                  auto operator=(const InternalCopySourceConverter&) -> InternalCopySourceConverter& = delete;
+                  auto operator=(InternalCopySourceConverter&&) -> InternalCopySourceConverter& = delete;
                   ~InternalCopySourceConverter() = default;
                   
-                  bool isFinished(CopyDestId id) const;
+                  auto isFinished(CopyDestId id) const -> bool;
                   void read(mods::utils::RWBuffer<u8>* buf, int len, CopyDestId id);
                   
                 private:
@@ -50,15 +50,15 @@ namespace mods
                   ChannelCopyWavConverterSlave() = delete;
                   ChannelCopyWavConverterSlave(const ChannelCopyWavConverterSlave&) = delete;
                   ChannelCopyWavConverterSlave(ChannelCopyWavConverterSlave&&) = delete;
-                  ChannelCopyWavConverterSlave& operator=(const ChannelCopyWavConverterSlave&) = delete;
-                  ChannelCopyWavConverterSlave& operator=(ChannelCopyWavConverterSlave&&) = delete;
+                  auto operator=(const ChannelCopyWavConverterSlave&) -> ChannelCopyWavConverterSlave& = delete;
+                  auto operator=(ChannelCopyWavConverterSlave&&) -> ChannelCopyWavConverterSlave& = delete;
                   ~ChannelCopyWavConverterSlave() override = default;
                   
-                  bool isFinished() const override;
-                  void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+                  auto isFinished() const -> bool override;
+                  void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
                   
                 protected:
-                  WavConverter::ptr buildSlave() const;
+                  auto buildSlave() const -> WavConverter::ptr;
                   
                 private:
                   InternalCopySourceConverter::sptr _src;

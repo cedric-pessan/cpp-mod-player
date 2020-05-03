@@ -2,6 +2,7 @@
 #include "mods/wav/DVIADPCMDecoderConverter.hpp"
 
 #include <iostream>
+#include <limits>
 
 namespace mods
 {
@@ -13,38 +14,38 @@ namespace mods
 	    {
 	    }
 	
-	bool DVIADPCMDecoderConverter::isFinished() const
+	auto DVIADPCMDecoderConverter::isFinished() const -> bool
 	  {
 	     return !_sampleAvailable && _src->isFinished();
 	  }
 	
-	void DVIADPCMDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, int len)
+	void DVIADPCMDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
 	  {
-	     if((len & 1) != 0)
+	     if((len & 1U) != 0)
 	       {
 		  std::cout << "Odd length in DVI/ADPCM not supported" << std::endl;
 	       }
 	     
-	     int samplesToRead = len / 2;
+	     size_t samplesToRead = len / 2;
 	     if(_sampleAvailable)
 	       {
 		  --samplesToRead;
 	       }
-	     if((samplesToRead & 1) != 0) 
+	     if((samplesToRead & 1U) != 0) 
 	       {
 		  ++samplesToRead;
 	       }
-	     int bytesToRead = samplesToRead / 2;
+	     size_t bytesToRead = samplesToRead / 2;
 	     
 	     ensureTempBufferSize(bytesToRead);
 	     auto inView = _temp.slice<u8>(0, bytesToRead);
 	     
-	     int samplesToWrite = len / 2;
+	     size_t samplesToWrite = len / 2;
 	     auto outView = buf->slice<s16>(0, samplesToWrite);
 	     
 	     _src->read(&inView, bytesToRead);
 	     
-	     int samplesWritten = 0;
+	     size_t samplesWritten = 0;
 	     
 	     if(_sampleAvailable)
 	       {
@@ -52,15 +53,17 @@ namespace mods
 		  outView[samplesWritten++] = newSample;
 		  _sampleAvailable = false;
 	       }
+             
+             static constexpr u8 nibbleMask = 0xFU;
 	     
-	     for(int i=0; i<bytesToRead; ++i)
+	     for(size_t i=0; i<bytesToRead; ++i)
 	       {
-		  int v = inView[i];
-		  _sample = (v >> 4) & 0xF;
+		  u8 v = inView[i];
+		  _sample = static_cast<u8>(v >> 4U) & nibbleMask;
 		  s16 newSample = decodeSample(_sample);
 		  outView[samplesWritten++] = newSample;
 		  
-		  _sample = v & 0xF;
+		  _sample = v & nibbleMask;
 		  if(samplesWritten < samplesToWrite)
 		    {
 		       newSample = decodeSample(_sample);
@@ -73,7 +76,7 @@ namespace mods
 	       }
 	  }
 	
-	mods::utils::RWBuffer<u8> DVIADPCMDecoderConverter::allocateNewTempBuffer(size_t len)
+	auto DVIADPCMDecoderConverter::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>
 	  {
 	     _tempVec.resize(len);
 	     u8* ptr = _tempVec.data();
@@ -92,13 +95,13 @@ namespace mods
 	
 	namespace
 	  {
-	     std::array<int, 16> indexTable
+	     constexpr std::array<int, 16> indexTable
 	       {
 		  -1, -1, -1, -1, 2, 4, 6, 8,
 		    -1, -1, -1, -1, 2, 4, 6, 8
 	       };
 	     
-	     std::array<int, 89> stepSizeTable
+	     constexpr std::array<int, 89> stepSizeTable
 	       {
 		  7, 8, 9, 10, 11, 12, 13, 14,
 		    16, 17, 19, 21, 23, 25, 28,
@@ -115,34 +118,38 @@ namespace mods
 	       };
 	  } // namespace
 	
-	s16 DVIADPCMDecoderConverter::decodeSample(int sample)
+	auto DVIADPCMDecoderConverter::decodeSample(int sample) -> s16
 	  {
 	     using mods::utils::at;
+             
+             static constexpr u32 signBitMask = 8U;
 	     
 	     u32 originalSample = static_cast<u32>(sample);
 	     int difference = 0;
-	     if(originalSample & 4)
+	     if((originalSample & 4U) != 0)
 	       {
 		  difference += _stepSize;
 	       }
-	     if(originalSample & 2)
+	     if((originalSample & 2U) != 0)
 	       {
-		  difference += (_stepSize >> 1);
+		  difference += (_stepSize >> 1U);
 	       }
-	     if(originalSample & 1)
+	     if((originalSample & 1U) != 0)
 	       {
-		  difference += (_stepSize >> 2);
+		  difference += (_stepSize >> 2U);
 	       }
-	     difference += (_stepSize >> 3);
-	     if(originalSample & 8)
+	     difference += (_stepSize >> 3U);
+	     if((originalSample & signBitMask) != 0)
 	       {
 		  difference = -difference;
 	       }
 	     _newSample += difference;
-	     _newSample = mods::utils::clamp(_newSample, -32768, 32767);
+	     _newSample = mods::utils::clamp(_newSample, 
+                                             static_cast<int>(std::numeric_limits<s16>::min()),
+                                             static_cast<int>(std::numeric_limits<s16>::max()));
 	     
 	     _index += at(indexTable, originalSample);
-	     _index = mods::utils::clamp(_index, 0, 88);
+	     _index = mods::utils::clamp(_index, 0, static_cast<int>(stepSizeTable.size()-1));
 	     _stepSize = at(stepSizeTable, _index);
 	     
 	     return static_cast<s16>(_newSample);

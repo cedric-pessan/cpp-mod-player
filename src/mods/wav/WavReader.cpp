@@ -2,6 +2,9 @@
 #include "mods/wav/Format.hpp"
 #include "mods/utils/FileUtils.hpp"
 #include "mods/utils/optional.hpp"
+#include "mods/wav/ALawConverter.hpp"
+#include "mods/wav/GSMDecoderConverter.hpp"
+#include "mods/wav/MuLawConverter.hpp"
 #include "mods/wav/WavReader.hpp"
 #include "mods/wav/WavTypes.hpp"
 
@@ -14,87 +17,87 @@ namespace mods
      {
         namespace
           {
-             const std::string& getRIFF()
+             auto getRIFF() -> const std::string&
                {
                   static const std::string RIFF = "RIFF";
                   return RIFF;
                }
-             const std::string& getWAVE()
+             auto getWAVE() -> const std::string&
                {
                   static const std::string WAVE = "WAVE";
                   return WAVE;
                }
-             const std::string& getFMT()
+             auto getFMT() -> const std::string&
                {
                   static const std::string FMT = "fmt ";
                   return FMT;
                }
-             const std::string& getFACT()
+             auto getFACT() -> const std::string&
                {
                   static const std::string FACT = "fact";
                   return FACT;
                }
-             const std::string& getDATA()
+             auto getDATA() -> const std::string&
                {
                   static const std::string DATA = "data";
                   return DATA;
                }
-             const std::string& getDISP()
+             auto getDISP() -> const std::string&
                {
                   static const std::string DISP = "DISP";
                   return DISP;
                }
-             const std::string& getLIST()
+             auto getLIST() -> const std::string&
                {
                   static const std::string LIST = "LIST";
                   return LIST;
                }
-             const std::string& getINFO()
+             auto getINFO() -> const std::string&
                {
                   static const std::string INFO = "INFO";
                   return INFO;
                }
-             const std::string& getICOP()
+             auto getICOP() -> const std::string&
                {
                   static const std::string ICOP = "ICOP";
                   return ICOP;
                }
-             const std::string& getISBJ()
+             auto getISBJ() -> const std::string&
                {
                   static const std::string ISBJ = "ISBJ";
                   return ISBJ;
                }
-             const std::string& getICRD()
+             auto getICRD() -> const std::string&
                {
                   static const std::string ICRD = "ICRD";
                   return ICRD;
                }
-             const std::string& getISFT()
+             auto getISFT() -> const std::string&
                {
                   static const std::string ISFT = "ISFT";
                   return ISFT;
                }
-             const std::string& getAfsp()
+             auto getAfsp() -> const std::string&
                {
                   static const std::string afsp = "afsp";
                   return afsp;
                }
-             const std::string& getICMT()
+             auto getICMT() -> const std::string&
                {
                   static const std::string ICMT = "ICMT";
                   return ICMT;
                }
-             const std::string& getCUE()
+             auto getCUE() -> const std::string&
                {
                   static const std::string CUE = "cue ";
                   return CUE;
                }
-             const std::string& getPEAK()
+             auto getPEAK() -> const std::string&
                {
                   static const std::string PEAK = "PEAK";
                   return PEAK;
                }
-             const std::string& getADTL()
+             auto getADTL() -> const std::string&
                {
                   static const std::string ADTL = "adtl";
                   return ADTL;
@@ -123,7 +126,7 @@ namespace mods
                
                auto riffLength = incompleteRiff ? 
                  _fileBuffer.size() - sizeof(RiffHeader) :
-                 riffHeader->chunk.getChunkSize() - sizeof(RiffHeader) + sizeof(ChunkHeader);
+                 riffHeader->getChunkHeader().getChunkSize() - sizeof(RiffHeader) + sizeof(ChunkHeader);
                auto riffBuffer = _fileBuffer.slice<u8>(sizeof(RiffHeader), riffLength);
                
                using mods::utils::RBuffer;
@@ -197,7 +200,7 @@ namespace mods
                       }
                     
                     auto chunkSize = chunkHeader->getChunkSize();
-                    if((chunkSize & 1u) != 0) // padding
+                    if((chunkSize & 1U) != 0) // padding
                       {
                          ++chunkSize;
                       }
@@ -216,9 +219,9 @@ namespace mods
                buildInfo(fmt.getBitsPerSample(), fmt.getNumChannels(), fmt.getSampleRate(), description.str(), fmt.getAudioFormat());
             }
         
-        Format WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                                  const mods::utils::RBuffer<u8>& riffBuffer,
-                                  size_t offset) const
+        auto WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                const mods::utils::RBuffer<u8>& riffBuffer,
+                                size_t offset) -> Format
           {
              checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
                        chunkHeader->getChunkSize() >= sizeof(FmtHeader) - sizeof(ChunkHeader) , "Incomplete FMT chunk");
@@ -227,7 +230,7 @@ namespace mods
              
              optional<mods::utils::RBuffer<ExtendedFmtHeader>> extendedFmtHeader;
              
-             if(fmtHeader->chunk.getChunkSize() >= sizeof(ExtendedFmtHeader) - sizeof(ChunkHeader))
+             if(fmtHeader->getChunkHeader().getChunkSize() >= sizeof(ExtendedFmtHeader) - sizeof(ChunkHeader))
                {
                   mods::utils::RBuffer<ExtendedFmtHeader> buf = riffBuffer.slice<ExtendedFmtHeader>(offset, 1);
                   extendedFmtHeader = buf;
@@ -236,7 +239,7 @@ namespace mods
              optional<mods::utils::RBuffer<ExtensibleHeader>> extensibleHeader;
              
              if(extendedFmtHeader.has_value() &&
-                fmtHeader->chunk.getChunkSize() >= sizeof(ExtensibleHeader) - sizeof(ChunkHeader) &&
+                fmtHeader->getChunkHeader().getChunkSize() >= sizeof(ExtensibleHeader) - sizeof(ChunkHeader) &&
                 (*extendedFmtHeader)->getExtensionSize() == (sizeof(ExtensibleHeader) - sizeof(ExtendedFmtHeader)))
                {
                   mods::utils::RBuffer<ExtensibleHeader> buf = riffBuffer.slice<ExtensibleHeader>(offset, 1);
@@ -267,22 +270,22 @@ namespace mods
                   break;
                   
                 case WavAudioFormat::A_LAW:
-                  checkInit(decodedFormat.getBitsPerSample() == 8, "A-Law codec needs 8 bits per sample");
+                  checkInit(ALawConverter::isValidAsBitsPerSample(decodedFormat.getBitsPerSample()), ALawConverter::getBitsPerSampleRequirementsString());
                   break;
                   
                 case WavAudioFormat::MU_LAW:
-                  checkInit(decodedFormat.getBitsPerSample() == 8, "MU-Law codec needs 8 bits per sample");
+                  checkInit(MuLawConverter::isValidAsBitsPerSample(decodedFormat.getBitsPerSample()), MuLawConverter::getBitsPerSampleRequirementsString());
                   break;
                   
                 case WavAudioFormat::IEEE_FLOAT:
-                  checkInit(decodedFormat.getBitsPerSample() == 32 || decodedFormat.getBitsPerSample() == 64, "IEEE float codec needs 32 or 64 bits per sample");
+                  checkInit(decodedFormat.getBitsPerSample() == sizeof(u32) * BITS_IN_BYTE || decodedFormat.getBitsPerSample() == sizeof(u64) * BITS_IN_BYTE, "IEEE float codec needs 32 or 64 bits per sample");
                   break;
                   
                 case WavAudioFormat::TRUSPEECH:
                   break;
                   
                 case WavAudioFormat::GSM:
-                  checkInit((decodedFormat.getBitsPerContainer() % 260) == 0, "Container length for GSM should be a multiple of 260");
+                  checkInit(GSMDecoderConverter::isValidAsBitsPerSample(decodedFormat.getBitsPerSample()), GSMDecoderConverter::getBitsPerSampleRequirementsString());
                   checkInit(extendedFmtHeader.has_value(), "GSM codec without extended fmt");
                   break;
 		  
@@ -302,9 +305,9 @@ namespace mods
              return decodedFormat;
           }
         
-        mods::utils::RBuffer<FactHeader> WavReader::readFact(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                                                             const mods::utils::RBuffer<u8>& riffBuffer,
-                                                             size_t offset) const
+        auto WavReader::readFact(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                 const mods::utils::RBuffer<u8>& riffBuffer,
+                                 size_t offset) -> mods::utils::RBuffer<FactHeader>
           {
              checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
                        chunkHeader->getChunkSize() == sizeof(FactHeader) - sizeof(ChunkHeader) , "Incomplete Fact chunk");
@@ -314,9 +317,9 @@ namespace mods
              return factHeader;
           }
         
-        mods::utils::RBuffer<u8> WavReader::readData(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                                                     const mods::utils::RBuffer<u8>& riffBuffer,
-                                                     size_t offset) const
+        auto WavReader::readData(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                 const mods::utils::RBuffer<u8>& riffBuffer,
+                                 size_t offset) -> mods::utils::RBuffer<u8>
           {
              checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader),
                        "Incomplete Data chunk");
@@ -329,7 +332,7 @@ namespace mods
         void WavReader::readDisp(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
                                  const mods::utils::RBuffer<u8>& riffBuffer,
                                  size_t offset,
-                                 std::stringstream& description) const
+                                 std::stringstream& description)
           {
              checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
                        chunkHeader->getChunkSize() >= sizeof(DispHeader), "Incomplete Disp chunk");
@@ -359,7 +362,7 @@ namespace mods
         void WavReader::readAfsp(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
                                  const mods::utils::RBuffer<u8>& riffBuffer,
                                  size_t offset,
-                                 std::stringstream& description) const
+                                 std::stringstream& description)
           {
              checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
                        chunkHeader->getChunkSize() >= sizeof(AfspHeader), "Incomplete Afsp chunk");
@@ -390,10 +393,10 @@ namespace mods
              // no need to read adtl until we handle play lists and cue
           }
         
-        double WavReader::readPeak(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                                   const mods::utils::RBuffer<u8>& riffBuffer,
-                                   size_t offset,
-                                   int nbChannels) const
+        auto WavReader::readPeak(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                 const mods::utils::RBuffer<u8>& riffBuffer,
+                                 size_t offset,
+                                 int nbChannels) -> double
           {
              if(nbChannels == 0)
                {
@@ -421,9 +424,9 @@ namespace mods
         void WavReader::parseInfoList(const mods::utils::RBuffer<ListHeader>& listHeader,
                                       const mods::utils::RBuffer<u8>& riffBuffer,
                                       size_t offset,
-                                      std::stringstream& description) const
+                                      std::stringstream& description)
           {
-             auto listBuffer = riffBuffer.slice<u8>(offset + sizeof(ListHeader), listHeader->chunk.getChunkSize() - (sizeof(ListHeader) - sizeof(ChunkHeader)));
+             auto listBuffer = riffBuffer.slice<u8>(offset + sizeof(ListHeader), listHeader->getChunkHeader().getChunkSize() - (sizeof(ListHeader) - sizeof(ChunkHeader)));
              size_t listOffset = 0;
              while(listOffset < listBuffer.size())
                {
@@ -464,7 +467,7 @@ namespace mods
                   description << info;
                   
                   auto chunkSize = chunkHeader->getChunkSize();
-                  if((chunkSize & 1u) != 0) // padding
+                  if((chunkSize & 1U) != 0) // padding
                     {
                        ++chunkSize;
                     }
@@ -486,7 +489,7 @@ namespace mods
              _info = ss.str();
           }
         
-        bool WavReader::isFinished() const
+        auto WavReader::isFinished() const -> bool
           {
              return _converter->isFinished();
           }
@@ -496,15 +499,17 @@ namespace mods
              _converter->read(buf, len);
           }
         
-        std::string WavReader::getInfo() const
+        auto WavReader::getInfo() const -> std::string
           {
              return _info;
           }
         
-        std::string WavReader::getProgressInfo() const
+        auto WavReader::getProgressInfo() const -> std::string
           {
+             static constexpr int fullProgressValue = 100;
+             
              size_t read = _statCollector->getBytesRead();
-             size_t percentage = read * 100 / _length;
+             size_t percentage = read * /*100*/fullProgressValue / _length;
              std::stringstream ss;
              ss << "Reading..." << percentage << "%";
              return ss.str();

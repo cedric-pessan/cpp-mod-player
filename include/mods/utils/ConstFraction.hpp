@@ -19,23 +19,23 @@ namespace mods
              ConstFraction() = delete;
              ConstFraction(const ConstFraction&) = default;
              ConstFraction(ConstFraction&&) = default;
-             ConstFraction& operator=(const ConstFraction&) = delete;
-             ConstFraction& operator=(ConstFraction&&) = delete;
+             auto operator=(const ConstFraction&) -> ConstFraction& = delete;
+             auto operator=(ConstFraction&&) -> ConstFraction& = delete;
              ~ConstFraction() = default;
              
-             constexpr ConstFraction reduce() const
+             constexpr auto reduce() const -> ConstFraction
                {
                   int factor = gcd(_numerator, _denominator);
                   return {_numerator / factor, 
                           _denominator / factor};
                }
              
-             constexpr int getDenominator() const
+             constexpr auto getDenominator() const -> int
                {
                   return _denominator;
                }
              
-             constexpr int getNumerator() const
+             constexpr auto getNumerator() const -> int
                {
                   return _numerator;
                }

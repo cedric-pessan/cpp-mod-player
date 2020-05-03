@@ -15,11 +15,11 @@ namespace mods
              ChannelCopyWavConverter() = delete;
              ChannelCopyWavConverter(const ChannelCopyWavConverter&) = delete;
              ChannelCopyWavConverter(ChannelCopyWavConverter&&) = delete;
-             ChannelCopyWavConverter& operator=(const ChannelCopyWavConverter&) = delete;
-             ChannelCopyWavConverter& operator=(ChannelCopyWavConverter&&) = delete;
+             auto operator=(const ChannelCopyWavConverter&) -> ChannelCopyWavConverter& = delete;
+             auto operator=(ChannelCopyWavConverter&&) -> ChannelCopyWavConverter& = delete;
              ~ChannelCopyWavConverter() override = default;
              
-             WavConverter::ptr getCopy();
+             auto getCopy() -> WavConverter::ptr;
              
            private:
              WavConverter::ptr _copy;

@@ -12,7 +12,7 @@ namespace mods
           {
              namespace
                {
-                  std::array<double,30> i0_0_8_coefficients
+                  constexpr std::array<double,30> i0_0_8_coefficients
                     {
                        -4.41534164647933937950E-18,
                          3.33079451882223809783E-17,
@@ -46,7 +46,7 @@ namespace mods
                          6.76795274409476084995E-1
                     };
                   
-                  std::array<double,25> i0_8_infinity_coefficients
+                  constexpr std::array<double,25> i0_8_infinity_coefficients
                     {
                        -7.23318048787475395456E-18,
                          -4.83050448594418207126E-18,
@@ -74,22 +74,27 @@ namespace mods
                          3.36911647825569408990E-3,
                          8.04490411014108831608E-1
                     };
+                  
+                  constexpr double limitBetweenPolynoms = 8.0;
                } // namespace
              
-             double i0(double x)
+             auto i0(double x) -> double
                {
                   namespace chebyshev = mods::utils::chebyshevPolynom;
+                  static constexpr double const_2 = 2.0;
+                  static constexpr double const_32 = 32.0;
+                  
                   if(x < 0)
                     {
                        return i0(-x);
                     }
-                  if(x <= 8.0)
+                  if(x <= limitBetweenPolynoms)
                     {
-                       double y = (x / 2.0) - 2.0;
+                       double y = (x / const_2) - const_2;
                        return std::exp(x) * chebyshev::eval(y, i0_0_8_coefficients);
                     }
                   
-                  return std::exp(x) * chebyshev::eval(32.0 / x - 2.0, i0_8_infinity_coefficients) / std::sqrt(x);
+                  return std::exp(x) * chebyshev::eval(const_32 / x - const_2, i0_8_infinity_coefficients) / std::sqrt(x);
                }
           } // namespace bessel
      } // namespace utils

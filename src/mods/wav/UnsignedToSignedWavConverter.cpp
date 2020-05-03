@@ -14,13 +14,13 @@ namespace mods
               }
         
         template<typename T>
-          bool UnsignedToSignedWavConverter<T>::isFinished() const
+          auto UnsignedToSignedWavConverter<T>::isFinished() const -> bool
           {
              return _src->isFinished();
           }
         
         template<typename T>
-          void UnsignedToSignedWavConverter<T>::read(mods::utils::RWBuffer<u8>* buf, int len)
+          void UnsignedToSignedWavConverter<T>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
             {
                if((len % sizeof(T)) != 0)
                  {

@@ -8,32 +8,32 @@ namespace mods
 {
    namespace wav
      {
-        template<int CH, int NBCHANNELS, int BITSPERCONTAINER>
-          class ReaderWavConverter : public WavConverter
+        class ReaderWavConverter : public WavConverter
           {
            public:
-             ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector::sptr statCollector);
+             ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector::sptr statCollector, u32 channel, u32 nbChannels, u32 bitsPerContainer);
              
              ReaderWavConverter() = delete;
              ReaderWavConverter(const ReaderWavConverter&) = delete;
              ReaderWavConverter(ReaderWavConverter&&) = delete;
-             ReaderWavConverter& operator=(const ReaderWavConverter&) = delete;
-             ReaderWavConverter& operator=(ReaderWavConverter&&) = delete;
+             auto operator=(const ReaderWavConverter&) -> ReaderWavConverter& = delete;
+             auto operator=(ReaderWavConverter&&) -> ReaderWavConverter& = delete;
              ~ReaderWavConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
              const mods::utils::RBuffer<u8> _buffer;
              mods::utils::RBuffer<u8>::const_iterator _it;
              mods::utils::RBuffer<u8>::const_iterator _end;
-             int _currentByte = 0;
+             size_t _currentByte = 0;
              
              u8 _defaultValue;
              StatCollector::sptr _statCollector;
              
-             constexpr static int BYTESPERCONTAINER = BITSPERCONTAINER/8;
+             const u32 _bytesPerContainer;
+             const u32 _bytesBetweenContainers;
           };
      } // namespace wav
 } // namespace mods

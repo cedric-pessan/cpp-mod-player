@@ -10,28 +10,30 @@ namespace mods
 	class DVIADPCMDecoderConverter : public WavConverter
 	  {
 	   public:
-	     DVIADPCMDecoderConverter(WavConverter::ptr src);
+	     explicit DVIADPCMDecoderConverter(WavConverter::ptr src);
 	     
 	     DVIADPCMDecoderConverter() = delete;
 	     DVIADPCMDecoderConverter(const DVIADPCMDecoderConverter&) = delete;
 	     DVIADPCMDecoderConverter(DVIADPCMDecoderConverter&&) = delete;
-	     DVIADPCMDecoderConverter& operator=(const DVIADPCMDecoderConverter&) = delete;
-	     DVIADPCMDecoderConverter& operator=(DVIADPCMDecoderConverter&&) = delete;
-	     ~DVIADPCMDecoderConverter() = default;
+	     auto operator=(const DVIADPCMDecoderConverter&) -> DVIADPCMDecoderConverter& = delete;
+	     auto operator=(DVIADPCMDecoderConverter&&) -> DVIADPCMDecoderConverter& = delete;
+	     ~DVIADPCMDecoderConverter() override = default;
 	     
-	     bool isFinished() const override;
-	     void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+	     auto isFinished() const -> bool override;
+	     void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
 	     
 	   private:
-	     mods::utils::RWBuffer<u8> allocateNewTempBuffer(size_t len);
+	     auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
 	     void ensureTempBufferSize(size_t len);
-	     s16 decodeSample(int sample);
+	     auto decodeSample(int sample) -> s16;
 	     
 	     WavConverter::ptr _src;
+             
+             static constexpr u32 _defaultStepSize = 7;
 	     
 	     bool _sampleAvailable = false;
 	     int _sample = 0;
-	     int _stepSize = 7;
+	     u32 _stepSize = _defaultStepSize;
 	     int _newSample = 0;
 	     int _index = 0;
 	     

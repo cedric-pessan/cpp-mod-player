@@ -67,19 +67,19 @@ namespace mods
                   InternalMultiChannelMixerSourceConverter() = delete;
                   InternalMultiChannelMixerSourceConverter(const InternalMultiChannelMixerSourceConverter&) = delete;
                   InternalMultiChannelMixerSourceConverter(InternalMultiChannelMixerSourceConverter&&) = delete;
-                  InternalMultiChannelMixerSourceConverter& operator=(const InternalMultiChannelMixerSourceConverter&) = delete;
-                  InternalMultiChannelMixerSourceConverter& operator=(InternalMultiChannelMixerSourceConverter&&) = delete;
+                  auto operator=(const InternalMultiChannelMixerSourceConverter&) -> InternalMultiChannelMixerSourceConverter& = delete;
+                  auto operator=(InternalMultiChannelMixerSourceConverter&&) -> InternalMultiChannelMixerSourceConverter& = delete;
                   ~InternalMultiChannelMixerSourceConverter() = default;
                   
-                  bool isFinished(ChannelId outChannel) const;
+                  auto isFinished(ChannelId outChannel) const -> bool;
                   void read(mods::utils::RWBuffer<u8>* buf, int len, ChannelId outChannel);
                   
                 private:
-                  mods::utils::RWBuffer<u8> allocateNewTempBuffer(std::vector<u8>* backendVec, size_t len);
+                  static auto allocateNewTempBuffer(std::vector<u8>* backendVec, size_t len) -> mods::utils::RWBuffer<u8>;
                   void ensureChannelBuffersSizes(size_t len);
                   
                   void computeMixingCoefficients();
-                  double mix(int idxOutBuffer, size_t idxSample) const;
+                  auto mix(int idxOutBuffer, size_t idxSample) const -> double;
                   
                   using UnconsumedBuffer = std::deque<double>;
                   std::array<UnconsumedBuffer,2> _unconsumedBuffers;
@@ -102,15 +102,15 @@ namespace mods
                   MultiChannelMixerBase() = delete;
                   MultiChannelMixerBase(const MultiChannelMixerBase&) = delete;
                   MultiChannelMixerBase(MultiChannelMixerBase&&) = delete;
-                  MultiChannelMixerBase& operator=(const MultiChannelMixerBase&) = delete;
-                  MultiChannelMixerBase& operator=(MultiChannelMixerBase&&) = delete;
+                  auto operator=(const MultiChannelMixerBase&) -> MultiChannelMixerBase& = delete;
+                  auto operator=(MultiChannelMixerBase&&) -> MultiChannelMixerBase& = delete;
                   ~MultiChannelMixerBase() override = default;
                   
-                  bool isFinished() const override;
-                  void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+                  auto isFinished() const -> bool override;
+                  void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
                   
                 protected:
-                  WavConverter::ptr buildRightChannel() const;
+                  auto buildRightChannel() const -> WavConverter::ptr;
                   
                 private:
                   InternalMultiChannelMixerSourceConverter::sptr _src;

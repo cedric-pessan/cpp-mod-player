@@ -13,25 +13,25 @@ namespace mods
             {
             }
         
-        bool DivideConverter::isFinished() const
+        auto DivideConverter::isFinished() const -> bool
           {
              return _src->isFinished();
           }
         
-        void DivideConverter::read(mods::utils::RWBuffer<u8>* buf, int len)
+        void DivideConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
           {
              if((len % sizeof(double)) != 0)
                {
                   std::cout << "TODO: wrong buffer length in DivideConverter" << std::endl;
                }
              
-             int nbElems = len / sizeof(double);
+             size_t nbElems = len / sizeof(double);
              
              _src->read(buf, len);
              
              auto view = buf->slice<double>(0, nbElems);
              
-             for(int i=0; i<nbElems; ++i)
+             for(size_t i=0; i<nbElems; ++i)
                {
                   view[i] /= _coef;
                }

@@ -16,20 +16,20 @@ namespace mods
              DownscaleWavConverter() = delete;
              DownscaleWavConverter(const DownscaleWavConverter&) = delete;
              DownscaleWavConverter(DownscaleWavConverter&&) = delete;
-             DownscaleWavConverter& operator=(const DownscaleWavConverter&) = delete;
-             DownscaleWavConverter& operator=(DownscaleWavConverter&&) = delete;
+             auto operator=(const DownscaleWavConverter&) -> DownscaleWavConverter& = delete;
+             auto operator=(DownscaleWavConverter&&) -> DownscaleWavConverter& = delete;
              ~DownscaleWavConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
-             mods::utils::RWBuffer<u8> allocateNewTempBuffer(size_t len);
+             auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
              void ensureTempBufferSize(size_t len);
              
-             constexpr u32 shiftRight()
+             auto constexpr shiftRight() -> u32
                {
-                  return (sizeof(TIn) - sizeof(TOut))*8;
+                  return (sizeof(TIn) - sizeof(TOut))*BITS_IN_BYTE;
                }
              
              WavConverter::ptr _src;

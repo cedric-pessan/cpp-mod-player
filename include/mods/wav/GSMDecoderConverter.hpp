@@ -5,6 +5,8 @@
 #include "mods/wav/GSMInt16.hpp"
 #include "mods/wav/WavConverter.hpp"
 
+#include <functional>
+
 namespace mods
 {
    namespace wav
@@ -17,16 +19,23 @@ namespace mods
              GSMDecoderConverter() = delete;
              GSMDecoderConverter(const GSMDecoderConverter&) = delete;
              GSMDecoderConverter(GSMDecoderConverter&&) = delete;
-             GSMDecoderConverter& operator=(const GSMDecoderConverter&) = delete;
-             GSMDecoderConverter& operator=(GSMDecoderConverter&&) = delete;
+             auto operator=(const GSMDecoderConverter&) -> GSMDecoderConverter& = delete;
+             auto operator=(GSMDecoderConverter&&) -> GSMDecoderConverter = delete;
              ~GSMDecoderConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             
+             static constexpr auto isValidAsBitsPerSample(int bitsPerSample) -> bool
+               {
+                  return (bitsPerSample % GSM_ENCODED_FRAME_SIZE) == 0;
+               }
+             
+             static auto getBitsPerSampleRequirementsString() -> std::string&;
              
            private:
              template<typename ARRAY>
-               static mods::utils::RWBuffer<typename ARRAY::value_type> initializeArrayRWBuffer(ARRAY& backArray);
+               static auto initializeArrayRWBuffer(ARRAY& backArray) -> mods::utils::RWBuffer<typename ARRAY::value_type>;
              
              void decodeGSMFrame();
              void uncompressGSMFrame();
@@ -65,17 +74,19 @@ namespace mods
              bool _evenFrame = true;
              mods::utils::BitReader<mods::utils::ByteSwap::None, mods::utils::BitOrder::LsbToMsb> _bitReader;
              
-             std::array<GSMInt16, 8> _LARc;
+             constexpr static int _numberOfLARCoefficients = 8;
              
-             using LARppArray = std::array<GSMInt16, 8>;
+             std::array<GSMInt16, _numberOfLARCoefficients> _LARc;
+             
+             using LARppArray = std::array<GSMInt16, _numberOfLARCoefficients>;
              std::array<LARppArray, 2> _LARpp;
              int _currentLARpp = 0;
              
-             std::array<GSMInt16, 8> _LARp;
+             std::array<GSMInt16, _numberOfLARCoefficients> _LARp;
              
-             std::array<GSMInt16, 8> _rp;
+             std::array<GSMInt16, _numberOfLARCoefficients> _rp;
              
-             std::array<GSMInt16, 9> _v;
+             std::array<GSMInt16, _numberOfLARCoefficients+1> _v;
              
              std::array<GSMInt16, GSM_DECODED_FRAME_SAMPLES> _sr;
              
@@ -112,6 +123,9 @@ namespace mods
                   13107, 13107, 13107, 13107, 19223, 17476, 31454, 29708
                };
              
+             constexpr static int _numberOfRPEPulses = 13;
+             constexpr static int _RPEBlockSize = 40;
+             
              struct SubFrame
                {
                   // LTP
@@ -121,16 +135,18 @@ namespace mods
                   // RPE
                   GSMInt16 M;
                   GSMInt16 Xmax;
-                  std::array<GSMInt16, 13> x;
+                  std::array<GSMInt16, _numberOfRPEPulses> x;
                   
                   // temporaries
-                  std::array<GSMInt16, 13> xp;
-                  std::array<GSMInt16, 40> ep;
+                  std::array<GSMInt16, _numberOfRPEPulses> xp;
+                  std::array<GSMInt16, _RPEBlockSize> ep;
                };
              
              std::array<SubFrame, 4> _subframes;
              
-             GSMInt16 _nrp = 40;
+             constexpr static int _INITIAL_NRP = 40;
+             
+             GSMInt16 _nrp = _INITIAL_NRP;
              
              constexpr static int LTP_LAG_SIZE = 7;
              constexpr static int LTP_GAIN_SIZE = 2;
@@ -147,10 +163,10 @@ namespace mods
                   
                   RingArray(const RingArray&) = delete;
                   RingArray(RingArray&&) = delete;
-                  RingArray& operator=(const RingArray&) = delete;
-                  RingArray& operator=(RingArray&&) = delete;
+                  auto operator=(const RingArray&) -> RingArray& = delete;
+                  auto operator=(RingArray&&) -> RingArray& = delete;
                   
-                  GSMInt16& operator[](const GSMInt16& index);
+                  auto operator[](const GSMInt16& index) -> GSMInt16&;
                   
                   void slideOrigin(int offset);
                   

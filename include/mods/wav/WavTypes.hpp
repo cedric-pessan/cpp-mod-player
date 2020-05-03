@@ -1,6 +1,7 @@
 #ifndef MODS_WAV_WAVTYPES_HPP
 #define MODS_WAV_WAVTYPES_HPP
 
+#include "mods/utils/PackedArray.hpp"
 #include "mods/utils/types.hpp"
 
 #include <string>
@@ -21,7 +22,7 @@ namespace mods
                EXTENSIBLE = 0xFFFE
           };
         
-        const std::string& toString(WavAudioFormat fmt);
+        auto toString(WavAudioFormat fmt) -> const std::string&;
         
         enum struct DispType : u32
           {
@@ -32,16 +33,16 @@ namespace mods
         struct ChunkHeader
           {
            private:
-             char chunkID[4];
+             mods::utils::PackedArray<char,4> chunkID;
              u32le chunkSize;
              
            public:
-             std::string getChunkID() const noexcept
+             auto getChunkID() const noexcept -> std::string
                {
-                  return std::string(static_cast<const char*>(chunkID), sizeof(chunkID));
+                  return std::string(chunkID.data(), sizeof(chunkID));
                }
              
-             u32 getChunkSize() const noexcept
+             auto getChunkSize() const noexcept -> u32
                {
                   return static_cast<u32>(chunkSize);
                }
@@ -49,25 +50,26 @@ namespace mods
         
         struct RiffHeader
           {
-           public:
-             ChunkHeader chunk;
-             
            private:
-             char format[4];
+             ChunkHeader chunk;
+             mods::utils::PackedArray<char,4> format;
              
            public:
-             std::string getFormat() const noexcept
+             auto getChunkHeader() const noexcept -> const ChunkHeader&
                {
-                  return std::string(static_cast<const char*>(format), sizeof(format));
+                  return chunk;
+               }
+             
+             auto getFormat() const noexcept -> std::string
+               {
+                  return std::string(format.data(), sizeof(format));
                }
           };
         
         struct FmtHeader
           {
-           public:
-             ChunkHeader chunk;
-             
            private:
+             ChunkHeader chunk;
              u16le audioFormat;
              u16le numChannels;
              u32le sampleRate;
@@ -76,33 +78,38 @@ namespace mods
              u16le bitsPerSample;
              
            public:
-             WavAudioFormat getAudioFormat() const noexcept
+             auto getChunkHeader() const noexcept -> const ChunkHeader&
+               {
+                  return chunk;
+               }
+             
+             auto getAudioFormat() const noexcept -> WavAudioFormat
                {
                   u16 value = static_cast<u16>(audioFormat);
                   return static_cast<WavAudioFormat>(value);
                }
              
-             u16 getAudioFormatAsNumber() const noexcept
+             auto getAudioFormatAsNumber() const noexcept -> u16
                {
                   return static_cast<u16>(audioFormat);
                }
              
-             u16 getNumChannels() const noexcept
+             auto getNumChannels() const noexcept -> u16
                {
                   return static_cast<u16>(numChannels);
                }
              
-             u32 getSampleRate() const noexcept
+             auto getSampleRate() const noexcept -> u32
                {
                   return static_cast<u32>(sampleRate);
                }
              
-             u16 getBlockAlign() const noexcept
+             auto getBlockAlign() const noexcept -> u16
                {
                   return static_cast<u16>(blockAlign);
                }
              
-             u16 getBitsPerSample() const noexcept
+             auto getBitsPerSample() const noexcept -> u16
                {
                   return static_cast<u16>(bitsPerSample);
                }
@@ -110,14 +117,12 @@ namespace mods
         
         struct ExtendedFmtHeader
           {
-           public:
-             FmtHeader fmt;
-             
            private:
+             FmtHeader fmt;
              u16le extensionSize;
              
            public:
-             u16 getExtensionSize() const noexcept
+             auto getExtensionSize() const noexcept -> u16
                {
                   return static_cast<u16>(extensionSize);
                }
@@ -125,33 +130,33 @@ namespace mods
         
         struct ExtensibleHeader
           {
-           public:
-             ExtendedFmtHeader extendedFmt;
-             
            private:
+             static constexpr int SUBFORMAT_LENGTH = 14;
+             
+             ExtendedFmtHeader extendedFmt;
              u16le validBitsPerSample;
              u32le channelMask;
              u16le audioFormat;
-             u8 subformat[14];
+             mods::utils::PackedArray<u8, SUBFORMAT_LENGTH> subformat;
              
            public:
-             WavAudioFormat getAudioFormat() const noexcept
+             auto getAudioFormat() const noexcept -> WavAudioFormat
                {
                   u16 value = static_cast<u16>(audioFormat);
                   return static_cast<WavAudioFormat>(value);
                }
              
-             u16 getAudioFormatAsNumber() const noexcept
+             auto getAudioFormatAsNumber() const noexcept -> u16
                {
                   return static_cast<u16>(audioFormat);
                }
              
-             u16 getValidBitsPerSample() const noexcept
+             auto getValidBitsPerSample() const noexcept -> u16
                {
                   return static_cast<u16>(validBitsPerSample);
                }
              
-             u32 getChannelMask() const noexcept
+             auto getChannelMask() const noexcept -> u32
                {
                   return static_cast<u32>(channelMask);
                }
@@ -172,19 +177,17 @@ namespace mods
              ChunkHeader chunk;
              
            private:
-             char afspId[4];
+             mods::utils::PackedArray<char, 4> afspId;
           };
         
         struct DispHeader
           {
-           public:
-             ChunkHeader chunk;
-             
            private:
+             ChunkHeader chunk;
              u32le type;
              
            public:
-             DispType getType() const noexcept
+             auto getType() const noexcept -> DispType
                {
                   u32 value = static_cast<u32>(type);
                   return static_cast<DispType>(value);
@@ -193,16 +196,19 @@ namespace mods
         
         struct ListHeader
           {
-           public:
-             ChunkHeader chunk;
-             
            private:
-             char listTypeID[4];
+             ChunkHeader chunk;
+             mods::utils::PackedArray<char, 4> listTypeID;
              
            public:
-             std::string getListTypeID() const noexcept
+             auto getChunkHeader() const noexcept -> const ChunkHeader&
                {
-                  return std::string(static_cast<const char*>(listTypeID), sizeof(listTypeID));
+                  return chunk;
+               }
+             
+             auto getListTypeID() const noexcept -> std::string
+               {
+                  return std::string(listTypeID.data(), sizeof(listTypeID));
                }
           };
         

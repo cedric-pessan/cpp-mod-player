@@ -28,8 +28,8 @@ namespace mods
                        UnixMapperDeleter() = delete;
                        UnixMapperDeleter(const UnixMapperDeleter&) = delete;
                        UnixMapperDeleter(UnixMapperDeleter&&) = delete;
-                       UnixMapperDeleter& operator=(const UnixMapperDeleter&) = delete;
-                       UnixMapperDeleter& operator=(UnixMapperDeleter&&) = delete;
+                       auto operator=(const UnixMapperDeleter&) -> UnixMapperDeleter& = delete;
+                       auto operator=(UnixMapperDeleter&&) -> UnixMapperDeleter& = delete;
                        ~UnixMapperDeleter() override
                          {
                             ::munmap(_ptr, _length);
@@ -43,7 +43,7 @@ namespace mods
                     };
                } // namespace
              
-             RBufferBackend::sptr mapFileToBuffer(const std::string& filename)
+             auto mapFileToBuffer(const std::string& filename) -> RBufferBackend::sptr
                {
                   int fd = modsOpen(filename.c_str(), O_RDONLY);
                   if(fd == -1)

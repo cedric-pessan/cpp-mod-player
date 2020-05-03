@@ -19,13 +19,13 @@ namespace mods
               }
         
         template<typename TOut, typename TIn>
-          bool DownscaleWavConverter<TOut, TIn>::isFinished() const
+          auto DownscaleWavConverter<TOut, TIn>::isFinished() const -> bool
           {
              return _src->isFinished();
           }
         
         template<typename TOut, typename TIn>
-          void DownscaleWavConverter<TOut, TIn>::read(mods::utils::RWBuffer<u8>* buf, int len)
+          void DownscaleWavConverter<TOut, TIn>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
             {
                if((len % sizeof(TOut)) != 0)
                  {
@@ -50,7 +50,7 @@ namespace mods
             }
         
         template<typename TOut, typename TIn>
-          mods::utils::RWBuffer<u8> DownscaleWavConverter<TOut, TIn>::allocateNewTempBuffer(size_t len)
+          auto DownscaleWavConverter<TOut, TIn>::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>
             {
                _tempVec.resize(len);
                u8* ptr = _tempVec.data();

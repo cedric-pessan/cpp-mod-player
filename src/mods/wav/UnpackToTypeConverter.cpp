@@ -19,13 +19,13 @@ namespace mods
             }
         
         template<typename T>
-          bool UnpackToTypeConverter<T>::isFinished() const
+          auto UnpackToTypeConverter<T>::isFinished() const -> bool
           {
              return _src->isFinished();
           }
         
         template<typename T>
-          void UnpackToTypeConverter<T>::read(mods::utils::RWBuffer<u8>* buf, int len)
+          void UnpackToTypeConverter<T>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
             {
                if((len % sizeof(T)) != 0)
                  {
@@ -40,6 +40,10 @@ namespace mods
                
                _src->read(&inView, toReadLen);
                
+               static constexpr u8 signMask = 0x80U;
+               static constexpr u32 negativeSignExtensionByte = 0xFFU;
+               static constexpr u32 maxShiftValueMask = 31U; 
+               
                for(int i=0; i<nbElems; ++i)
                  {
                     u32 v = 0;
@@ -48,17 +52,17 @@ namespace mods
                     for(size_t j=0; j<_packSize; ++j)
                       {
                          inValue = inView[i*_packSize + j];
-                         v |= (static_cast<u32>(inValue) << (8 * j));
+                         v |= (static_cast<u32>(inValue) << (BITS_IN_BYTE * j));
                       }
                     
-                    if((inValue & 0x80u) != 0)
+                    if((inValue & signMask) != 0)
                       {
                          for(size_t j=_packSize; j<sizeof(T); ++j)
                            {
-                              v |= (0xFFu << (8u * j));
+                              v |= (negativeSignExtensionByte << (BITS_IN_BYTE * j));
                            }
                       }
-                    T outValue = v << (((sizeof(T) - _packSize)*8) & 31u);
+                    T outValue = v << (((sizeof(T) - _packSize)*BITS_IN_BYTE) & maxShiftValueMask);
                     outView[i] = outValue;
                  }
             }

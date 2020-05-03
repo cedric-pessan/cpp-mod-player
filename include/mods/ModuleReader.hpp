@@ -23,22 +23,22 @@ namespace mods
         
         ModuleReader(const ModuleReader&) = delete;
         ModuleReader(ModuleReader&&) = delete;
-        ModuleReader& operator=(const ModuleReader&) = delete;
-        ModuleReader& operator=(ModuleReader&&) = delete;
+        auto operator=(const ModuleReader&) -> ModuleReader& = delete;
+        auto operator=(ModuleReader&&) -> ModuleReader& = delete;
         virtual ~ModuleReader() = default;
         
-        virtual bool isFinished() const = 0;
+        virtual auto isFinished() const -> bool = 0;
         virtual void read(mods::utils::RWBuffer<u8>* buf, int len) = 0;
-        virtual std::string getInfo() const = 0;
-        virtual std::string getProgressInfo() const = 0;
+        virtual auto getInfo() const -> std::string = 0;
+        virtual auto getProgressInfo() const -> std::string = 0;
         
-        static ModuleFormat parseFormat(const std::string& format);
-        static ModuleReader::ptr buildReader(ModuleFormat format, const std::string& filename);
+        static auto parseFormat(const std::string& format) -> ModuleFormat;
+        static auto buildReader(ModuleFormat format, const std::string& filename) -> ModuleReader::ptr;
         
       protected:
         ModuleReader() = default;
         
-        void checkInit(bool condition, const std::string& description) const;
+        static void checkInit(bool condition, const std::string& description);
         
       private:
         
@@ -51,8 +51,8 @@ namespace mods
              ~ModuleReaderInitException() override = default;
              
              ModuleReaderInitException() = delete;
-             ModuleReaderInitException& operator=(const ModuleReaderInitException&) = delete;
-             ModuleReaderInitException& operator=(ModuleReaderInitException&&) = delete;
+             auto operator=(const ModuleReaderInitException&) -> ModuleReaderInitException& = delete;
+             auto operator=(ModuleReaderInitException&&) -> ModuleReaderInitException& = delete;
           };
      };
    

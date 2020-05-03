@@ -20,13 +20,13 @@ namespace mods
             }
         
         template<typename T>
-          bool FromDoubleConverter<T>::isFinished() const
+          auto FromDoubleConverter<T>::isFinished() const -> bool
           {
              return _src->isFinished();
           }
         
         template<typename T>
-          void FromDoubleConverter<T>::read(mods::utils::RWBuffer<u8>* buf, int len)
+          void FromDoubleConverter<T>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
             {
                if((len % sizeof(T)) != 0)
                  {
@@ -34,7 +34,7 @@ namespace mods
                  }
                
                int nbElems = len / sizeof(T);
-               int toReadLen = nbElems * sizeof(double);
+               size_t toReadLen = nbElems * sizeof(double);
                
                ensureTempBufferSize(toReadLen);
                
@@ -63,7 +63,7 @@ namespace mods
             }
         
         template<typename T>
-          mods::utils::RWBuffer<u8> FromDoubleConverter<T>::allocateNewTempBuffer(size_t len)
+          auto FromDoubleConverter<T>::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>
             {
                _tempVec.resize(len);
                u8* ptr = _tempVec.data();

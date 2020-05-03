@@ -19,42 +19,43 @@ namespace mods
               }
         
         template<typename T>
-          bool ToDoubleConverter<T>::isFinished() const
+          auto ToDoubleConverter<T>::isFinished() const -> bool
           {
              return _src->isFinished();
           }
         
         template<typename T>
-          void ToDoubleConverter<T>::read(mods::utils::RWBuffer<u8>* buf, int len)
+          void ToDoubleConverter<T>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
             {
                if((len % sizeof(double)) != 0)
                  {
                     std::cout << "TODO: wrong buffer length in ToDoubleConverter" << std::endl;
                  }
                
-               int nbElems = len / sizeof(double);
-               int toReadLen = nbElems * sizeof(T);
+               size_t nbElems = len / sizeof(double);
+               size_t toReadLen = nbElems * sizeof(T);
                
                _src->read(buf, toReadLen);
                
                auto inView = buf->slice<T>(0, nbElems);
                auto outView = buf->slice<double>(0, nbElems);
                
-               for(int i = nbElems-1; i>=0; --i)
+               for(size_t i=0; i<nbElems; ++i)
                  {
-                    double value = convert(inView[i]);
-                    outView[i] = value;
+                    size_t idx = nbElems - 1 - i;
+                    double value = convert(inView[idx]);
+                    outView[idx] = value;
                  }
             }
         
         template<>
-          double ToDoubleConverter<float>::convert(float in) 
+          auto ToDoubleConverter<float>::convert(float in) -> double
             {
                return in;
             }
         
         template<typename T>
-          double ToDoubleConverter<T>::convert(T in)
+          auto ToDoubleConverter<T>::convert(T in) -> double
             {
                double value = in;
                if(value >= 0)

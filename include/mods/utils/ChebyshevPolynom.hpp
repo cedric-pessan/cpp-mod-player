@@ -8,7 +8,7 @@ namespace mods
         namespace chebyshevPolynom
           {
              template<typename CoefList>
-               double eval(double x, const CoefList& coefficients)
+               auto eval(double x, const CoefList& coefficients) -> double
                  {
                     auto it = coefficients.begin();
                     auto b0 = *it;
@@ -24,7 +24,8 @@ namespace mods
                          b0 = x * b1 - b2 + *it;
                       }
                     
-                    return 0.5 * (b0 - b2);
+                    static constexpr double const_0_5 = 0.5;
+                    return const_0_5 * (b0 - b2);
                  }
           } // namespace chebyshevPolynom
      } // namespace utils

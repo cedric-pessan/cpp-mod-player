@@ -10,23 +10,23 @@ namespace mods
         template<typename T>
           FillLSBConverter<T>::FillLSBConverter(WavConverter::ptr src, u32 bitsToFill)
             : _src(std::move(src)),
-          _shift(((sizeof(T) * 8) - bitsToFill)-1),
-          _mask((1u << bitsToFill) -1)
+          _shift(((sizeof(T) * BITS_IN_BYTE) - bitsToFill)-1),
+          _mask((1U << bitsToFill) -1)
               {
-                 if(bitsToFill >= sizeof(T)*8)
+                 if(bitsToFill >= sizeof(T)*BITS_IN_BYTE)
                    {
                       std::cout << "TODO: invalid number of bits to fill in FillLSBConverter" << std::endl;
                    }
               }
         
         template<typename T>
-          bool FillLSBConverter<T>::isFinished() const
+          auto FillLSBConverter<T>::isFinished() const -> bool
           {
              return _src->isFinished();
           }
         
         template<typename T>
-          void FillLSBConverter<T>::read(mods::utils::RWBuffer<u8>* buf, int len)
+          void FillLSBConverter<T>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
             {
                if((len % sizeof(T)) != 0)
                  {

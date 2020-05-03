@@ -30,27 +30,27 @@ namespace mods
              
              ~RBuffer() = default;
              
-             RBuffer& operator=(const RBuffer&) = default;
-             RBuffer& operator=(RBuffer&&) noexcept = default;
+             auto operator=(const RBuffer&) -> RBuffer& = default;
+             auto operator=(RBuffer&&) noexcept -> RBuffer& = default;
              
-             const T* operator->() const
+             auto operator->() const -> const T*
                {
                   return _buf;
                }
              
              template<typename T2>
-               const RBuffer<T2> slice(size_t offset, size_t len) const
+               auto slice(size_t offset, size_t len) const -> RBuffer<T2>
                {
                   using TBuf = RBuffer<T2>;
                   return buildSlice<TBuf, T2, const T*>(_buf, offset, len);
                }
              
-             size_type size() const noexcept
+             auto size() const noexcept -> size_type
                {
                   return _len;
                }
              
-             const_reference operator[](size_type pos) const
+             auto operator[](size_type pos) const -> const_reference
                {
                   assert(check(pos < _len, "out of bound RBuffer[]"));
                   return *(_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -77,44 +77,44 @@ namespace mods
                 public:
                   const_iterator(const_iterator&&) noexcept = default;
                   const_iterator(const const_iterator&) = default;
-                  const_iterator& operator=(const_iterator&&) noexcept = default;
+                  auto operator=(const_iterator&&) noexcept -> const_iterator& = default;
                   ~const_iterator() = default;
                   
                   const_iterator() = delete;
-                  const_iterator& operator=(const const_iterator&) = delete;
+                  auto operator=(const const_iterator&) -> const_iterator& = delete;
                   
-                  bool operator==(const const_iterator& obj) const
+                  auto operator==(const const_iterator& obj) const -> bool
                     {
                        return _pos == obj._pos;
                     }
                   
-                  bool operator!=(const const_iterator& obj) const
+                  auto operator!=(const const_iterator& obj) const -> bool
                     {
                        return !(*this == obj);
                     }
                   
-                  bool operator<(const const_iterator& obj) const
+                  auto operator<(const const_iterator& obj) const -> bool
                     {
                        return _pos < obj._pos;
                     }
                   
-                  bool operator>=(const const_iterator& obj) const
+                  auto operator>=(const const_iterator& obj) const -> bool
                     {
                        return _pos >= obj._pos;
                     }
                   
-                  const_reference operator*() const
+                  auto operator*() const -> const_reference
                     {
                        return (*_rbuf)[_pos];
                     }
                   
-                  const_iterator operator++()
+                  auto operator++() -> const_iterator
                     {
                        ++_pos;
                        return *this;
                     }
                   
-                  const_iterator operator+=(int n)
+                  auto operator+=(ssize_t n) -> const_iterator
                     {
                        _pos += n;
                        return *this;
@@ -125,12 +125,12 @@ namespace mods
                   const RBuffer<T>* _rbuf;
                };
              
-             const_iterator begin() const noexcept
+             auto begin() const noexcept -> const_iterator
                {
                   return const_iterator(*this, 0);
                }
              
-             const_iterator end() const noexcept
+             auto end() const noexcept -> const_iterator
                {
                   return const_iterator(*this, size());
                }
@@ -138,9 +138,10 @@ namespace mods
            private:
              RBufferBackend::sptr _backend;
              const T* _buf;
+             size_t _len;
              
            protected:
-             bool check(bool condition, const std::string& description) const
+             auto check(bool condition, const std::string& description) const -> bool
                {
                   if(!condition)
                     {
@@ -160,7 +161,7 @@ namespace mods
                friend class RBuffer;
              
              template<typename Buf, typename T2, typename InternalBuf>
-               const Buf buildSlice(InternalBuf buf, size_t offset, size_t len) const
+               auto buildSlice(InternalBuf buf, size_t offset, size_t len) const -> Buf
                {
                   using BackendType = typename Buf::backend_type;
                   using ValueType = typename BackendType::value_type;
@@ -169,8 +170,6 @@ namespace mods
                   check(offset * sizeof(T) + len * sizeof(T2) <= _len * sizeof(T), "invalid slice limits");
                   return Buf(backend, currentOffset + offset * sizeof(T), len);
                }
-             
-             size_t _len;
           };
      } // namespace utils
 } // namespace mods

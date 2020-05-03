@@ -16,12 +16,12 @@ namespace mods
              FillLSBConverter() = delete;
              FillLSBConverter(const FillLSBConverter&) = delete;
              FillLSBConverter(FillLSBConverter&&) = delete;
-             FillLSBConverter& operator=(const FillLSBConverter&) = delete;
-             FillLSBConverter& operator=(FillLSBConverter&&) = delete;
+             auto operator=(const FillLSBConverter&) -> FillLSBConverter& = delete;
+             auto operator=(FillLSBConverter&&) -> FillLSBConverter& = delete;
              ~FillLSBConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
              WavConverter::ptr _src;

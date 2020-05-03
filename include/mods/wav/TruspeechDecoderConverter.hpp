@@ -16,17 +16,17 @@ namespace mods
              TruspeechDecoderConverter() = delete;
              TruspeechDecoderConverter(const TruspeechDecoderConverter&) = delete;
              TruspeechDecoderConverter(TruspeechDecoderConverter&&) = delete;
-             TruspeechDecoderConverter& operator=(const TruspeechDecoderConverter&) = delete;
-             TruspeechDecoderConverter& operator=(TruspeechDecoderConverter&&) = delete;
+             auto operator=(const TruspeechDecoderConverter&) -> TruspeechDecoderConverter& = delete;
+             auto operator=(TruspeechDecoderConverter&&) -> TruspeechDecoderConverter& = delete;
              ~TruspeechDecoderConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
              
              template<typename ARRAY>
-               static mods::utils::RWBuffer<typename ARRAY::value_type> initializeArrayRWBuffer(ARRAY& backArray);
+               static auto initializeArrayRWBuffer(ARRAY& backArray) -> mods::utils::RWBuffer<typename ARRAY::value_type>;
              
              void decodeTruspeechFrame();
              void readParameters();
@@ -53,8 +53,12 @@ namespace mods
              
              mods::utils::BitReader<mods::utils::ByteSwap::U32, mods::utils::BitOrder::MsbToLsb> _bitReader;
              
+             static constexpr int _numberOfFilterCoefficients = 8;
+             static constexpr int _filterBufferLength = 146;
+             static constexpr int _subframeLength = 60;
+             
              // parameters
-             std::array<s16,8> _vector;
+             std::array<s16,_numberOfFilterCoefficients> _vector;
              bool _flag = false;
              std::array<s32,2> _offset1;
              std::array<s32,4> _offset2;
@@ -63,17 +67,18 @@ namespace mods
              std::array<s32,4> _pulseoff;
              
              // tmps
-             using CorrelatedVector = std::array<s16,8>;
+             using CorrelatedVector = std::array<s16,_numberOfFilterCoefficients>;
              std::array<CorrelatedVector,2> _correlatedVectors;
              int _currentCorrelatedVector = 0;
              s32 _filtVal = 0;
              
-             std::array<s16, 32> _filters;
-             std::array<s32, 146> _filterBuffer;
-             std::array<s16, 60> _newVector;
-             std::array<s16, 8> _tmp1;
-             std::array<s16, 8> _tmp2;
-             std::array<s16, 8> _tmp3;
+             using Filter = std::array<s16, _numberOfFilterCoefficients>;
+             std::array<Filter, 4> _filters;
+             std::array<s32, _filterBufferLength> _filterBuffer;
+             std::array<s16, _subframeLength> _newVector;
+             std::array<s16, _numberOfFilterCoefficients> _tmp1;
+             std::array<s16, _numberOfFilterCoefficients> _tmp2;
+             std::array<s16, _numberOfFilterCoefficients> _tmp3;
           };
      } // namespace wav
 } // namespace mods

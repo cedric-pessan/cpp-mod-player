@@ -1,4 +1,5 @@
 
+#include "mods/utils/arithmeticShifter.hpp"
 #include "mods/wav/TruspeechDecoderConverter.hpp"
 
 /*
@@ -16,10 +17,10 @@ namespace mods
           _itDecodedBuffer(_decodedBuffer.RBuffer<u8>::end()),
           _subframes
           {
-             _decodedBuffer.slice<s16>(0,    60),
-             _decodedBuffer.slice<s16>(60*2, 60),
-             _decodedBuffer.slice<s16>(120*2,60),
-             _decodedBuffer.slice<s16>(180*2,60)
+             _decodedBuffer.slice<s16>(0,                       _subframeLength),
+             _decodedBuffer.slice<s16>(_subframeLength * 2,     _subframeLength),
+             _decodedBuffer.slice<s16>(_subframeLength * 2 * 2, _subframeLength),
+             _decodedBuffer.slice<s16>(_subframeLength * 2 * 3, _subframeLength)
           },
           _encodedArray {},
           _encodedBuffer(initializeArrayRWBuffer(_encodedArray)),
@@ -31,7 +32,12 @@ namespace mods
           _pulsepos {},
           _pulseoff {},
           _correlatedVectors {},
-          _filters {},
+          _filters 
+          {
+               {
+                    {}, {}, {}, {}
+               }
+          },
           _filterBuffer {},
           _newVector {},
           _tmp1 {},
@@ -41,7 +47,7 @@ namespace mods
           }
         
         template<typename ARRAY>
-          mods::utils::RWBuffer<typename ARRAY::value_type> TruspeechDecoderConverter::initializeArrayRWBuffer(ARRAY& backArray)
+          auto TruspeechDecoderConverter::initializeArrayRWBuffer(ARRAY& backArray) -> mods::utils::RWBuffer<typename ARRAY::value_type>
             {
                auto* ptr = static_cast<u8*>(static_cast<void*>(backArray.data()));
                auto len = backArray.size();
@@ -50,14 +56,14 @@ namespace mods
                return mods::utils::RWBuffer<u8>(buffer).slice<typename ARRAY::value_type>(0, len);
             }
         
-        bool TruspeechDecoderConverter::isFinished() const
+        auto TruspeechDecoderConverter::isFinished() const -> bool
           {
              return _itDecodedBuffer == _decodedBuffer.RBuffer<u8>::end() && _src->isFinished();
           }
         
-        void TruspeechDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, int len)
+        void TruspeechDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
           {
-             int count = 0;
+             size_t count = 0;
              while(count < len)
                {
                   if(_itDecodedBuffer != _decodedBuffer.RBuffer<u8>::end())
@@ -103,53 +109,101 @@ namespace mods
         
         namespace
           {
-             constexpr std::array<s16,32> codeBook0
+             template<int number, int size>
+               struct CodeBook
                {
-                  s16(0x8240), s16(0x8364), s16(0x84CE), s16(0x865D), s16(0x8805), s16(0x89DE), s16(0x8BD7), s16(0x8DF4),
-                    s16(0x9051), s16(0x92E2), s16(0x95DE), s16(0x990F), s16(0x9C81), s16(0xA079), s16(0xA54C), s16(0xAAD2),
-                    s16(0xB18A), s16(0xB90A), s16(0xC124), s16(0xC9CC), s16(0xD339), s16(0xDDD3), s16(0xE9D6), s16(0xF893),
-                    s16(0x096F), s16(0x1ACA), s16(0x29EC), s16(0x381F), s16(0x45F9), s16(0x546A), s16(0x63C3), s16(0x73B5)
+                  std::array<s16, size> array;
+                  
+                  static constexpr auto getArrayMaskSize() -> int
+                    {
+                       static_assert(size > 0, "Codebook size should be positive");
+                       u32 value = size;
+                       int maskSize = 0;
+                       while(value > 0)
+                         {
+                            if((value & 1U) != 0)
+                              {
+                                 value >>= 1U;
+                                 assert(value == 0);
+                                 return maskSize;
+                              }
+                            value >>= 1U;
+                            ++maskSize;
+                         }
+                       return maskSize;
+                    }
+                  
+                  template<typename DESTARRAY, typename BITREADER>
+                    void read(DESTARRAY* out, BITREADER* bitReader) const
+                      {
+                         using mods::utils::at;
+                         at(*out, number) = at(array, bitReader->read(getArrayMaskSize()));
+                      }
                };
              
-             constexpr std::array<s16,32> codeBook1
+             constexpr CodeBook<0,32> codeBook0
                {
-                  s16(0x9F65), s16(0xB56B), s16(0xC583), s16(0xD371), s16(0xE018), s16(0xEBB4), s16(0xF61C), s16(0xFF59),
-                    s16(0x085B), s16(0x1106), s16(0x1952), s16(0x214A), s16(0x28C9), s16(0x2FF8), s16(0x36E6), s16(0x3D92),
-                    s16(0x43DF), s16(0x49BB), s16(0x4F46), s16(0x5467), s16(0x5930), s16(0x5DA3), s16(0x61EC), s16(0x65F9),
-                    s16(0x69D4), s16(0x6D5A), s16(0x709E), s16(0x73AD), s16(0x766B), s16(0x78F0), s16(0x7B5A), s16(0x7DA5)
+                    {
+                       s16(0x8240), s16(0x8364), s16(0x84CE), s16(0x865D), s16(0x8805), s16(0x89DE), s16(0x8BD7), s16(0x8DF4),
+                         s16(0x9051), s16(0x92E2), s16(0x95DE), s16(0x990F), s16(0x9C81), s16(0xA079), s16(0xA54C), s16(0xAAD2),
+                         s16(0xB18A), s16(0xB90A), s16(0xC124), s16(0xC9CC), s16(0xD339), s16(0xDDD3), s16(0xE9D6), s16(0xF893),
+                         s16(0x096F), s16(0x1ACA), s16(0x29EC), s16(0x381F), s16(0x45F9), s16(0x546A), s16(0x63C3), s16(0x73B5)
+                    }
                };
              
-             constexpr std::array<s16,16> codeBook2
+             constexpr CodeBook<1,32> codeBook1
                {
-                  s16(0x96F8), s16(0xA3B4), s16(0xAF45), s16(0xBA53), s16(0xC4B1), s16(0xCECC), s16(0xD86F), s16(0xE21E),
-                    s16(0xEBF3), s16(0xF640), s16(0x00F7), s16(0x0C20), s16(0x1881), s16(0x269A), s16(0x376B), s16(0x4D60)
+                    {
+                       s16(0x9F65), s16(0xB56B), s16(0xC583), s16(0xD371), s16(0xE018), s16(0xEBB4), s16(0xF61C), s16(0xFF59),
+                         s16(0x085B), s16(0x1106), s16(0x1952), s16(0x214A), s16(0x28C9), s16(0x2FF8), s16(0x36E6), s16(0x3D92),
+                         s16(0x43DF), s16(0x49BB), s16(0x4F46), s16(0x5467), s16(0x5930), s16(0x5DA3), s16(0x61EC), s16(0x65F9),
+                         s16(0x69D4), s16(0x6D5A), s16(0x709E), s16(0x73AD), s16(0x766B), s16(0x78F0), s16(0x7B5A), s16(0x7DA5)
+                    }
                };
              
-             constexpr std::array<s16,16> codeBook3
+             constexpr CodeBook<2,16> codeBook2
                {
-                  s16(0xC654), s16(0xDEF2), s16(0xEFAA), s16(0xFD94), s16(0x096A), s16(0x143F), s16(0x1E7B), s16(0x282C),
-                    s16(0x3176), s16(0x3A89), s16(0x439F), s16(0x4CA2), s16(0x557F), s16(0x5E50), s16(0x6718), s16(0x6F8D)
+                    {
+                       s16(0x96F8), s16(0xA3B4), s16(0xAF45), s16(0xBA53), s16(0xC4B1), s16(0xCECC), s16(0xD86F), s16(0xE21E),
+                         s16(0xEBF3), s16(0xF640), s16(0x00F7), s16(0x0C20), s16(0x1881), s16(0x269A), s16(0x376B), s16(0x4D60)
+                    }
                };
              
-             constexpr std::array<s16,16> codeBook4
+             constexpr CodeBook<3,16> codeBook3
                {
-                  s16(0xABE7), s16(0xBBA8), s16(0xC81C), s16(0xD326), s16(0xDD0E), s16(0xE5D4), s16(0xEE22), s16(0xF618),
-                    s16(0xFE28), s16(0x064F), s16(0x0EB7), s16(0x17B8), s16(0x21AA), s16(0x2D8B), s16(0x3BA2), s16(0x4DF9)
+                    {
+                       s16(0xC654), s16(0xDEF2), s16(0xEFAA), s16(0xFD94), s16(0x096A), s16(0x143F), s16(0x1E7B), s16(0x282C),
+                         s16(0x3176), s16(0x3A89), s16(0x439F), s16(0x4CA2), s16(0x557F), s16(0x5E50), s16(0x6718), s16(0x6F8D)
+                    }
                };
              
-             constexpr std::array<s16,8> codeBook5
+             constexpr CodeBook<4,16> codeBook4
                {
-                  s16(0xD51B), s16(0xF12E), s16(0x042E), s16(0x13C7), s16(0x2260), s16(0x311B), s16(0x40DE), s16(0x5385)
+                    {
+                       s16(0xABE7), s16(0xBBA8), s16(0xC81C), s16(0xD326), s16(0xDD0E), s16(0xE5D4), s16(0xEE22), s16(0xF618),
+                         s16(0xFE28), s16(0x064F), s16(0x0EB7), s16(0x17B8), s16(0x21AA), s16(0x2D8B), s16(0x3BA2), s16(0x4DF9)
+                    }
                };
              
-             constexpr std::array<s16,8> codeBook6
+             constexpr CodeBook<5,8> codeBook5
                {
-                  s16(0xB550), s16(0xC825), s16(0xD980), s16(0xE997), s16(0xF883), s16(0x0752), s16(0x1811), s16(0x2E18)
+                    {
+                       s16(0xD51B), s16(0xF12E), s16(0x042E), s16(0x13C7), s16(0x2260), s16(0x311B), s16(0x40DE), s16(0x5385)
+                    }
                };
              
-             constexpr std::array<s16,8> codeBook7
+             constexpr CodeBook<6,8> codeBook6
                {
-                  s16(0xCEF0), s16(0xE4F9), s16(0xF6BB), s16(0x0646), s16(0x14F5), s16(0x23FF), s16(0x356F), s16(0x4A8D)
+                  {
+                     s16(0xB550), s16(0xC825), s16(0xD980), s16(0xE997), s16(0xF883), s16(0x0752), s16(0x1811), s16(0x2E18)
+                  }
+               };
+             
+             constexpr CodeBook<7,8> codeBook7
+               {
+                    {
+                       s16(0xCEF0), s16(0xE4F9), s16(0xF6BB), s16(0x0646), s16(0x14F5), s16(0x23FF), s16(0x356F), s16(0x4A8D)
+                    }
                };
              
              constexpr std::array<s16,8> decay_994_1000
@@ -249,70 +303,82 @@ namespace mods
           {
              using mods::utils::at;
              
-             at(_vector,7) = at(codeBook7, _bitReader.read(3));
-             at(_vector,6) = at(codeBook6, _bitReader.read(3));
-             at(_vector,5) = at(codeBook5, _bitReader.read(3));
-             at(_vector,4) = at(codeBook4, _bitReader.read(4));
-             at(_vector,3) = at(codeBook3, _bitReader.read(4));
-             at(_vector,2) = at(codeBook2, _bitReader.read(4));
-             at(_vector,1) = at(codeBook1, _bitReader.read(5));
-             at(_vector,0) = at(codeBook0, _bitReader.read(5));
+             static constexpr int pulsevalSize = 14;
+             static constexpr int pulseposSize = 27;
+             static constexpr int offset2Size = 7;
+             
+             codeBook7.read(&_vector, &_bitReader);
+             codeBook6.read(&_vector, &_bitReader);
+             codeBook5.read(&_vector, &_bitReader);
+             codeBook4.read(&_vector, &_bitReader);
+             codeBook3.read(&_vector, &_bitReader);
+             codeBook2.read(&_vector, &_bitReader);
+             codeBook1.read(&_vector, &_bitReader);
+             codeBook0.read(&_vector, &_bitReader);
              
              _flag = _bitReader.read(1) != 0;
              
-             at(_offset1,0) = _bitReader.read(4) << 4;
-             at(_offset2,3) = _bitReader.read(7);
-             at(_offset2,2) = _bitReader.read(7);
-             at(_offset2,1) = _bitReader.read(7);
-             at(_offset2,0) = _bitReader.read(7);
+             u32 offset1_0 = _bitReader.read(4) << 4U;
+             at(_offset2,3) = _bitReader.read(offset2Size);
+             at(_offset2,2) = _bitReader.read(offset2Size);
+             at(_offset2,1) = _bitReader.read(offset2Size);
+             at(_offset2,0) = _bitReader.read(offset2Size);
              
-             at(_offset1,1) = _bitReader.read(4);
-             at(_pulseval,1) = _bitReader.read(14);
-             at(_pulseval,0) = _bitReader.read(14);
+             u32 offset1_1 = _bitReader.read(4);
+             at(_pulseval,1) = _bitReader.read(pulsevalSize);
+             at(_pulseval,0) = _bitReader.read(pulsevalSize);
              
-             at(_offset1,1) |= _bitReader.read(4) << 4;
-             at(_pulseval,3) = _bitReader.read(14);
-             at(_pulseval,2) = _bitReader.read(14);
+             offset1_1 |= _bitReader.read(4) << 4U;
+             at(_pulseval,3) = _bitReader.read(pulsevalSize);
+             at(_pulseval,2) = _bitReader.read(pulsevalSize);
              
-             at(_offset1,0) |= _bitReader.read(1);
-             at(_pulsepos,0) = _bitReader.read(27);
+             offset1_0 |= _bitReader.read(1);
+             at(_pulsepos,0) = _bitReader.read(pulseposSize);
              at(_pulseoff,0) = _bitReader.read(4);
              
-             at(_offset1,0) |= _bitReader.read(1) << 1;
-             at(_pulsepos,1) = _bitReader.read(27);
+             offset1_0 |= _bitReader.read(1) << 1U;
+             at(_pulsepos,1) = _bitReader.read(pulseposSize);
              at(_pulseoff,1) = _bitReader.read(4);
              
-             at(_offset1,0) |= _bitReader.read(1) << 2;
-             at(_pulsepos,2) = _bitReader.read(27);
+             offset1_0 |= _bitReader.read(1) << 2U;
+             at(_pulsepos,2) = _bitReader.read(pulseposSize);
              at(_pulseoff,2) = _bitReader.read(4);
              
-             at(_offset1,0) |= _bitReader.read(1) << 3;
-             at(_pulsepos,3) = _bitReader.read(27);
+             offset1_0 |= _bitReader.read(1) << 3U;
+             at(_pulsepos,3) = _bitReader.read(pulseposSize);
              at(_pulseoff,3) = _bitReader.read(4);
+             
+             at(_offset1,0) = offset1_0;
+             at(_offset1,1) = offset1_1;
           }
         
         void TruspeechDecoderConverter::correlateFilter()
           {
              using mods::utils::at;
+             using mods::utils::arithmeticShifter::shiftRight;
              
-             std::array<s16,8> tmp;
+             std::array<s16,_numberOfFilterCoefficients> tmp {};
              auto& correlatedVector = at(_correlatedVectors, _currentCorrelatedVector);
              
-             for(int i=0; i<8; ++i)
+             static constexpr int roundConstant = 0x4000;
+             static constexpr int fixedPointShift = 15;
+             
+             for(size_t i=0; i<correlatedVector.size(); ++i)
                {
                   if(i > 0)
                     {
 		       std::copy(correlatedVector.begin(), correlatedVector.begin() + i, tmp.begin());
-                       for(int j=0; j<i; ++j)
+                       for(size_t j=0; j<i; ++j)
                          {
-                            at(correlatedVector,j) += (at(tmp, i - j -1) * at(_vector,i) + 0x4000) >> 15;
+                            at(correlatedVector,j) += shiftRight(at(tmp, i - j -1) * at(_vector,i) + roundConstant, fixedPointShift);
                          }
                     }
-                  at(correlatedVector,i) = (8 - at(_vector,i)) >> 3;
+                  static constexpr int offsetVector = 8;
+                  at(correlatedVector,i) = shiftRight(offsetVector - at(_vector,i), 3);
                }
-             for(int i=0; i<8; ++i)
+             for(size_t i=0; i<correlatedVector.size(); ++i)
                {
-                  at(correlatedVector,i) = (at(correlatedVector,i) * at(decay_994_1000,i)) >> 15;
+                  at(correlatedVector,i) = shiftRight(at(correlatedVector,i) * at(decay_994_1000,i), fixedPointShift);
                }
              
              _filtVal = at(_vector,0);
@@ -321,86 +387,112 @@ namespace mods
         void TruspeechDecoderConverter::filtersMerge()
           {
              using mods::utils::at;
+             using mods::utils::arithmeticShifter::shiftRight;
              
              auto& previousCorrelatedVector = at(_correlatedVectors, 1 - _currentCorrelatedVector);
              auto& correlatedVector = at(_correlatedVectors, _currentCorrelatedVector);
              
+             int currentFilter = 0;
+             auto& filter1 = at(_filters, currentFilter++);
+             auto& filter2 = at(_filters, currentFilter++);
+             auto& filter3 = at(_filters, currentFilter++);
+             auto& filter4 = at(_filters, currentFilter++);
+             
              if(!_flag)
                {
-                  for(int i=0; i<8; ++i)
+                  for(size_t i=0; i<previousCorrelatedVector.size(); ++i)
                     {
-                       at(_filters, i)   = at(previousCorrelatedVector, i);
-                       at(_filters, i+8) = at(previousCorrelatedVector, i);
+                       at(filter1, i) = at(previousCorrelatedVector, i);
+                       at(filter2, i) = at(previousCorrelatedVector, i);
                     }
                }
              else
                {
-                  for(int i=0; i<8; ++i)
+                  static constexpr int mixCoef1 = 21846;
+                  static constexpr int mixCoef2 = 10923;
+                  static constexpr int roundConstant = 16384;
+                  static constexpr int fixedPointShift = 15;
+                  
+                  for(size_t i=0; i<correlatedVector.size(); ++i)
                     {
-                       at(_filters, i) = (at(correlatedVector, i) * 21846 + at(previousCorrelatedVector, i) * 10923 + 16384) >> 15;
-                       at(_filters, i+8) = (at(correlatedVector, i) * 10923 + at(previousCorrelatedVector, i) * 21846 + 16384) >> 15;
+                       at(filter1, i) = shiftRight(at(correlatedVector, i) * mixCoef1 + at(previousCorrelatedVector, i) * mixCoef2 + roundConstant, fixedPointShift);
+                       at(filter2, i) = shiftRight(at(correlatedVector, i) * mixCoef2 + at(previousCorrelatedVector, i) * mixCoef1 + roundConstant, fixedPointShift);
                     }
                }
              
-             for(int i=0; i<8; ++i)
+             for(size_t i=0; i<correlatedVector.size(); ++i)
                {
-                  at(_filters, i+16) = at(correlatedVector, i);
-                  at(_filters, i+24) = at(correlatedVector, i);
+                  at(filter3, i) = at(correlatedVector, i);
+                  at(filter4, i) = at(correlatedVector, i);
                }
           }
         
         void TruspeechDecoderConverter::applyTwoPointFilter(int subframe)
           {
              using mods::utils::at;
+             using mods::utils::arithmeticShifter::shiftRight;
              
-             std::array<s16, 146 + 60> tmp;
+             static constexpr int clearFilterSpecialCase = 127;
+             static constexpr int offset2Factor = 25;
+             static constexpr int baseOffset = 18;
+             
+             std::array<s16, _filterBufferLength + _subframeLength> tmp {};
              
              int t = at(_offset2, subframe);
-             if(t == 127)
+             if(t == clearFilterSpecialCase)
 	       {
 		  std::fill(_newVector.begin(), _newVector.end(), 0);
 		  return;
 	       }
-             for(int i=0; i<146; ++i)
+             for(size_t i=0; i<_filterBuffer.size(); ++i)
                {
                   at(tmp,i) = at(_filterBuffer,i);
                }
-             s32 off = (t / 25) + at(_offset1, subframe >> 1) + 18;
-             off = mods::utils::clamp(off, 0, 145);
-             auto it0 = tmp.begin() + (145 - off);
-             auto it1 = tmp.begin() + 146;
-             auto& filter = at(order2Coeffs, t % 25);
-             for(int i=0; i<60; ++i,++it1)
+             s32 off = (t / offset2Factor) + at(_offset1, shiftRight(subframe, 1)) + baseOffset;
+             off = mods::utils::clamp(off, 0, _filterBufferLength-1);
+             size_t idx0 = _filterBufferLength - 1 - off;
+             auto it1 = tmp.begin() + _filterBuffer.size();
+             auto& filter = at(order2Coeffs, t % order2Coeffs.size());
+             
+             static constexpr int roundConstant = 0x2000;
+             static constexpr int fixedPointShift = 14;
+             for(size_t i=0; i<_newVector.size(); ++i,++it1)
                {
-                  t = (*it0 * at(filter,0) + *(it0+1) * at(filter,1) + 0x2000) >> 14;
-                  ++it0;
-                  at(_newVector, i) = t;
-                  *it1 = t;
+                  s16 v = shiftRight(at(tmp, idx0)   * at(filter,0) + 
+                                     at(tmp, idx0+1) * at(filter,1) + roundConstant, fixedPointShift);
+                  ++idx0;
+                  at(_newVector, i) = v;
+                  *it1 = v;
                }
           }
         
         void TruspeechDecoderConverter::placePulses(int subframe)
           {
              using mods::utils::at;
-             std::array<s16, 7> tmp;
+             using mods::utils::arithmeticShifter::shiftRight;
+             
+             static constexpr int numberOfPulses = 7;
+             std::array<s16, numberOfPulses> tmp {};
              
              auto& buf = at(_subframes, subframe);
              
              std::fill(buf.begin(), buf.end(), 0);
-             for(int i=0; i<7; ++i)
+             for(size_t i=0; i<tmp.size(); ++i)
                {
-                  auto t = at(_pulseval, subframe) & 3;
-                  at(_pulseval, subframe) >>= 2;
-                  at(tmp, 6-i) = at(pulseScales, at(_pulseoff, subframe) * 4 + t);
+                  auto& val = at(_pulseval, subframe);
+                  auto t = static_cast<u32>(val) & 3U;
+                  val = shiftRight(val, 2);
+                  at(tmp, tmp.size()-1-i) = at(pulseScales, at(_pulseoff, subframe) * 4 + t);
                }
              
-             int coef = at(_pulsepos, subframe) >> 15;
-             auto it1 = pulseValues.begin() + 30;
+             static constexpr int coef1Shift = 15;
+             int coef = shiftRight(at(_pulsepos, subframe), coef1Shift);
+             size_t idxPulseValue = buf.size()/2;
              auto it2 = tmp.begin();
-             for(int i=0, j=3; (i < 30) && (j > 0); ++i)
+             for(size_t i=0, j=3; (i < buf.size()/2) && (j > 0); ++i)
                {
-                  auto t = *it1;
-                  ++it1;
+                  auto t = at(pulseValues, idxPulseValue);
+                  ++idxPulseValue;
                   if(coef >= t)
                     {
                        coef -= t;
@@ -409,16 +501,17 @@ namespace mods
                     {
                        buf[i] = *it2;
                        ++it2;
-                       it1 += 30;
+                       idxPulseValue += buf.size()/2;
                        --j;
                     }
                }
-             coef = at(_pulsepos, subframe) & 0x7FFF;
-             it1 = pulseValues.begin();
-             for(int i=30, j=4; (i < 60) && (j > 0); ++i)
+             static constexpr u16 coef2Mask = 0x7FFFU;
+             coef = static_cast<u16>(at(_pulsepos, subframe)) & coef2Mask;
+             idxPulseValue = 0;
+             for(size_t i=buf.size()/2, j=4; (i < buf.size()) && (j > 0); ++i)
                {
-                  auto t = *it1;
-                  ++it1;
+                  auto t = at(pulseValues, idxPulseValue);
+                  ++idxPulseValue;
                   if(coef >= t)
                     {
                        coef -= t;
@@ -427,7 +520,7 @@ namespace mods
                     {
                        buf[i] = *it2;
                        ++it2;
-                       it1 += 30;
+                       idxPulseValue += buf.size()/2;
                        --j;
                     }
                }
@@ -436,13 +529,15 @@ namespace mods
         void TruspeechDecoderConverter::updateFilters(int subframe)
           {
              using mods::utils::at;
+             using mods::utils::arithmeticShifter::shiftRight;
+             static constexpr int shiftOffset = _filterBufferLength - _subframeLength;
              
              auto& buf = at(_subframes, subframe);
              
-             std::move(_filterBuffer.begin() + 60, _filterBuffer.end(), _filterBuffer.begin());
-             for(int i=0; i<60; ++i)
+             std::move(_filterBuffer.begin() + buf.size(), _filterBuffer.end(), _filterBuffer.begin());
+             for(size_t i=0; i<buf.size(); ++i)
                {
-                  at(_filterBuffer, i + 86) = buf[i] + at(_newVector,i) - (at(_newVector,i) >> 3);
+                  at(_filterBuffer, i + shiftOffset) = buf[i] + at(_newVector,i) - shiftRight(at(_newVector,i), 3);
                   buf[i] += at(_newVector,i);
                }
           }
@@ -450,71 +545,77 @@ namespace mods
         void TruspeechDecoderConverter::synth(int subframe)
           {
              using mods::utils::at;
+             using mods::utils::arithmeticShifter::shiftRight;
+             
+             static constexpr int roundConstant = 0x800;
+             static constexpr u32 fixedPointShift = 12;
+             static constexpr int clampLimit = 0x7FFE;
              
              auto& buf = at(_subframes, subframe);
-             std::array<int, 8> t;
+             std::array<int, _numberOfFilterCoefficients> t {};
              
              auto* tmp = &_tmp1;
-             auto it = _filters.begin() + subframe * 8;
-             for(int i=0; i<60; ++i)
+             auto filter = at(_filters, subframe);
+             for(s16& v : buf)
                {
                   int sum = 0;
-                  for(int k=0; k<8; ++k)
+                  for(size_t k=0; k<tmp->size(); ++k)
                     {
-                       sum += at(*tmp, k) * (u32)*(it + k);
+                       sum += at(*tmp, k) * static_cast<s32>(at(filter, k));
                     }
-                  sum = buf[i] + ((sum + 0x800) >> 12);
-                  buf[i] = mods::utils::clamp(sum, -0x7FFE, 0x7FFE);
-                  for(int k=7; k>0; --k)
+                  sum = v + shiftRight(sum + roundConstant, fixedPointShift);
+                  v = mods::utils::clamp(sum, -clampLimit, clampLimit);
+                  for(size_t k=tmp->size()-1; k>0; --k)
                     {
                        at(*tmp, k) = at(*tmp, k-1);
                     }
-                  at(*tmp, 0) = buf[i];
+                  at(*tmp, 0) = v;
                }
              
-             for(int i=0; i<8; ++i)
+             static constexpr int decayShift = 15;
+             for(size_t i=0; i<t.size(); ++i)
                {
-                  at(t, i) = (at(decay_35_64, i) * *(it + i)) >> 15;
+                  at(t, i) = shiftRight(at(decay_35_64, i) * at(filter, i), decayShift);
                }
              
              tmp = &_tmp2;
-             for(int i=0; i<60; ++i)
+             for(s16& v : buf)
                {
                   int sum = 0;
-                  for(int k=0; k<8; ++k)
+                  for(size_t k=0; k<tmp->size(); ++k)
                     {
                        sum += at(*tmp, k) * at(t, k);
                     }
-                  for(int k=7; k>0; --k)
+                  for(size_t k=tmp->size()-1; k>0; --k)
                     {
                        at(*tmp, k) = at(*tmp, k-1);
                     }
-                  at(*tmp, 0) = buf[i];
-                  buf[i] += (-sum) >> 12;
+                  at(*tmp, 0) = v;
+                  v += shiftRight(-sum, fixedPointShift);
                }
              
-             for(int i=0; i<8; ++i)
+             for(size_t i=0; i<t.size(); ++i)
                {
-                  at(t, i) = (at(decay_3_4, i) * *(it + i)) >> 15;
+                  at(t, i) = shiftRight(at(decay_3_4, i) * at(filter, i), decayShift);
                }
              
              tmp = &_tmp3;
-             for(int i=0; i<60; ++i)
+             for(s16& v : buf)
                {
-                  int sum = buf[i] * (1 << 12);
-                  for(int k=0; k<8; ++k)
+                  s32 sum = v * static_cast<s16>(1U << fixedPointShift);
+                  for(size_t k=0; k<tmp->size(); ++k)
                     {
                        sum += at(*tmp, k) * at(t, k);
                     }
-                  for(int k=7; k>0; --k)
+                  for(size_t k=tmp->size()-1; k>0; --k)
                     {
                        at(*tmp, k) = at(*tmp, k-1);
                     }
-                  at(*tmp, 0) = mods::utils::clamp((sum + 0x800) >> 12, -0x7FFE, 0x7FFE);
+                  at(*tmp, 0) = mods::utils::clamp(shiftRight(sum + roundConstant, fixedPointShift), -clampLimit, clampLimit);
                   
-                  sum = ((at(*tmp, 1) * (_filtVal - (_filtVal >> 2))) >> 4) + sum;
-                  sum = sum - (sum >> 3);
-                  buf[i] = mods::utils::clamp((sum + 0x800) >> 12, -0x7FFE, 0x7FFE);
+                  sum = shiftRight(at(*tmp, 1) * (_filtVal - shiftRight(_filtVal, 2)), 4) + sum;
+                  sum = sum - shiftRight(sum, 3);
+                  v = mods::utils::clamp(shiftRight(sum + roundConstant, fixedPointShift), -clampLimit, clampLimit);
                }
           }
         

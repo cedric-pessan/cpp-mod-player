@@ -16,15 +16,15 @@ namespace mods
              ToDoubleConverter() = delete;
              ToDoubleConverter(const ToDoubleConverter&) = delete;
              ToDoubleConverter(ToDoubleConverter&&) = delete;
-             ToDoubleConverter& operator=(const ToDoubleConverter&) = delete;
-             ToDoubleConverter& operator=(ToDoubleConverter&&) = delete;
+             auto operator=(const ToDoubleConverter&) -> ToDoubleConverter& = delete;
+             auto operator=(ToDoubleConverter&&) -> ToDoubleConverter& = delete;
              ~ToDoubleConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
-             double convert(T in);
+             auto convert(T in) -> double;
              
              WavConverter::ptr _src;
           };

@@ -19,40 +19,41 @@ namespace mods
 	    }
         
 	template<ByteSwap BYTESWAP, BitOrder BITORDER>
-	  int BitReader<BYTESWAP, BITORDER>::read(size_t bits)
+	  auto BitReader<BYTESWAP, BITORDER>::read(size_t bits) -> u32
 	    {
 	       u32 value = 0;
 	       
 	       for(size_t i=0; i<bits; ++i)
 		 {
-		    int bytePos = _position / 8;
+		    size_t bytePos = _position / BITS_IN_BYTE;
 		    if(BYTESWAP == ByteSwap::U32) 
 		      {
-			 bytePos ^= 3;
+			 bytePos ^= 3U;
 		      }
 		    u8 byte = _buf[bytePos];
 		    
-		    size_t bitInByte = _position & 7u;
+                    static constexpr u32 bitPositionMask = 0x7U;
+		    size_t bitInByte = _position & bitPositionMask;
 		    u8 bitMask = 0;
 		    if(BITORDER == BitOrder::LsbToMsb)
 		      {
-			 bitMask = 1u << bitInByte;
+			 bitMask = 1U << bitInByte;
 		      }
 		    else
 		      {
-			 bitMask = 1u << (7 - bitInByte);
-			 value <<= 1;
+			 bitMask = 1U << ((BITS_IN_BYTE - 1) - bitInByte);
+			 value <<= 1U;
 		      }
 		    
 		    if((byte & bitMask) != 0)
 		      {
 			 if(BITORDER == BitOrder::LsbToMsb)
 			   {
-			      value |= (1u << i);
+			      value |= (1U << i);
 			   }
 			 else
 			   {
-			      value |= 1;
+			      value |= 1U;
 			   }
 		      }
 		    

@@ -14,12 +14,12 @@ namespace mods
             {
             }
         
-        bool MultiplexerWavConverter::isFinished() const
+        auto MultiplexerWavConverter::isFinished() const -> bool
           {
              return _left->isFinished() && _right->isFinished();
           }
         
-        void MultiplexerWavConverter::read(mods::utils::RWBuffer<u8>* buf, int len)
+        void MultiplexerWavConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
           {
              if((len % 4) != 0)
                {
@@ -28,7 +28,7 @@ namespace mods
              
              ensureTempBufferSize(len);
              
-             int nbElems = (len/2) / sizeof(s16);
+             size_t nbElems = (len/2) / sizeof(s16);
              auto leftBuf = _temp.slice<u8>(0, len/2);
              auto rightBuf = _temp.slice<u8>(len/2, len/2);
              
@@ -39,14 +39,14 @@ namespace mods
              auto leftView = leftBuf.slice<s16>(0, nbElems);
              auto rightView = rightBuf.slice<s16>(0, nbElems);
              
-             for(int i=0; i<nbElems; ++i)
+             for(size_t i=0; i<nbElems; ++i)
                {
                   outView[i*2] = leftView[i];
                   outView[i*2+1] = rightView[i];
                }
           }
         
-        mods::utils::RWBuffer<u8> MultiplexerWavConverter::allocateNewTempBuffer(size_t len)
+        auto MultiplexerWavConverter::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>
           {
              _tempVec.resize(len);
              u8* ptr = _tempVec.data();

@@ -21,8 +21,8 @@ namespace mods
              RWBufferBackend() = delete;
              RWBufferBackend(const RWBufferBackend&) = delete;
              RWBufferBackend(RWBufferBackend&&) = delete;
-             RWBufferBackend& operator=(const RWBufferBackend&) = delete;
-             RWBufferBackend& operator=(RWBufferBackend&&) = delete;
+             auto operator=(const RWBufferBackend&) -> RWBufferBackend& = delete;
+             auto operator=(RWBufferBackend&&) -> RWBufferBackend& = delete;
              
            private:
              u8* _buf;
@@ -34,12 +34,12 @@ namespace mods
                   Attorney() = delete;
                   Attorney(const Attorney&) = delete;
                   Attorney(Attorney&&) = delete;
-                  Attorney& operator=(const Attorney&) = delete;
-                  Attorney& operator=(Attorney&&) = delete;
+                  auto operator=(const Attorney&) -> Attorney& = delete;
+                  auto operator=(Attorney&&) -> Attorney& = delete;
                   ~Attorney() = delete;
                   
                 private:
-                  static u8* getBuffer(const RWBufferBackend& buffer)
+                  static auto getBuffer(const RWBufferBackend& buffer) -> u8*
                     {
                        return buffer._buf;
                     }

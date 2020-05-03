@@ -23,7 +23,7 @@ namespace mods
           }
         
         template<typename U = T>
-          optional& operator=(U&& value)
+          auto operator=(U&& value) -> optional&
             {
                cleanValue();
                if(_hasValue) 
@@ -38,12 +38,12 @@ namespace mods
                return *this;
             }
         
-        constexpr bool has_value() const noexcept
+        constexpr auto has_value() const noexcept -> bool
           {
              return _hasValue;
           }
         
-        constexpr const T& operator*() const&
+        constexpr auto operator*() const& -> const T&
           {
              return _value.value; // NOLINT(cppcoreguidelines-pro-type-union-access)
           }
@@ -58,7 +58,7 @@ namespace mods
                  }
             }
         
-        optional& operator=(optional&& o) noexcept
+        auto operator=(optional&& o) noexcept -> optional&
           {
              cleanValue();
              _hasValue = false;
@@ -71,7 +71,7 @@ namespace mods
           }
         
         optional(const optional&) = delete;
-        optional& operator=(const optional&) = delete;
+        auto operator=(const optional&) -> optional& = delete;
         
       private:
         void cleanValue()
@@ -99,8 +99,8 @@ namespace mods
              
              Value(const Value&) = delete;
              Value(Value&&) = delete;
-             Value& operator=(const Value&) = delete;
-             Value& operator=(Value&&) = delete;
+             auto operator=(const Value&) -> Value& = delete;
+             auto operator=(Value&&) -> Value& = delete;
           } _value;
      };
    

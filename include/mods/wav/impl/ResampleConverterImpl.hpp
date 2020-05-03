@@ -9,41 +9,50 @@ namespace mods
      {
         namespace impl
           {
-             struct SampleWithZeros
+             class SampleWithZeros
                {
+                public:
                   SampleWithZeros(double sample, int zeros);
                   
                   SampleWithZeros() = default;
                   SampleWithZeros(const SampleWithZeros&) = delete;
                   SampleWithZeros(SampleWithZeros&&) = delete;
-                  SampleWithZeros& operator=(const SampleWithZeros&) = default;
-                  SampleWithZeros& operator=(SampleWithZeros&&) = delete;
+                  auto operator=(const SampleWithZeros&) -> SampleWithZeros& = default;
+                  auto operator=(SampleWithZeros&&) -> SampleWithZeros& = delete;
                   ~SampleWithZeros() = default;
                   
-                  int numberOfZeros;
-                  double sample;
+                  auto numberOfZeros() -> int&;
+                  auto numberOfZeros() const -> int;
+                  auto sample() -> double&;
+                  auto sample() const -> double;
+                  
+                private:
+                  int _numberOfZeros;
+                  double _sample;
                };
              
              class History
                {
                 public:
-                  History(int numTaps);
+                  explicit History(int numTaps);
                   
                   History() = delete;
                   History(const History&) = delete;
                   History(History&&) = delete;
-                  History& operator=(const History&) = delete;
-                  History& operator=(History&&) = delete;
+                  auto operator=(const History&) -> History& = delete;
+                  auto operator=(History&&) -> History& = delete;
                   ~History() = default;
                   
                   void push_back(const SampleWithZeros& sampleWithZeros);
-                  SampleWithZeros& front();
-                  SampleWithZeros& back();
+                  auto front() -> SampleWithZeros&;
+                  auto back() -> SampleWithZeros&;
                   void pop_front();
-                  bool isEmpty() const;
-                  const SampleWithZeros& getSample(size_t i);
+                  auto isEmpty() const -> bool;
+                  auto getSample(size_t i) -> const SampleWithZeros&;
                   
                 private:
+                  static constexpr int _sizeOfZeroChunksReturnedWhenEmpty = 1000000;
+                  
                   std::vector<SampleWithZeros> _v;
                   size_t _begin = 0;
                   size_t _end = 0;

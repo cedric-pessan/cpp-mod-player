@@ -25,8 +25,8 @@ namespace mods
                   
                   Deleter(const Deleter&) = delete;
                   Deleter(Deleter&&) = delete;
-                  Deleter& operator=(const Deleter&) = delete;
-                  Deleter& operator=(Deleter&&) = delete;
+                  auto operator=(const Deleter&) -> Deleter& = delete;
+                  auto operator=(Deleter&&) -> Deleter& = delete;
                };
              
              class EmptyDeleter : public Deleter
@@ -37,8 +37,8 @@ namespace mods
                   
                   EmptyDeleter(const EmptyDeleter&) = delete;
                   EmptyDeleter(EmptyDeleter&&) = delete;
-                  EmptyDeleter& operator=(const EmptyDeleter&) = delete;
-                  EmptyDeleter& operator=(EmptyDeleter&&) = delete;
+                  auto operator=(const EmptyDeleter&) -> EmptyDeleter& = delete;
+                  auto operator=(EmptyDeleter&&) -> EmptyDeleter& = delete;
                };
              
              RBufferBackend(const u8* buf, size_t length, Deleter::ptr deleter);
@@ -47,8 +47,8 @@ namespace mods
              RBufferBackend() = delete;
              RBufferBackend(const RBufferBackend&) = delete;
              RBufferBackend(RBufferBackend&&) = delete;
-             RBufferBackend& operator=(const RBufferBackend&) = delete;
-             RBufferBackend& operator=(RBufferBackend&&) = delete;
+             auto operator=(const RBufferBackend&) -> RBufferBackend& = delete;
+             auto operator=(RBufferBackend&&) -> RBufferBackend& = delete;
              
            private:
              const u8* _buf;
@@ -62,17 +62,17 @@ namespace mods
                   Attorney() = delete;
                   Attorney(const Attorney&) = delete;
                   Attorney(Attorney&&) = delete;
-                  Attorney& operator=(const Attorney&) = delete;
-                  Attorney& operator=(Attorney&&) = delete;
+                  auto operator=(const Attorney&) -> Attorney& = delete;
+                  auto operator=(Attorney&&) -> Attorney& = delete;
                   ~Attorney() = delete;
                   
                 private:
-                  static const u8* getBuffer(const RBufferBackend& buffer)
+                  static auto getBuffer(const RBufferBackend& buffer) -> const u8*
                     {
                        return buffer._buf;
                     }
                   
-                  static size_t getLength(const RBufferBackend& buffer)
+                  static auto getLength(const RBufferBackend& buffer) -> size_t
                     {
                        return buffer._length;
                     }

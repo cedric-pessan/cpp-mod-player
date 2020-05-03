@@ -12,7 +12,7 @@ namespace mods
                  {
                  }
              
-             bool InternalCopySourceConverter::isFinished(CopyDestId id) const
+             auto InternalCopySourceConverter::isFinished(CopyDestId id) const -> bool
                {
                   auto idxBuffer = toUnderlying(id);
                   if(!_unconsumedBuffers.at(idxBuffer).empty())
@@ -50,7 +50,7 @@ namespace mods
                  {
                  }
              
-             WavConverter::ptr ChannelCopyWavConverterSlave::buildSlave() const
+             auto ChannelCopyWavConverterSlave::buildSlave() const -> WavConverter::ptr
                {
                   class make_unique_enabler : public ChannelCopyWavConverterSlave
                     {
@@ -63,19 +63,19 @@ namespace mods
                        make_unique_enabler() = delete;
                        make_unique_enabler(const make_unique_enabler&) = delete;
                        make_unique_enabler(make_unique_enabler&&) = delete;
-                       make_unique_enabler& operator=(const make_unique_enabler&) = delete;
-                       make_unique_enabler& operator=(make_unique_enabler&&) = delete;
+                       auto operator=(const make_unique_enabler&) -> make_unique_enabler& = delete;
+                       auto operator=(make_unique_enabler&&) -> make_unique_enabler& = delete;
                        ~make_unique_enabler() override = default;
                     };
                   return std::make_unique<make_unique_enabler>(_src);
                }
              
-             bool ChannelCopyWavConverterSlave::isFinished() const
+             auto ChannelCopyWavConverterSlave::isFinished() const -> bool
                {
                   return _src->isFinished(_id);
                }
              
-             void ChannelCopyWavConverterSlave::read(mods::utils::RWBuffer<u8>* buf, int len)
+             void ChannelCopyWavConverterSlave::read(mods::utils::RWBuffer<u8>* buf, size_t len)
                {
                   _src->read(buf, len, _id);
                }
@@ -87,7 +87,7 @@ namespace mods
             {
             }
         
-        WavConverter::ptr ChannelCopyWavConverter::getCopy()
+        auto ChannelCopyWavConverter::getCopy() -> WavConverter::ptr
           {
              return std::move(_copy);
           }

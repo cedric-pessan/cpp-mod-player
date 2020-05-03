@@ -5,7 +5,7 @@ namespace mods
 {
    namespace wav
      {
-        const std::string& toString(WavAudioFormat fmt)         
+        auto toString(WavAudioFormat fmt) -> const std::string&
           {
              static const std::string PCM = "PCM";
              static const std::string IEEE_FLOAT = "IEEE FLOAT";

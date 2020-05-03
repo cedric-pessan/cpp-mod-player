@@ -1,11 +1,12 @@
 #ifndef MODS_WAV_RESAMPLECONVERTER_HPP
 #define MODS_WAV_RESAMPLECONVERTER_HPP
 
+#include "mods/StandardFrequency.hpp"
 #include "mods/utils/ConstFraction.hpp"
 #include "mods/utils/Filters.hpp"
 #include "mods/utils/FirFilterDesigner.hpp"
-#include "mods/wav/impl/ResampleConverterImpl.hpp"
 #include "mods/wav/WavConverter.hpp"
+#include "mods/wav/impl/ResampleConverterImpl.hpp"
 
 namespace mods
 {
@@ -20,22 +21,22 @@ namespace mods
              ResampleConverter() = delete;
              ResampleConverter(const ResampleConverter&) = delete;
              ResampleConverter(ResampleConverter&&) = delete;
-             ResampleConverter& operator=(const ResampleConverter&) = delete;
-             ResampleConverter& operator=(ResampleConverter&&) = delete;
+             auto operator=(const ResampleConverter&) -> ResampleConverter& = delete;
+             auto operator=(ResampleConverter&&) -> ResampleConverter& = delete;
              ~ResampleConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
-             double getNextDecimatedSample();
+             auto getNextDecimatedSample() -> double;
              void updateHistory();
              void removeFromHistory();
              void addToHistory();
-             double calculateInterpolatedSample();
-             double getNextSample();
-             bool nextSampleExists() const;
-             mods::utils::RWBuffer<u8> initBuffer();
+             auto calculateInterpolatedSample() -> double;
+             auto getNextSample() -> double;
+             auto nextSampleExists() const -> bool;
+             auto initBuffer() -> mods::utils::RWBuffer<u8>;
              
              WavConverter::ptr _src;
              PARAMETERS _resampleParameters;
@@ -49,44 +50,47 @@ namespace mods
              impl::History _history;
           };
         
-        template<int InFrequency, int OutFrequency>
+        template<StandardFrequency InFrequency, StandardFrequency OutFrequency>
           class StaticResampleParameters 
           {
            public:
              StaticResampleParameters() = default;
              StaticResampleParameters(const StaticResampleParameters&) = default;
-             StaticResampleParameters(StaticResampleParameters&&) = default;
-             StaticResampleParameters& operator=(const StaticResampleParameters&) = delete;
-             StaticResampleParameters& operator=(StaticResampleParameters&&) = delete;
+             StaticResampleParameters(StaticResampleParameters&&) noexcept = default;
+             auto operator=(const StaticResampleParameters&) -> StaticResampleParameters& = delete;
+             auto operator=(StaticResampleParameters&&) -> StaticResampleParameters& = delete;
              ~StaticResampleParameters() = default;
              
            private:
-             constexpr static mods::utils::ConstFraction getResampleFraction()
+             constexpr static int _inFrequency = toUnderlying(InFrequency);
+             constexpr static int _outFrequency = toUnderlying(OutFrequency);
+             
+             constexpr static auto getResampleFraction() -> mods::utils::ConstFraction
                {
-                  return mods::utils::ConstFraction(InFrequency, OutFrequency).reduce();
+                  return mods::utils::ConstFraction(_inFrequency, _outFrequency).reduce();
                }
              
            public:
-             constexpr static int getInterpolationFactor()
+             constexpr static auto getInterpolationFactor() -> int
                {
                   return getResampleFraction().getDenominator();
                }
              
-             constexpr static int getDecimationFactor()
+             constexpr static auto getDecimationFactor() -> int
                {
                   return getResampleFraction().getNumerator();
                }
              
            private:
-             using FilterType = mods::utils::LowPassFilter<std::min(InFrequency, OutFrequency), 2, InFrequency * getInterpolationFactor()>;
+             using FilterType = mods::utils::LowPassFilter<std::min(_inFrequency, _outFrequency), 2, _inFrequency * getInterpolationFactor()>;
              
            public:
-             constexpr static int getNumTaps()
+             constexpr static auto getNumTaps() -> int
                {
                   return FilterType::taps.size();
                }
              
-             constexpr static double getTap(size_t i)
+             constexpr static auto getTap(size_t i) -> double
                {
                   using mods::utils::at;
                   return at(FilterType::taps, i);
@@ -101,22 +105,24 @@ namespace mods
              DynamicResampleParameters() = delete;
              DynamicResampleParameters(const DynamicResampleParameters&) = default;
              DynamicResampleParameters(DynamicResampleParameters&&) = default;
-             DynamicResampleParameters& operator=(const DynamicResampleParameters&) = delete;
-             DynamicResampleParameters& operator=(DynamicResampleParameters&&) = delete;
+             auto operator=(const DynamicResampleParameters&) -> DynamicResampleParameters& = delete;
+             auto operator=(DynamicResampleParameters&&) -> DynamicResampleParameters& = delete;
              ~DynamicResampleParameters() = default;
              
-             int getNumTaps() const;
+             auto getNumTaps() const -> int;
              
-             int getInterpolationFactor() const;
+             auto getInterpolationFactor() const -> int;
              
-             int getDecimationFactor() const;
+             auto getDecimationFactor() const -> int;
              
-             double getTap(size_t i) const;
+             auto getTap(size_t i) const -> double;
              
            private:
-             const mods::utils::ConstFraction& getResampleFraction() const;
+             auto getResampleFraction() const -> const mods::utils::ConstFraction&;
              
-             mods::utils::ConstFraction _resampleFraction = mods::utils::ConstFraction(1,1);
+             static constexpr double _nyquistFactor = 2.0;
+             
+             mods::utils::ConstFraction _resampleFraction;
              mods::utils::FirFilterDesigner _designer;
           };
      } // namespace wav

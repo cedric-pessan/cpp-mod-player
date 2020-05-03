@@ -10,10 +10,8 @@ enum
 #ifdef __cplusplus
 extern "C"
 {
-#endif
-   int modsOpen(const char* pathName, int flags);
-   int modsHasMapFailed(void* ptr);
-#ifdef __cplusplus
+   auto modsOpen(const char* pathName, int flags) -> int;
+   auto modsHasMapFailed(void* ptr) -> int;
 }
 #endif
 

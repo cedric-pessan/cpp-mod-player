@@ -9,7 +9,7 @@ namespace mods
      {
         namespace FileUtils
           {
-             RBufferBackend::sptr mapFileToBuffer(const std::string& filename);
+             auto mapFileToBuffer(const std::string& filename) -> RBufferBackend::sptr;
           } // namespace FileUtils
      } // namespace utils
 } // namespace mods

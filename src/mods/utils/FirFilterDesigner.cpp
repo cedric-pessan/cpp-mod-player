@@ -8,33 +8,50 @@ namespace mods
 {
    namespace utils
      {
-	FirFilterDesigner::FirFilterDesigner(int sampleFrequency, double cutOff)
+	FirFilterDesigner::FirFilterDesigner(u32 sampleFrequency, double cutOff)
 	  : _sampleFrequency(sampleFrequency),
 	  _cutOff(cutOff)
 	    {
                optimizeFilter();
 	    }
+        
+        namespace
+          {
+             constexpr double transitionWidth = 50.0;
+             constexpr double expectedAttenuation = 40.0;
+          } // namespace
 	
 	void FirFilterDesigner::optimizeFilter()
 	  {
-	     double A = 40.0;
-	     double transitionWidth = 50.0;
-	     double niquist = _sampleFrequency / 2.0;
-	     double deltaOmega = transitionWidth / niquist * M_PI;
-	     int M = static_cast<int>(((A - 8) / (2.285 * deltaOmega)) + 0.5);
-	     if((M&1) == 0) ++M;
+             static constexpr double two = 2.0;
+             static constexpr double minAttenuation = 21.0;
+             static constexpr double highAttenuationLimit = 50.0;
+             
+             double A = expectedAttenuation;
+	     double nyquistFrequency = _sampleFrequency / two;
+	     double deltaOmega = transitionWidth / nyquistFrequency * M_PI;
+             // apply empirical kaiser window formula to determine number of taps
+             static_assert(transitionWidth > 0, "transition width should be positive");
+             static_assert(expectedAttenuation > minAttenuation, "attenuation should be greater than 8dB");
+	     s64 M = std::lround((A - 8.0) / (2.285 * deltaOmega)); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+	     if((static_cast<u64>(M)&1U) == 0)
+               {
+                  ++M;
+               }
 	     
 	     double wc = _cutOff / _sampleFrequency;
 	     
-	     for(int i=0; i<M; ++i)
+	     for(s64 i=0; i<M; ++i)
 	       {
 		  if((i-(M/2)) == 0)
 		    {
-		       _taps.push_back(wc * 2.0);
+		       _taps.push_back(wc * two);
 		    }
 		  else
 		    {
-		       _taps.push_back(std::sin(2.0 * M_PI * wc * (i-M/2)) / (M_PI * (i-(M/2))));
+                       s64 shiftedFrequency = i-M/2;
+                       auto w = static_cast<double>(shiftedFrequency);
+		       _taps.push_back(std::sin(two * M_PI * wc * w) / (M_PI * w));
 		    }
 	       }
 	     
@@ -42,27 +59,29 @@ namespace mods
 	     
 	     // compute beta parameter
 	     double beta = 0.0;
-	     if(A > 50)
+	     if(A > highAttenuationLimit)
 	       {
-		  beta = 0.1102 * (A - 8.7);
+		  beta = 0.1102 * (A - 8.7); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 	       }
-	     else if(A > 21)
+	     else if(A > minAttenuation)
 	       {
-		  beta = 0.5842 * std::pow(A - 21.0, 0.4) + 0.07886 * (A - 21.0);
+		  beta = 0.5842 * std::pow(A - minAttenuation, 0.4) + 0.07886 * (A - minAttenuation); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 	       }
 	     
 	     // compute and apply kaiser window
-	     double alpha = M / 2.0;
-	     for(int i=0; i<M; ++i)
+	     double alpha = M / two;
+	     for(s64 i=0; i<M; ++i)
 	       {
 		  namespace bessel = mods::utils::bessel;
-		  double kaiserValue = bessel::i0(beta * std::sqrt(1.0 - std::pow((i - alpha) / alpha, 2.0))) / bessel::i0(beta);
+                  s64 shiftedFrequency = i-M/2;
+                  auto w = static_cast<double>(shiftedFrequency);
+		  double kaiserValue = bessel::i0(beta * std::sqrt(1.0 - std::pow(w / alpha, 2))) / bessel::i0(beta);
 		  
 		  _taps[i] *= kaiserValue;
 	       }
 	  }
         
-        const std::vector<double>& FirFilterDesigner::getTaps() const
+        auto FirFilterDesigner::getTaps() const -> const std::vector<double>&
           {
              return _taps;
           }

@@ -23,7 +23,7 @@ namespace mods
                     computeMixingCoefficients();
                  }
              
-             mods::utils::RWBuffer<u8> InternalMultiChannelMixerSourceConverter::allocateNewTempBuffer(std::vector<u8>* backendVec, size_t len)
+             auto InternalMultiChannelMixerSourceConverter::allocateNewTempBuffer(std::vector<u8>* backendVec, size_t len) -> mods::utils::RWBuffer<u8>
                {
                   backendVec->resize(len);
                   u8* ptr = backendVec->data();
@@ -41,7 +41,7 @@ namespace mods
                     }
                }
              
-             bool InternalMultiChannelMixerSourceConverter::isFinished(ChannelId outChannel) const
+             auto InternalMultiChannelMixerSourceConverter::isFinished(ChannelId outChannel) const -> bool
                {
                   auto idxBuffer = toUnderlying(outChannel);
                   if(!_unconsumedBuffers.at(idxBuffer).empty())
@@ -109,27 +109,27 @@ namespace mods
                        double defaultRightCoefficient;
                     };
                   
-                  std::array<ChannelDescriptor, toUnderlying(ChannelTypes::NbChannelTypes)> channelDescriptors
+                  constexpr std::array<ChannelDescriptor, toUnderlying(ChannelTypes::NbChannelTypes)> channelDescriptors
                     {
                          {
-                              { DepthPositions::Front, true, 1.0, false, 0.0 },         // FRONT_LEFT
-                              { DepthPositions::Front, false, 0.0, true, 1.0 },         // FRONT_RIGHT
-                              { DepthPositions::FrontCenter, true, 0.5, true, 0.5 },    // FRONT_CENTER
-                              { DepthPositions::LowFrequency, true, 0.5, true, 0.5 },   // LOW_FREQUENCY
-                              { DepthPositions::Back, true, 1.0, false, 0.0 },          // BACK_LEFT
-                              { DepthPositions::Back, false, 0.0, true, 1.0 },          // BACK_RIGHT
-                              { DepthPositions::FrontSide, true, 0.75, true, 0.25 },    // FRONT_LEFT_OF_CENTER
-                              { DepthPositions::FrontSide, true, 0.25, true, 0.75 },    // FRONT_RIGHT_OF_CENTER
-                              { DepthPositions::BackCenter, true, 0.5, true, 0.5 },     // BACK_CENTER
-                              { DepthPositions::Side, true, 1.0, false, 0.0 },          // SIDE_LEFT
-                              { DepthPositions::Side, false, 0.0, true, 1.0 },          // SIDE_RIGHT
-                              { DepthPositions::TopCenter, true, 0.5, true, 0.5 },      // TOP_CENTER
-                              { DepthPositions::TopFront, true, 0.75, true, 0.25 },     // TOP_FRONT_LEFT
-                              { DepthPositions::TopFrontCenter, true, 0.5, true, 0.5 }, // TOP_FRONT_CENTER
-                              { DepthPositions::TopFront, true, 0.25, true, 0.75 },     // TOP_FRONT_RIGHT
-                              { DepthPositions::TopBack, true, 1.0, false, 0.0 },       // TOP_BACK_LEFT
-                              { DepthPositions::TopBackCenter, true, 0.5, true, 0.5 },  // TOP_BACK_CENTER
-                              { DepthPositions::TopBack, false, 0.0, true, 1.0 }        // TOP_ BACK_RIGHT
+                              { DepthPositions::Front,          true,  1.0,  false, 0.0  }, // FRONT_LEFT
+                              { DepthPositions::Front,          false, 0.0,  true,  1.0  }, // FRONT_RIGHT
+                              { DepthPositions::FrontCenter,    true,  0.5,  true,  0.5  }, // FRONT_CENTER
+                              { DepthPositions::LowFrequency,   true,  0.5,  true,  0.5  }, // LOW_FREQUENCY
+                              { DepthPositions::Back,           true,  1.0,  false, 0.0  }, // BACK_LEFT
+                              { DepthPositions::Back,           false, 0.0,  true,  1.0  }, // BACK_RIGHT
+                              { DepthPositions::FrontSide,      true,  0.75, true,  0.25 }, // FRONT_LEFT_OF_CENTER
+                              { DepthPositions::FrontSide,      true,  0.25, true,  0.75 }, // FRONT_RIGHT_OF_CENTER
+                              { DepthPositions::BackCenter,     true,  0.5,  true,  0.5  }, // BACK_CENTER
+                              { DepthPositions::Side,           true,  1.0,  false, 0.0  }, // SIDE_LEFT
+                              { DepthPositions::Side,           false, 0.0,  true,  1.0  }, // SIDE_RIGHT
+                              { DepthPositions::TopCenter,      true,  0.5,  true,  0.5  }, // TOP_CENTER
+                              { DepthPositions::TopFront,       true,  0.75, true,  0.25 }, // TOP_FRONT_LEFT
+                              { DepthPositions::TopFrontCenter, true,  0.5,  true,  0.5  }, // TOP_FRONT_CENTER
+                              { DepthPositions::TopFront,       true,  0.25, true,  0.75 }, // TOP_FRONT_RIGHT
+                              { DepthPositions::TopBack,        true,  1.0,  false, 0.0  }, // TOP_BACK_LEFT
+                              { DepthPositions::TopBackCenter,  true,  0.5,  true,  0.5  }, // TOP_BACK_CENTER
+                              { DepthPositions::TopBack,        false, 0.0,  true,  1.0  }  // TOP_ BACK_RIGHT
                          }
                     };
                } // namespace
@@ -172,7 +172,7 @@ namespace mods
                                  break;
                               }
                          }
-                       mask <<= 1u;
+                       mask <<= 1U;
                     }
                   
                   // loop that assigns remaining channels
@@ -201,7 +201,7 @@ namespace mods
                               }
                             ++idxChannel;
                          }
-                       mask <<= 1u;
+                       mask <<= 1U;
                     }
                   
                   for(size_t i=0; i<_channels.size(); ++i)
@@ -211,7 +211,7 @@ namespace mods
                     }
                }
              
-             double InternalMultiChannelMixerSourceConverter::mix(int idxOutBuffer, size_t idxSample) const
+             auto InternalMultiChannelMixerSourceConverter::mix(int idxOutBuffer, size_t idxSample) const -> double
                {
                   double sample = 0.0;
                   auto& coefficients = _coefficients.at(idxOutBuffer);
@@ -229,7 +229,7 @@ namespace mods
                  {
                  }
              
-             WavConverter::ptr MultiChannelMixerBase::buildRightChannel() const
+             auto MultiChannelMixerBase::buildRightChannel() const -> WavConverter::ptr
                {
                   class make_unique_enabler : public MultiChannelMixerBase
                     {
@@ -242,19 +242,19 @@ namespace mods
                        make_unique_enabler() = delete;
                        make_unique_enabler(const make_unique_enabler&) = delete;
                        make_unique_enabler(make_unique_enabler&&) = delete;
-                       make_unique_enabler& operator=(const make_unique_enabler&) = delete;
-                       make_unique_enabler& operator=(make_unique_enabler&&) = delete;
+                       auto operator=(const make_unique_enabler&) -> make_unique_enabler& = delete;
+                       auto operator=(make_unique_enabler&&) -> make_unique_enabler& = delete;
                        ~make_unique_enabler() override = default;
                     };
                   return std::make_unique<make_unique_enabler>(_src);
                }
              
-             bool MultiChannelMixerBase::isFinished() const
+             auto MultiChannelMixerBase::isFinished() const -> bool
                {
                   return _src->isFinished(_channel);
                }
              
-             void MultiChannelMixerBase::read(mods::utils::RWBuffer<u8>* buf, int len)
+             void MultiChannelMixerBase::read(mods::utils::RWBuffer<u8>* buf, size_t len)
                {
                   _src->read(buf, len, _channel);
                }
@@ -266,7 +266,7 @@ namespace mods
             {
             }
         
-        WavConverter::ptr MultiChannelMixer::getRightChannel()
+        auto MultiChannelMixer::getRightChannel() -> WavConverter::ptr
           {
              return std::move(_right);
           }

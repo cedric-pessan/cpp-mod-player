@@ -9,7 +9,7 @@ namespace mods
      {
         namespace arithmeticShifter
           {
-             inline s32 shiftRight(s32 value, u32 n)
+             inline auto shiftRight(s32 value, u32 n) -> s32
                {
                   u32 x = static_cast<u32>(value);
                   if(value < 0)

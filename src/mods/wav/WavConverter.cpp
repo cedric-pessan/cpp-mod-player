@@ -1,9 +1,9 @@
 
 #include "mods/wav/ALawConverter.hpp"
 #include "mods/wav/ChannelCopyWavConverter.hpp"
+#include "mods/wav/DVIADPCMDecoderConverter.hpp"
 #include "mods/wav/DivideConverter.hpp"
 #include "mods/wav/DownscaleWavConverter.hpp"
-#include "mods/wav/DVIADPCMDecoderConverter.hpp"
 #include "mods/wav/FillLSBConverter.hpp"
 #include "mods/wav/FromDoubleConverter.hpp"
 #include "mods/wav/GSMDecoderConverter.hpp"
@@ -28,8 +28,8 @@ namespace mods
    namespace wav
      {
         // static
-        WavConverter::ptr WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, StatCollector::sptr statCollector, WavAudioFormat codec, u32 channelMask,
-                                                       double peak)
+        auto WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, const StatCollector::sptr& statCollector, WavAudioFormat codec, u32 channelMask,
+                                          double peak) -> WavConverter::ptr
           {
              /* pipeline:
               sampleReader
@@ -105,42 +105,9 @@ namespace mods
                }
              
              std::vector<WavConverter::ptr> channels;
-             switch(bitsPerContainer)
+             for(int i=0; i<nbChannels; ++i)
                {
-                case 8:
-                  buildDemuxStage<8>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
-                  break;
-                  
-                case 16:
-                  buildDemuxStage<16>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
-                  break;
-                  
-                case 24:
-                  buildDemuxStage<24>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
-                  break;
-                  
-                case 32:
-                  buildDemuxStage<32>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
-                  break;
-                  
-                case 64:
-                  buildDemuxStage<64>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
-                  break;
-                  
-                case 256:
-                  buildDemuxStage<256>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
-                  break;
-                  
-                case 520:
-                  buildDemuxStage<520>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
-                  break;
-		  
-		case 4096:
-		  buildDemuxStage<4096>(&channels, nbChannels, defaultValue, buffer, std::move(statCollector));
-		  break;
-                  
-                default:
-                  std::cout << "WavConverter: unsupported " << bitsPerContainer << " bits per container for demux stage" << std::endl;
+                  channels.push_back(std::make_unique<ReaderWavConverter>(buffer, defaultValue, statCollector, i, nbChannels, bitsPerContainer));
                }
              
              int unpackedBitsPerContainer = bitsPerContainer;
@@ -417,7 +384,7 @@ namespace mods
                 case 8000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       using ParamType = StaticResampleParameters<8000, 44100>;
+                       using ParamType = StaticResampleParameters<StandardFrequency::_8000, StandardFrequency::_44100>;
                        ParamType params;
                        resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
                     }
@@ -426,7 +393,7 @@ namespace mods
 		case 10000:
 		  for(int i = 0; i < nbChannels; ++i)
 		    {
-                       using ParamType = StaticResampleParameters<10000, 44100>;
+                       using ParamType = StaticResampleParameters<StandardFrequency::_10000, StandardFrequency::_44100>;
                        ParamType params;
 		       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
 		    }
@@ -442,7 +409,7 @@ namespace mods
                 case 22000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       using ParamType = StaticResampleParameters<22000, 44100>;
+                       using ParamType = StaticResampleParameters<StandardFrequency::_22000, StandardFrequency::_44100>;
                        ParamType params;
                        resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
                     }
@@ -465,7 +432,7 @@ namespace mods
                 case 48000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       using ParamType = StaticResampleParameters<48000, 44100>;
+                       using ParamType = StaticResampleParameters<StandardFrequency::_48000, StandardFrequency::_44100>;
                        ParamType params;
                        resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
                     }
@@ -573,53 +540,6 @@ namespace mods
                   default:
                     std::cout << "WavConverter: unsupported bits per sample for resampling with positive integer factor: " << bitsPerSample << std::endl;
                     return nullptr;
-                 }
-            }
-        
-        // static
-        template<int BITSPERCONTAINER>
-          void WavConverter::buildDemuxStage(std::vector<WavConverter::ptr>* channels, int nbChannels, u8 defaultValue, const mods::utils::RBuffer<u8>& buffer, StatCollector::sptr statCollector)
-            {
-               switch(nbChannels)
-                 {
-                  case 1:
-                    channels->push_back(std::make_unique<ReaderWavConverter<0,1,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    break;
-                    
-                  case 2:
-                    channels->push_back(std::make_unique<ReaderWavConverter<0,2,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<1,2,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    break;
-                    
-                  case 4:
-                    channels->push_back(std::make_unique<ReaderWavConverter<0,4,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<1,4,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<2,4,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<3,4,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    break;
-                    
-                  case 6:
-                    channels->push_back(std::make_unique<ReaderWavConverter<0,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<1,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<2,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<3,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<4,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<5,6,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    break;
-                    
-                  case 8:
-                    channels->push_back(std::make_unique<ReaderWavConverter<0,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<1,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<2,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<3,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<4,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<5,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<6,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    channels->push_back(std::make_unique<ReaderWavConverter<7,8,BITSPERCONTAINER>>(buffer, defaultValue, statCollector));
-                    break;
-                    
-                  default:
-                    std::cout << "WavConverter: unsupported number of channels for demux stage:" << nbChannels << std::endl;
                  }
             }
         

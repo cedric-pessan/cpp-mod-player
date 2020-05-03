@@ -16,25 +16,25 @@ namespace mods
              UpscaleWavConverter() = delete;
              UpscaleWavConverter(const UpscaleWavConverter&) = delete;
              UpscaleWavConverter(UpscaleWavConverter&&) = delete;
-             UpscaleWavConverter& operator=(const UpscaleWavConverter&) = delete;
-             UpscaleWavConverter& operator=(UpscaleWavConverter&&) = delete;
+             auto operator=(const UpscaleWavConverter&) -> UpscaleWavConverter& = delete;
+             auto operator=(UpscaleWavConverter&&) -> UpscaleWavConverter& = delete;
              ~UpscaleWavConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
-             constexpr u32 shiftLeftValue()
+             constexpr auto shiftLeftValue() -> u32
                {
-                  return sizeof(TOut)*8 - sizeof(TIn)*8;
+                  return sizeof(TOut)*BITS_IN_BYTE - sizeof(TIn)*BITS_IN_BYTE;
                }
              
-             constexpr u32 shiftRightValue()
+             constexpr auto shiftRightValue() -> u32
                {
-                  return sizeof(TIn)*8 - shiftLeftValue();
+                  return sizeof(TIn)*BITS_IN_BYTE - shiftLeftValue();
                }
              
-             constexpr u32 maskValue()
+             constexpr auto maskValue() -> u32
                {
                   return (1U << shiftLeftValue()) - 1;
                }

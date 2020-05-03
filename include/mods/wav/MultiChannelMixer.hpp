@@ -15,11 +15,11 @@ namespace mods
              MultiChannelMixer() = delete;
              MultiChannelMixer(const MultiChannelMixer&) = delete;
              MultiChannelMixer(MultiChannelMixer&&) = delete;
-             MultiChannelMixer& operator=(const MultiChannelMixer&) = delete;
-             MultiChannelMixer& operator=(MultiChannelMixer&&) = delete;
+             auto operator=(const MultiChannelMixer&) -> MultiChannelMixer& = delete;
+             auto operator=(MultiChannelMixer&&) -> MultiChannelMixer& = delete;
              ~MultiChannelMixer() override = default;
              
-             WavConverter::ptr getRightChannel();
+             auto getRightChannel() -> WavConverter::ptr;
              
            private:
              WavConverter::ptr _right;

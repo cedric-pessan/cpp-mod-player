@@ -16,15 +16,15 @@ namespace mods
              FromDoubleConverter() = delete;
              FromDoubleConverter(const FromDoubleConverter&) = delete;
              FromDoubleConverter(FromDoubleConverter&&) = delete;
-             FromDoubleConverter& operator=(const FromDoubleConverter&) = delete;
-             FromDoubleConverter& operator=(FromDoubleConverter&&) = delete;
+             auto operator=(const FromDoubleConverter&) -> FromDoubleConverter& = delete;
+             auto operator=(FromDoubleConverter&&) -> FromDoubleConverter& = delete;
              ~FromDoubleConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
-             mods::utils::RWBuffer<u8> allocateNewTempBuffer(size_t len);
+             auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
              void ensureTempBufferSize(size_t len);
              
              WavConverter::ptr _src;

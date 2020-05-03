@@ -20,23 +20,23 @@ namespace mods
              Format() = delete;
              Format(const Format&) = delete;
              Format(Format&&) = default;
-             Format& operator=(const Format&) = delete;
-             Format& operator=(Format&&) = default;
+             auto operator=(const Format&) -> Format& = delete;
+             auto operator=(Format&&) -> Format& = default;
              ~Format() = default;
              
-             WavAudioFormat getAudioFormat() const noexcept;
+             auto getAudioFormat() const noexcept -> WavAudioFormat;
              
-             u16 getAudioFormatAsNumber() const noexcept;
+             auto getAudioFormatAsNumber() const noexcept -> u16;
              
-             u16 getNumChannels() const noexcept;
+             auto getNumChannels() const noexcept -> u16;
              
-             u32 getSampleRate() const noexcept;
+             auto getSampleRate() const noexcept -> u32;
              
-             u16 getBitsPerSample() const noexcept;
+             auto getBitsPerSample() const noexcept -> u16;
              
-             u16 getBitsPerContainer() const noexcept;
+             auto getBitsPerContainer() const noexcept -> u16;
              
-             u32 getChannelMask() const noexcept;
+             auto getChannelMask() const noexcept -> u32;
              
            private:
              mods::utils::RBuffer<FmtHeader> _fmtHeader;

@@ -15,12 +15,12 @@ namespace mods
              DivideConverter() = delete;
              DivideConverter(const DivideConverter&) = delete;
              DivideConverter(DivideConverter&&) = delete;
-             DivideConverter& operator=(const DivideConverter&) = delete;
-             DivideConverter& operator=(DivideConverter&&) = delete;
+             auto operator=(const DivideConverter&) -> DivideConverter& = delete;
+             auto operator=(DivideConverter&&) -> DivideConverter& = delete;
              ~DivideConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
              WavConverter::ptr _src;

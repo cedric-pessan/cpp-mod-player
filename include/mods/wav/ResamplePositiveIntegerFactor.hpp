@@ -16,12 +16,12 @@ namespace mods
              ResamplePositiveIntegerFactor() = delete;
              ResamplePositiveIntegerFactor(const ResamplePositiveIntegerFactor&) = delete;
              ResamplePositiveIntegerFactor(ResamplePositiveIntegerFactor&&) = delete;
-             ResamplePositiveIntegerFactor& operator=(const ResamplePositiveIntegerFactor&) = delete;
-             ResamplePositiveIntegerFactor& operator=(ResamplePositiveIntegerFactor&&) = delete;
+             auto operator=(const ResamplePositiveIntegerFactor&) -> ResamplePositiveIntegerFactor& = delete;
+             auto operator=(ResamplePositiveIntegerFactor&&) -> ResamplePositiveIntegerFactor& = delete;
              ~ResamplePositiveIntegerFactor() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
              WavConverter::ptr _src;

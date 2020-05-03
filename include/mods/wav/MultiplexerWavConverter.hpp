@@ -17,15 +17,15 @@ namespace mods
              MultiplexerWavConverter() = delete;
              MultiplexerWavConverter(const MultiplexerWavConverter&) = delete;
              MultiplexerWavConverter(MultiplexerWavConverter&&) = delete;
-             MultiplexerWavConverter& operator=(const MultiplexerWavConverter&) = delete;
-             MultiplexerWavConverter& operator=(MultiplexerWavConverter&&) = delete;
+             auto operator=(const MultiplexerWavConverter&) -> MultiplexerWavConverter& = delete;
+             auto operator=(MultiplexerWavConverter&&) -> MultiplexerWavConverter& = delete;
              ~MultiplexerWavConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
-             mods::utils::RWBuffer<u8> allocateNewTempBuffer(size_t len);
+             auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
              void ensureTempBufferSize(size_t len);
              
              WavConverter::ptr _left;

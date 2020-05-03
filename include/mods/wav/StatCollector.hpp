@@ -16,11 +16,11 @@ namespace mods
              
              StatCollector(const StatCollector&) = delete;
              StatCollector(StatCollector&&) = delete;
-             StatCollector& operator=(const StatCollector&) = delete;
-             StatCollector& operator=(StatCollector&&) = delete;
+             auto operator=(const StatCollector&) -> StatCollector& = delete;
+             auto operator=(StatCollector&&) -> StatCollector& = delete;
              ~StatCollector() = default;
              
-             size_t getBytesRead() const;
+             auto getBytesRead() const -> size_t;
              
              void inc(size_t i);
              

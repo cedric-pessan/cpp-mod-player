@@ -14,7 +14,7 @@ namespace mods
             {
             }
         
-        WavAudioFormat Format::getAudioFormat() const noexcept
+        auto Format::getAudioFormat() const noexcept -> WavAudioFormat
           {
              auto fmt = _fmtHeader->getAudioFormat();
              if(fmt != WavAudioFormat::EXTENSIBLE || !_extensibleHeader.has_value())
@@ -25,7 +25,7 @@ namespace mods
              return (*_extensibleHeader)->getAudioFormat();
           }
         
-        u16 Format::getAudioFormatAsNumber() const noexcept
+        auto Format::getAudioFormatAsNumber() const noexcept -> u16
           {
              auto fmt = _fmtHeader->getAudioFormat();
              if(fmt != WavAudioFormat::EXTENSIBLE || !_extensibleHeader.has_value())
@@ -36,17 +36,17 @@ namespace mods
              return (*_extensibleHeader)->getAudioFormatAsNumber();
           }
         
-        u16 Format::getNumChannels() const noexcept
+        auto Format::getNumChannels() const noexcept -> u16
           {
              return _fmtHeader->getNumChannels();
           }
         
-        u32 Format::getSampleRate() const noexcept
+        auto Format::getSampleRate() const noexcept -> u32
           {
              return _fmtHeader->getSampleRate();
           }
         
-        u16 Format::getBitsPerSample() const noexcept
+        auto Format::getBitsPerSample() const noexcept -> u16
           {
              if(_extensibleHeader.has_value())
                {
@@ -56,16 +56,16 @@ namespace mods
              return _fmtHeader->getBitsPerSample();
           }
         
-        u16 Format::getBitsPerContainer() const noexcept
+        auto Format::getBitsPerContainer() const noexcept -> u16
           {
              if(_extensibleHeader.has_value())
                {
                   return _fmtHeader->getBitsPerSample();
                }
-             return _fmtHeader->getBlockAlign() * 8 / getNumChannels();
+             return _fmtHeader->getBlockAlign() * BITS_IN_BYTE / getNumChannels();
           }
         
-        u32 Format::getChannelMask() const noexcept
+        auto Format::getChannelMask() const noexcept -> u32
           {
              if(_useChannelMask && _extensibleHeader.has_value())
                {

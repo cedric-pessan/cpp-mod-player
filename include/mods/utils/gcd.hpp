@@ -5,7 +5,7 @@ namespace mods
 {
    namespace utils
      {
-        constexpr int gcd(int a, int b)
+        constexpr auto gcd(int a, int b) -> int
           {
              if(a < b)
                {

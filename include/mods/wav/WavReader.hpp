@@ -21,45 +21,45 @@ namespace mods
              WavReader() = delete;
              WavReader(const WavReader&) = delete;
              WavReader(WavReader&&) = delete;
-             WavReader& operator=(const WavReader&) = delete;
-             WavReader& operator=(WavReader&&) = delete;
+             auto operator=(const WavReader&) -> WavReader& = delete;
+             auto operator=(WavReader&&) -> WavReader& = delete;
              
-             bool isFinished() const override;
+             auto isFinished() const -> bool override;
              void read(mods::utils::RWBuffer<u8>* buf, int len) override;
-             std::string getInfo() const override;
-             std::string getProgressInfo() const override;
+             auto getInfo() const -> std::string override;
+             auto getProgressInfo() const -> std::string override;
              
            private:
-             Format readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                            const mods::utils::RBuffer<u8>& riffBuffer,
-                            size_t offset) const;
-             mods::utils::RBuffer<FactHeader> readFact(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                                                       const mods::utils::RBuffer<u8>& riffBuffer,
-                                                       size_t offset) const;
-             mods::utils::RBuffer<u8> readData(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                                               const mods::utils::RBuffer<u8>& riffBuffer,
-                                               size_t offset) const;
+             static auto readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                 const mods::utils::RBuffer<u8>& riffBuffer,
+                                 size_t offset) -> Format;
+             static auto readFact(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                  const mods::utils::RBuffer<u8>& riffBuffer,
+                                  size_t offset) -> mods::utils::RBuffer<FactHeader>;
+             static auto readData(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                  const mods::utils::RBuffer<u8>& riffBuffer,
+                                  size_t offset) -> mods::utils::RBuffer<u8>;
              
-             void readDisp(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                           const mods::utils::RBuffer<u8>& riffBuffer,
-                           size_t offset,
-                           std::stringstream& description) const;
+             static void readDisp(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                  const mods::utils::RBuffer<u8>& riffBuffer,
+                                  size_t offset,
+                                  std::stringstream& description);
              
-             void parseInfoList(const mods::utils::RBuffer<ListHeader>& listHeader,
-                                const mods::utils::RBuffer<u8>& riffBuffer,
-                                size_t offset,
-                                std::stringstream& description) const;
+             static void parseInfoList(const mods::utils::RBuffer<ListHeader>& listHeader,
+                                       const mods::utils::RBuffer<u8>& riffBuffer,
+                                       size_t offset,
+                                       std::stringstream& description);
              
-             void readAfsp(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                           const mods::utils::RBuffer<u8>& riffBuffer,
-                           size_t offset,
-                           std::stringstream& description) const;
+             static void readAfsp(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                  const mods::utils::RBuffer<u8>& riffBuffer,
+                                  size_t offset,
+                                  std::stringstream& description);
              void readCue() const;
              void parseAdtl() const;
-             double readPeak(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
-                             const mods::utils::RBuffer<u8>& riffBuffer,
-                             size_t offset,
-                             int nbChannels) const;
+             static auto readPeak(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                  const mods::utils::RBuffer<u8>& riffBuffer,
+                                  size_t offset,
+                                  int nbChannels) -> double;
              
              void buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec);
              

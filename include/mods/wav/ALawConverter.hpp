@@ -3,6 +3,8 @@
 
 #include "mods/wav/WavConverter.hpp"
 
+#include <limits>
+
 namespace mods
 {
    namespace wav
@@ -15,28 +17,39 @@ namespace mods
              ALawConverter() = delete;
              ALawConverter(const ALawConverter&) = delete;
              ALawConverter(ALawConverter&&) = delete;
-             ALawConverter& operator=(const ALawConverter&) = delete;
-             ALawConverter& operator=(ALawConverter&&) = delete;
+             auto operator=(const ALawConverter&) -> ALawConverter& = delete;
+             auto operator=(ALawConverter&&) -> ALawConverter& = delete;
              ~ALawConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
-             static constexpr u8 getZero()
+             static constexpr auto getZero() -> u8
                {
-                  return 0x80u | 0x55u;
+                  return _positiveSign | _encodedZero;
                }
              
+             static constexpr auto isValidAsBitsPerSample(int bitsPerSample) -> bool
+               {
+                  return bitsPerSample == BITS_IN_BYTE;
+               }
+             
+             static auto getBitsPerSampleRequirementsString() -> std::string&;
+             
            private:
+             static constexpr u8 _positiveSign = 0x80U;
+             static constexpr u8 _encodedZero = 0x55U;
+             
              static constexpr u32 MANTISSA_SIZE = 4;
              static constexpr u32 MANTISSA_MASK = 0xF;
              static constexpr u32 EXPONENT_MASK = 0x7;
              
              void fillLookupTable();
-             s16 aLawTransform(s8 value) const;
+             auto aLawTransform(s8 value) const -> s16;
              
              WavConverter::ptr _src;
-             std::array<s16, 256> _lookupTable {};
+             static constexpr u32 _lookupTableSize = static_cast<u32>(std::numeric_limits<u8>::max())+1;
+             std::array<s16, /*256*/_lookupTableSize> _lookupTable {};
           };
      } // namespace wav
 } // namespace mods

@@ -18,13 +18,13 @@ namespace mods
               }
         
         template<typename TOut, typename TIn>
-          bool UpscaleWavConverter<TOut, TIn>::isFinished() const
+          auto UpscaleWavConverter<TOut, TIn>::isFinished() const -> bool
           {
              return _src->isFinished();
           }
         
         template<typename TOut, typename TIn>
-          void UpscaleWavConverter<TOut, TIn>::read(mods::utils::RWBuffer<u8>* buf, int len)
+          void UpscaleWavConverter<TOut, TIn>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
             {
                if((len % sizeof(TOut)) != 0)
                  {

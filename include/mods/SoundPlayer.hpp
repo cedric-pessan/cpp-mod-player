@@ -25,22 +25,24 @@ namespace mods
         SoundPlayer() = delete;
         SoundPlayer(const SoundPlayer&) = delete;
         SoundPlayer(SoundPlayer&&) = delete;
-        SoundPlayer& operator=(const SoundPlayer&) = delete;
-        SoundPlayer& operator=(SoundPlayer&&) = delete;
+        auto operator=(const SoundPlayer&) -> SoundPlayer& = delete;
+        auto operator=(SoundPlayer&&) -> SoundPlayer& = delete;
         
         void play(ModuleReader::ptr reader);
         
       private:
+        static constexpr int _bufferSize = 1024;
+        
         using SynchronizedReader = std::pair<ModuleReader::ptr, std::shared_ptr<std::mutex>>;
         std::mutex _playListMutex;
         std::deque<SynchronizedReader> _playList;
         ModuleInfoCallback _moduleInfoCb;
         ModuleProgressCallback _moduleProgressCb;
         
-        void checkInit(bool condition, const std::string& description) const;
-        const SynchronizedReader& addReaderToPlayList(ModuleReader::ptr reader);
+        static void checkInit(bool condition, const std::string& description);
+        auto addReaderToPlayList(ModuleReader::ptr reader) -> const SynchronizedReader&;
         void removeOldestReaderFromPlayList();
-        void waitUntilFinished(const SynchronizedReader& entry);
+        static void waitUntilFinished(const SynchronizedReader& entry);
         
         void sendModuleInfo(const ModuleReader& module);
         void sendProgress(const ModuleReader& module);
@@ -55,11 +57,11 @@ namespace mods
              SoundPlayerInitException(const SoundPlayerInitException&) noexcept = delete;
              SoundPlayerInitException(SoundPlayerInitException&&) = default;
              ~SoundPlayerInitException() override = default;
-             const char* what() const noexcept override;
+             auto what() const noexcept -> const char* override;
              
              SoundPlayerInitException() = delete;
-             SoundPlayerInitException& operator=(const SoundPlayerInitException&) = delete;
-             SoundPlayerInitException& operator=(SoundPlayerInitException&&) = delete;
+             auto operator=(const SoundPlayerInitException&) -> SoundPlayerInitException& = delete;
+             auto operator=(SoundPlayerInitException&&) -> SoundPlayerInitException& = delete;
              
            private:
              std::string _reason;

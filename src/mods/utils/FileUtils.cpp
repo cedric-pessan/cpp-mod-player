@@ -12,7 +12,7 @@ namespace mods
      {
         namespace FileUtils
           {
-             const RBuffer<u8> mapFile(const std::string& filename)
+             auto mapFile(const std::string& filename) -> RBuffer<u8>
                {
                   auto buffer = mapFileToBuffer(filename);
                   if(!buffer)
@@ -36,15 +36,15 @@ namespace mods
                        FileReaderDeleter() = delete;
                        FileReaderDeleter(const FileReaderDeleter&) = delete;
                        FileReaderDeleter(FileReaderDeleter&&) = delete;
-                       FileReaderDeleter& operator=(const FileReaderDeleter&) = delete;
-                       FileReaderDeleter& operator=(FileReaderDeleter&&) = delete;
+                       auto operator=(const FileReaderDeleter&) -> FileReaderDeleter& = delete;
+                       auto operator=(FileReaderDeleter&&) -> FileReaderDeleter& = delete;
                        
                      private:
                        std::vector<u8> _v;
                     };
                } // namespace
              
-             RBufferBackend::sptr readFileToBuffer(const std::string& filename)
+             auto readFileToBuffer(const std::string& filename) -> RBufferBackend::sptr
                {
                   std::ifstream file(filename, std::ios::binary | std::ios::ate);
                   std::streamsize size = file.tellg();

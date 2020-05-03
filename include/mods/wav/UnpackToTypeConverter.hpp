@@ -16,12 +16,12 @@ namespace mods
              UnpackToTypeConverter() = delete;
              UnpackToTypeConverter(const UnpackToTypeConverter&) = delete;
              UnpackToTypeConverter(UnpackToTypeConverter&&) = delete;
-             UnpackToTypeConverter& operator=(const UnpackToTypeConverter&) = delete;
-             UnpackToTypeConverter& operator=(UnpackToTypeConverter&&) = delete;
+             auto operator=(const UnpackToTypeConverter&) -> UnpackToTypeConverter& = delete;
+             auto operator=(UnpackToTypeConverter&&) -> UnpackToTypeConverter& = delete;
              ~UnpackToTypeConverter() override = default;
              
-             bool isFinished() const override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             auto isFinished() const -> bool override;
+             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
              WavConverter::ptr _src;
