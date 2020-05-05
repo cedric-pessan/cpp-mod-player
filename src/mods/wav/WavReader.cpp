@@ -216,7 +216,7 @@ namespace mods
                                                          _statCollector, fmt.getAudioFormat(), fmt.getChannelMask(), peak);
                _length = data.size();
                
-               buildInfo(fmt.getBitsPerSample(), fmt.getNumChannels(), fmt.getSampleRate(), description.str(), fmt.getAudioFormat());
+               buildInfo(fmt.getBitsPerSample(), fmt.getBitsPerContainer(), fmt.getNumChannels(), fmt.getSampleRate(), description.str(), fmt.getAudioFormat());
             }
         
         auto WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
@@ -475,13 +475,14 @@ namespace mods
                }
           }
         
-        void WavReader::buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec)
+        void WavReader::buildInfo(int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec)
           {
              std::stringstream ss;
              if(description.length() > 0)
                {
                   ss << "description: " << description << std::endl;
                }
+             ss << "bits per container:" << bitsPerContainer << std::endl;
              ss << "bits per sample: " << bitsPerSample << std::endl;
              ss << "number of channels: " << nbChannels << std::endl;
              ss << "frequency: " << frequency << std::endl;

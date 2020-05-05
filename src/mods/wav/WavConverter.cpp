@@ -20,6 +20,7 @@
 #include "mods/wav/UpscaleWavConverter.hpp"
 #include "mods/wav/WavConverter.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
@@ -27,6 +28,14 @@ namespace mods
 {
    namespace wav
      {
+        namespace
+          {
+             constexpr std::array<int, 5> PCMBitsPerSample
+               {
+                  8, 12, 16, 24, 32
+               };
+          } // namespace
+        
         // static
         auto WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, const StatCollector::sptr& statCollector, WavAudioFormat codec, u32 channelMask,
                                           double peak) -> WavConverter::ptr
@@ -44,64 +53,35 @@ namespace mods
              */
              
              u8 defaultValue = 0;
-             switch(bitsPerSample)
+             switch(codec)
                {
-                case 0:
-                case 1:
-                  if(codec != WavAudioFormat::GSM &&
-                     codec != WavAudioFormat::TRUSPEECH)
+                case WavAudioFormat::PCM:
+                  if(std::find(PCMBitsPerSample.begin(), PCMBitsPerSample.end(), bitsPerSample) == PCMBitsPerSample.end())
                     {
-                       std::cout << bitsPerSample << "bits value is only valid for block codec" << std::endl;
+                       std::cout << "invalid bits per sample for PCM: " << bitsPerSample << std::endl;
                     }
-                  break;
-		  
-		case 4:
-		  if(codec != WavAudioFormat::DVI_ADPCM)
-		    {
-		       std::cout << "4 bits value is only valid for DVI/ADPCM codec" << std::endl;
-		    }
-		  break;
-                  
-                case 8:
-                  if(codec == WavAudioFormat::A_LAW)
-                    {
-                       defaultValue = ALawConverter::getZero();
-                    }
-                  else if(codec == WavAudioFormat::MU_LAW)
-                    {
-                       defaultValue = MuLawConverter::getZero();
-                    }
-                  else
+                  if(bitsPerSample == 8)
                     {
                        defaultValue = 128;
                     }
                   break;
                   
-                case 12:
-                case 16:
-                case 24:
-                  if(codec != WavAudioFormat::PCM)
-                    {
-                       std::cout << "WavConverter: codec is not pcm and bits per sample is not 8" << std::endl;
-                    }
+                case WavAudioFormat::A_LAW:
+                  defaultValue = ALawConverter::getZero();
                   break;
                   
-                case 32:
-                  if(codec != WavAudioFormat::PCM && codec != WavAudioFormat::IEEE_FLOAT)
-                    {
-                       std::cout << "WavConverter: 32 bits should be used with pcm or ieee float codec" << std::endl;
-                    }
+                case WavAudioFormat::MU_LAW:
+                  defaultValue = MuLawConverter::getZero();
                   break;
                   
-                case 64:
-                  if(codec != WavAudioFormat::IEEE_FLOAT)
-                    {
-                       std::cout << "WavConverter: 64 bits should be used with pcm or ieee float codec" << std::endl;
-                    }
+                case WavAudioFormat::DVI_ADPCM:
+                case WavAudioFormat::GSM:
+                case WavAudioFormat::IEEE_FLOAT:
+                case WavAudioFormat::TRUSPEECH:
                   break;
                   
                 default:
-                  std::cout << "WavConverter: unknown default value for " << bitsPerSample << " bits per sample" << std::endl;
+                  std::cout << "WavConverter: unknown default value for " << toString(codec) << std::endl;
                }
              
              std::vector<WavConverter::ptr> channels;

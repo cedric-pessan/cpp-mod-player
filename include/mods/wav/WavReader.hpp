@@ -61,7 +61,7 @@ namespace mods
                                   size_t offset,
                                   int nbChannels) -> double;
              
-             void buildInfo(int bitsPerSample, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec);
+             void buildInfo(int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec);
              
              WavConverter::ptr _converter;
              const mods::utils::RBuffer<u8> _fileBuffer;
