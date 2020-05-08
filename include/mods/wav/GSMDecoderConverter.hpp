@@ -31,6 +31,12 @@ namespace mods
                   return (bitsPerSample % GSM_ENCODED_FRAME_SIZE) == 0;
                }
              
+             static constexpr auto getOutputBitsPerSample() -> int
+               {
+                  constexpr int outputBitsPerSample = 13;
+                  return outputBitsPerSample;
+               }
+             
              static auto getBitsPerSampleRequirementsString() -> std::string&;
              
            private:

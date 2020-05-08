@@ -32,9 +32,6 @@ namespace mods
              auto operator=(WavConverter&&) -> WavConverter& = delete;
              
            private:
-             template<int FACTOR>
-               static auto buildResamplePositiveIntegerFactor(int bitsPerSample, ptr src) -> ptr;
-             
              static auto isResamplableByPositiveIntegerFactor(int frequency) -> bool;
           };
      } // namespace wav

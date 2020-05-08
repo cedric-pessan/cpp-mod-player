@@ -23,6 +23,12 @@ namespace mods
              auto isFinished() const -> bool override;
              void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
+             static constexpr auto getOutputBitsPerSample() -> int
+               {
+                  constexpr int outputBitsPerSample = 16;
+                  return outputBitsPerSample;
+               }
+             
            private:
              
              template<typename ARRAY>

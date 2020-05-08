@@ -34,6 +34,41 @@ namespace mods
                {
                   8, 12, 16, 24, 32
                };
+             
+             constexpr int default8BitsPCMValue = 128;
+             
+             enum struct WavBitsPerContainer : int
+               {
+                  _8 = 8,
+                    _16 = 16,
+                    _24 = 24,
+                    _32 = 32,
+                    _64 = 64
+               };
+             
+             enum struct WavBitsPerSample : int
+               {
+                  _8 = 8,
+                    _16 = 16,
+                    _32 = 32,
+                    _64 = 64,
+                    _double = -1
+               };
+             
+             template<int FACTOR>
+               auto buildResamplePositiveIntegerFactor(WavBitsPerSample bitsPerSample, WavConverter::ptr src) -> WavConverter::ptr
+                 {
+                    switch(bitsPerSample)
+                      {
+                       case WavBitsPerSample::_16:
+                         return std::make_unique<ResamplePositiveIntegerFactor<s16, FACTOR>>(std::move(src));
+                       case WavBitsPerSample::_double:
+                         return std::make_unique<ResamplePositiveIntegerFactor<double, FACTOR>>(std::move(src));
+                       default:
+                         std::cout << "WavConverter: unsupported bits per sample for resampling with positive integer factor: " << toUnderlying(bitsPerSample) << std::endl;
+                         return nullptr;
+                      }
+                 }
           } // namespace
         
         // static
@@ -60,9 +95,9 @@ namespace mods
                     {
                        std::cout << "invalid bits per sample for PCM: " << bitsPerSample << std::endl;
                     }
-                  if(bitsPerSample == 8)
+                  if(bitsPerSample == BITS_IN_BYTE)
                     {
-                       defaultValue = 128;
+                       defaultValue = default8BitsPCMValue;
                     }
                   break;
                   
@@ -85,97 +120,89 @@ namespace mods
                }
              
              std::vector<WavConverter::ptr> channels;
+             channels.reserve(nbChannels);
              for(int i=0; i<nbChannels; ++i)
                {
                   channels.push_back(std::make_unique<ReaderWavConverter>(buffer, defaultValue, statCollector, i, nbChannels, bitsPerContainer));
                }
              
-             int unpackedBitsPerContainer = bitsPerContainer;
-             std::vector<WavConverter::ptr> unpackedContainerChannels;
-             switch(bitsPerContainer)
+             auto uncompressedBitsPerContainer = static_cast<WavBitsPerContainer>(bitsPerContainer);
+             std::vector<WavConverter::ptr> uncompressedChannels;
+             uncompressedChannels.reserve(nbChannels);
+             switch(codec)
                {
-                case 8:
+                case WavAudioFormat::PCM:
+                case WavAudioFormat::A_LAW:
+                case WavAudioFormat::MU_LAW:
+                case WavAudioFormat::IEEE_FLOAT:
                   for(int i = 0; i < nbChannels; ++i)
                     {
-                       unpackedContainerChannels.push_back(std::move(channels[i]));
+                       uncompressedChannels.push_back(std::move(channels[i]));
                     }
                   break;
                   
-                case 16:
-                  for(int i = 0; i < nbChannels; ++i)
-                    {
-                       unpackedContainerChannels.push_back(std::move(channels[i]));
-                    }
-                  break;
-                  
-                case 24:
-                  unpackedBitsPerContainer = 32;
-                  for(int i = 0; i < nbChannels; ++i)
-                    {
-                       unpackedContainerChannels.push_back(std::make_unique<UnpackToTypeConverter<s32>>(std::move(channels[i]), 3));
-                    }
-                  break;
-                  
-                case 32:
-                  for(int i = 0; i < nbChannels; ++i)
-                    {
-                       unpackedContainerChannels.push_back(std::move(channels[i]));
-                    }
-                  break;
-                  
-                case 64:
-                  for(int i = 0; i < nbChannels; ++i)
-                    {
-                       unpackedContainerChannels.push_back(std::move(channels[i]));
-                    }
-                  break;
-                  
-                case 256:
-                  if(codec != WavAudioFormat::TRUSPEECH)
-                    {
-                       std::cout << "WavConverter:: 256 container only supported with TRUSPEECH" << std::endl;
-                    }
-                  unpackedBitsPerContainer = bitsPerContainer = 16;
-                  bitsPerSample = 16;
+                case WavAudioFormat::GSM:
+                  uncompressedBitsPerContainer = WavBitsPerContainer::_16;
+                  bitsPerSample = GSMDecoderConverter::getOutputBitsPerSample();
                   for(int i=0; i < nbChannels; ++i)
                     {
-                       unpackedContainerChannels.push_back(std::make_unique<TruspeechDecoderConverter>(std::move(channels[i])));
+                       uncompressedChannels.push_back(std::make_unique<GSMDecoderConverter>(std::move(channels[i])));
                     }
                   break;
                   
-                case 520:
-                  if(codec != WavAudioFormat::GSM)
-                    {
-                       std::cout << "WavConverter: 520 container should be GSM codec" << std::endl;
-                    }
-                  unpackedBitsPerContainer = bitsPerContainer = 16;
-                  bitsPerSample = 13;
+                case WavAudioFormat::TRUSPEECH:
+                  uncompressedBitsPerContainer = WavBitsPerContainer::_16;
+                  bitsPerSample = TruspeechDecoderConverter::getOutputBitsPerSample();
                   for(int i=0; i < nbChannels; ++i)
                     {
-                       unpackedContainerChannels.push_back(std::make_unique<GSMDecoderConverter>(std::move(channels[i])));
+                       uncompressedChannels.push_back(std::make_unique<TruspeechDecoderConverter>(std::move(channels[i])));
                     }
                   break;
-		  
-		case 4096:
-		  if(codec != WavAudioFormat::DVI_ADPCM)
-		    {
-		       std::cout << "WavConverter: 4096 container should be DVI/ADPCM codec" << std::endl;
-		    }
-		  unpackedBitsPerContainer = bitsPerContainer = 16;
-		  bitsPerSample = 16;
+                  
+                case WavAudioFormat::DVI_ADPCM:
+		  uncompressedBitsPerContainer = WavBitsPerContainer::_16;
+		  bitsPerSample = DVIADPCMDecoderConverter::getOutputBitsPerSample();
 		  for(int i=0; i < nbChannels; ++i)
 		    {
-		       unpackedContainerChannels.push_back(std::make_unique<DVIADPCMDecoderConverter>(std::move(channels[i])));
+		       uncompressedChannels.push_back(std::make_unique<DVIADPCMDecoderConverter>(std::move(channels[i])));
 		    }
 		  break;
                   
                 default:
-                  std::cout << "WavConverter: unsupported " << bitsPerContainer << " bits per container for unpacking container stage" << std::endl;
+                  std::cout << "WavConverter: unknown codec for uncompressing stage: 0x" << std::hex << toUnderlying(codec) << std::dec << std::endl;
                }
              
-             int unpackedBitsPerSample = unpackedBitsPerContainer;
+             auto unpackedBitsPerContainer = uncompressedBitsPerContainer;
+             std::vector<WavConverter::ptr> unpackedContainerChannels;
+             unpackedContainerChannels.reserve(nbChannels);
+             switch(uncompressedBitsPerContainer)
+               {
+                case WavBitsPerContainer::_8:
+                case WavBitsPerContainer::_16:
+                case WavBitsPerContainer::_32:
+                case WavBitsPerContainer::_64:
+                  for(int i = 0; i < nbChannels; ++i)
+                    {
+                       unpackedContainerChannels.push_back(std::move(uncompressedChannels[i]));
+                    }
+                  break;
+                  
+                case WavBitsPerContainer::_24:
+                  unpackedBitsPerContainer = WavBitsPerContainer::_32;
+                  for(int i = 0; i < nbChannels; ++i)
+                    {
+                       unpackedContainerChannels.push_back(std::make_unique<UnpackToTypeConverter<s32>>(std::move(uncompressedChannels[i]), 3));
+                    }
+                  break;
+                  
+                default:
+                  std::cout << "WavConverter: unsupported " << toUnderlying(uncompressedBitsPerContainer) << " bits per container for unpacking container stage" << std::endl;
+               }
+             
+             auto unpackedBitsPerSample = static_cast<WavBitsPerSample>(unpackedBitsPerContainer);
              std::vector<WavConverter::ptr> unpackedSampleChannels;
-             if(unpackedBitsPerContainer == bitsPerSample)
+             unpackedSampleChannels.reserve(nbChannels);
+             if(unpackedBitsPerContainer == static_cast<WavBitsPerContainer>(bitsPerSample))
                {
                   for(int i = 0; i < nbChannels; ++i)
                     {
@@ -184,35 +211,36 @@ namespace mods
                }
              else
                {
-                  switch(unpackedBitsPerContainer)
+                  switch(unpackedBitsPerSample)
                     {
-                     case 16:
+                     case WavBitsPerSample::_16:
                        for(int i = 0; i < nbChannels; ++i)
                          {
-                            unpackedSampleChannels.push_back(std::make_unique<FillLSBConverter<s16>>(std::move(unpackedContainerChannels[i]), unpackedBitsPerContainer - bitsPerSample));
+                            unpackedSampleChannels.push_back(std::make_unique<FillLSBConverter<s16>>(std::move(unpackedContainerChannels[i]), toUnderlying(unpackedBitsPerContainer) - bitsPerSample));
                          }
                        break;
                        
-                     case 32:
+                     case WavBitsPerSample::_32:
                        for(int i = 0; i < nbChannels; ++i)
                          {
-                            unpackedSampleChannels.push_back(std::make_unique<FillLSBConverter<s32>>(std::move(unpackedContainerChannels[i]), unpackedBitsPerContainer - bitsPerSample));
+                            unpackedSampleChannels.push_back(std::make_unique<FillLSBConverter<s32>>(std::move(unpackedContainerChannels[i]), toUnderlying(unpackedBitsPerContainer) - bitsPerSample));
                          }
                        break;
                        
                      default:
-                       std::cout << "WavConverter: unpacked bits per container is different than bits per sample (" << bitsPerSample << "/" << unpackedBitsPerContainer << ")" << std::endl;
+                       std::cout << "WavConverter: unpacked bits per container is different than bits per sample (" << bitsPerSample << "/" << toUnderlying(unpackedBitsPerContainer) << ")" << std::endl;
                     }
                }
              
-             int upscaledBitsPerSample = unpackedBitsPerSample;
+             auto upscaledBitsPerSample = unpackedBitsPerSample;
              std::vector<WavConverter::ptr> upscaledChannels;
+             upscaledChannels.reserve(nbChannels);
              switch(unpackedBitsPerSample)
                {
-                case 8:
+                case WavBitsPerSample::_8:
                   if(isResamplableByPositiveIntegerFactor(frequency) && peak == 1.0)
                     {
-                       upscaledBitsPerSample = 16;
+                       upscaledBitsPerSample = WavBitsPerSample::_16;
                        switch(codec)
                          {
 			  case WavAudioFormat::A_LAW:
@@ -234,7 +262,7 @@ namespace mods
                     }
                   else
                     {
-                       upscaledBitsPerSample = -1;
+                       upscaledBitsPerSample = WavBitsPerSample::_double;
                        switch(codec)
                          {
                           case WavAudioFormat::A_LAW:
@@ -264,7 +292,7 @@ namespace mods
                     }
                   break;
                   
-                case 16:
+                case WavBitsPerSample::_16:
                   if(isResamplableByPositiveIntegerFactor(frequency) && peak == 1.0)
                     {
                        for(int i = 0; i < nbChannels; ++i)
@@ -274,7 +302,7 @@ namespace mods
                     }
                   else
                     {
-                       upscaledBitsPerSample = -1;
+                       upscaledBitsPerSample = WavBitsPerSample::_double;
                        for(int i = 0; i < nbChannels; ++i)
                          {
                             upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(unpackedSampleChannels[i])));
@@ -282,7 +310,7 @@ namespace mods
                     }
                   break;
                   
-                case 32:
+                case WavBitsPerSample::_32:
                   if(isResamplableByPositiveIntegerFactor(frequency) && peak == 1.0)
                     {
                        switch(codec)
@@ -294,7 +322,7 @@ namespace mods
                               }
                             break;
 			  case WavAudioFormat::IEEE_FLOAT:
-			    upscaledBitsPerSample = -1;
+			    upscaledBitsPerSample = WavBitsPerSample::_double;
 			    for(int i = 0; i < nbChannels; ++i)
 			      {
 				 upscaledChannels.push_back(std::make_unique<ToDoubleConverter<float>>(std::move(unpackedSampleChannels[i])));
@@ -309,14 +337,14 @@ namespace mods
                        switch(codec)
                          {
                           case WavAudioFormat::PCM:
-                            upscaledBitsPerSample = -1;
+                            upscaledBitsPerSample = WavBitsPerSample::_double;
                             for(int i = 0; i < nbChannels; ++i)
                               {
                                  upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s32>>(std::move(unpackedSampleChannels[i])));
                               }
                             break;
                           case WavAudioFormat::IEEE_FLOAT:
-                            upscaledBitsPerSample = -1;
+                            upscaledBitsPerSample = WavBitsPerSample::_double;
                             for(int i = 0; i < nbChannels; ++i)
                               {
                                  upscaledChannels.push_back(std::make_unique<ToDoubleConverter<float>>(std::move(unpackedSampleChannels[i])));
@@ -328,14 +356,14 @@ namespace mods
                     }
                   break;
                   
-                case 64:
+                case WavBitsPerSample::_64:
                   if(codec != WavAudioFormat::IEEE_FLOAT)
                     {
                        std::cout << "WavConverter: unsuported codec in upscale stage for 64 bits sample" << std::endl;
                     }
                   else
                     {
-                       upscaledBitsPerSample = -1;
+                       upscaledBitsPerSample = WavBitsPerSample::_double;
                        for(int i = 0; i < nbChannels; ++i)
                          {
                             upscaledChannels.push_back(std::move(unpackedSampleChannels[i]));
@@ -344,12 +372,13 @@ namespace mods
                   break;
                   
                 default:
-                  std::cout << "WavConverter: unsupported bits per sample to upscale: " << unpackedBitsPerSample << std::endl;
+                  std::cout << "WavConverter: unsupported bits per sample to upscale: " << toUnderlying(unpackedBitsPerSample) << std::endl;
                }
              
              if(peak != 1.0)
                {
                   std::vector<WavConverter::ptr> peakVec = std::move(upscaledChannels);
+                  peakVec.reserve(nbChannels);
                   upscaledChannels.clear();
                   for(int i = 0; i < nbChannels; ++i)
                     {
@@ -357,11 +386,12 @@ namespace mods
                     }
                }
              
-             int resampledBitsPerSample = upscaledBitsPerSample;
+             auto resampledBitsPerSample = upscaledBitsPerSample;
              std::vector<WavConverter::ptr> resampledChannels;
-             switch(frequency)
+             resampledChannels.reserve(nbChannels);
+             switch(static_cast<StandardFrequency>(frequency))
                {
-                case 8000:
+                case StandardFrequency::_8000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
                        using ParamType = StaticResampleParameters<StandardFrequency::_8000, StandardFrequency::_44100>;
@@ -370,7 +400,7 @@ namespace mods
                     }
                   break;
 		  
-		case 10000:
+		case StandardFrequency::_10000:
 		  for(int i = 0; i < nbChannels; ++i)
 		    {
                        using ParamType = StaticResampleParameters<StandardFrequency::_10000, StandardFrequency::_44100>;
@@ -379,14 +409,14 @@ namespace mods
 		    }
 		  break;
 		  
-		case 11025:
+		case StandardFrequency::_11025:
 		  for(int i = 0; i < nbChannels; ++i)
 		    {
 		       resampledChannels.push_back(buildResamplePositiveIntegerFactor<4>(resampledBitsPerSample, std::move(upscaledChannels[i])));
 		    }
 		  break;
                   
-                case 22000:
+                case StandardFrequency::_22000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
                        using ParamType = StaticResampleParameters<StandardFrequency::_22000, StandardFrequency::_44100>;
@@ -395,21 +425,21 @@ namespace mods
                     }
                   break;
                   
-                case 22050:
+                case StandardFrequency::_22050:
                   for(int i = 0; i < nbChannels; ++i) 
                     {
                        resampledChannels.push_back(buildResamplePositiveIntegerFactor<2>(resampledBitsPerSample, std::move(upscaledChannels[i])));
                     }
                   break;
                   
-                case 44100:
+                case StandardFrequency::_44100:
                   for(int i = 0; i < nbChannels; ++i)
                     {
                        resampledChannels.push_back(std::move(upscaledChannels[i]));
                     }
                   break;
                   
-                case 48000:
+                case StandardFrequency::_48000:
                   for(int i = 0; i < nbChannels; ++i)
                     {
                        using ParamType = StaticResampleParameters<StandardFrequency::_48000, StandardFrequency::_44100>;
@@ -423,7 +453,7 @@ namespace mods
 		  for(int i = 0; i < nbChannels; ++i)
 		    {
                        using ParamType = DynamicResampleParameters;
-                       ParamType params(frequency, 44100);
+                       ParamType params(frequency, toUnderlying(StandardFrequency::_44100));
 		       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
 		    }
                }
@@ -455,24 +485,25 @@ namespace mods
              else
                {
                   std::vector<WavConverter::ptr> floatChannels;
+                  floatChannels.reserve(nbChannels);
                   switch(resampledBitsPerSample)
                     {
-                     case 16:
+                     case WavBitsPerSample::_16:
                        for(int i=0; i<nbChannels; ++i)
                          {
                             floatChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(resampledChannels[i])));
                          }
                        break;
-                     case -1:
+                     case WavBitsPerSample::_double:
                        for(int i=0; i<nbChannels; ++i)
                          {
                             floatChannels.push_back(std::move(resampledChannels[i]));
                          }
                        break;
                      default:
-                       std::cout << "WavConverter: unsupported bits per sample in surround mixer:" << resampledBitsPerSample << std::endl;
+                       std::cout << "WavConverter: unsupported bits per sample in surround mixer:" << toUnderlying(resampledBitsPerSample) << std::endl;
                     }
-                  resampledBitsPerSample = -1;
+                  resampledBitsPerSample = WavBitsPerSample::_double;
                   
                   auto mixer = std::make_unique<MultiChannelMixer>(std::move(floatChannels), channelMask);
                   mixedRight = mixer->getRightChannel();
@@ -484,23 +515,23 @@ namespace mods
              
              switch(resampledBitsPerSample)
                {
-                case 16:
+                case WavBitsPerSample::_16:
                   downScaledLeft = std::move(mixedLeft);
                   downScaledRight = std::move(mixedRight);
                   break;
                   
-                case 32:
+                case WavBitsPerSample::_32:
                   downScaledLeft = std::make_unique<DownscaleWavConverter<s16, s32>>(std::move(mixedLeft));
                   downScaledRight = std::make_unique<DownscaleWavConverter<s16, s32>>(std::move(mixedRight));
                   break;
                   
-                case -1:
+                case WavBitsPerSample::_double:
                   downScaledLeft = std::make_unique<FromDoubleConverter<s16>>(std::move(mixedLeft));
                   downScaledRight = std::make_unique<FromDoubleConverter<s16>>(std::move(mixedRight));
                   break;
                   
                 default:
-                  std::cout << "WavConverter: unsupported bits per sample to downscale: " << resampledBitsPerSample << std::endl;
+                  std::cout << "WavConverter: unsupported bits per sample to downscale: " << toUnderlying(resampledBitsPerSample) << std::endl;
                }
                     
              auto mux = std::make_unique<MultiplexerWavConverter>(std::move(downScaledLeft), std::move(downScaledRight));
@@ -508,25 +539,10 @@ namespace mods
           }
         
         // static
-        template<int FACTOR>
-          WavConverter::ptr WavConverter::buildResamplePositiveIntegerFactor(int bitsPerSample, WavConverter::ptr src)
-            {
-               switch(bitsPerSample)
-                 {
-                  case 16:
-                    return std::make_unique<ResamplePositiveIntegerFactor<s16, FACTOR>>(std::move(src));
-                  case -1:
-                    return std::make_unique<ResamplePositiveIntegerFactor<double, FACTOR>>(std::move(src));
-                  default:
-                    std::cout << "WavConverter: unsupported bits per sample for resampling with positive integer factor: " << bitsPerSample << std::endl;
-                    return nullptr;
-                 }
-            }
-        
-        // static
-        bool WavConverter::isResamplableByPositiveIntegerFactor(int frequency)
+        auto WavConverter::isResamplableByPositiveIntegerFactor(int frequency) -> bool
           {
-             return frequency == 44100 || frequency == 22050 || frequency == 11025;
+             auto f = static_cast<StandardFrequency>(frequency);
+             return f == StandardFrequency::_44100 || f == StandardFrequency::_22050 || f == StandardFrequency::_11025;
           }
         
      } // namespace wav
