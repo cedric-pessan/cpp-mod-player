@@ -62,6 +62,8 @@ namespace mods
                       {
                        case WavBitsPerSample::_16:
                          return std::make_unique<ResamplePositiveIntegerFactor<s16, FACTOR>>(std::move(src));
+                       case WavBitsPerSample::_32:
+                         return std::make_unique<ResamplePositiveIntegerFactor<s32, FACTOR>>(std::move(src));
                        case WavBitsPerSample::_double:
                          return std::make_unique<ResamplePositiveIntegerFactor<double, FACTOR>>(std::move(src));
                        default:
