@@ -510,7 +510,7 @@ namespace mods
              static constexpr int fullProgressValue = 100;
              
              size_t read = _statCollector->getBytesRead();
-             size_t percentage = read * /*100*/fullProgressValue / _length;
+             size_t percentage = read * fullProgressValue / _length;
              std::stringstream ss;
              ss << "Reading..." << percentage << "%";
              return ss.str();

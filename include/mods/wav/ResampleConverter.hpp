@@ -51,7 +51,7 @@ namespace mods
           };
         
         template<StandardFrequency InFrequency, StandardFrequency OutFrequency>
-          class StaticResampleParameters 
+          class StaticResampleParameters
           {
            public:
              StaticResampleParameters() = default;

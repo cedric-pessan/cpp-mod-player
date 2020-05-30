@@ -11,7 +11,7 @@ namespace mods
         class ReaderWavConverter : public WavConverter
           {
            public:
-             ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector::sptr statCollector, u32 channel, u32 nbChannels, u32 bitsPerContainer);
+             ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector::sptr statCollector);
              
              ReaderWavConverter() = delete;
              ReaderWavConverter(const ReaderWavConverter&) = delete;
@@ -27,13 +27,9 @@ namespace mods
              const mods::utils::RBuffer<u8> _buffer;
              mods::utils::RBuffer<u8>::const_iterator _it;
              mods::utils::RBuffer<u8>::const_iterator _end;
-             size_t _currentByte = 0;
              
              u8 _defaultValue;
              StatCollector::sptr _statCollector;
-             
-             const u32 _bytesPerContainer;
-             const u32 _bytesBetweenContainers;
           };
      } // namespace wav
 } // namespace mods

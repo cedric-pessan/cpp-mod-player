@@ -24,8 +24,6 @@ namespace mods
              auto isFinished() const -> bool override;
              void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
-             static constexpr u8 _zero = 0xff;
-             
              static constexpr auto getZero() -> u8
                {
                   return _zero;
@@ -42,6 +40,8 @@ namespace mods
              static constexpr u32 MANTISSA_SIZE = 4;
              static constexpr u32 MANTISSA_MASK = 0xF;
              static constexpr u32 EXPONENT_MASK = 0x7;
+             
+             static constexpr u8 _zero = 0xff;
              
              void fillLookupTable();
              auto muLawTransform(s8 value) const -> s16;

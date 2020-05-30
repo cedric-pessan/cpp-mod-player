@@ -5,16 +5,13 @@ namespace mods
 {
    namespace wav
      {
-        ReaderWavConverter::ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector::sptr statCollector, u32 channel, u32 nbChannels, u32 bitsPerContainer)
+        ReaderWavConverter::ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector::sptr statCollector)
           : _buffer(std::move(buffer)),
           _it(_buffer.begin()),
           _end(_buffer.end()),
           _defaultValue(defaultValue),
-          _statCollector(std::move(statCollector)),
-          _bytesPerContainer(bitsPerContainer / BITS_IN_BYTE),
-          _bytesBetweenContainers((nbChannels-1) * _bytesPerContainer)
+          _statCollector(std::move(statCollector))
             {
-               _it += channel * _bytesPerContainer;
             }
         
         auto ReaderWavConverter::isFinished() const -> bool
@@ -31,31 +28,13 @@ namespace mods
                {
                   if(_it < _end) 
                     {
-                       for(; _currentByte<_bytesPerContainer && bytesWritten < len; ++_currentByte)
-                         {
-                            if(_it < _end)
-                              {
-                                 out[bytesWritten++] = *_it;
-                                 ++_it;
-                                 ++bytesRead;
-                              }
-                            else
-                              {
-                                 out[bytesWritten++] = _defaultValue;
-                              }
-                         }
-                       if(_currentByte == _bytesPerContainer) 
-                         {
-                            _it += _bytesBetweenContainers;
-                            _currentByte = 0;
-                         }
+                       out[bytesWritten++] = *_it;
+                       ++_it;
+                       ++bytesRead;
                     }
                   else
                     {
-                       for(size_t b=0; b<_bytesPerContainer && bytesWritten < len; ++b)
-                         {
-                            out[bytesWritten++] = _defaultValue;
-                         }
+                       out[bytesWritten++] = _defaultValue;
                     }
                }
              _statCollector->inc(bytesRead);

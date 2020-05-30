@@ -73,7 +73,6 @@ namespace mods
              mods::utils::RWBuffer<u8> _decodedBuffer;
              mods::utils::RWBuffer<u8>::const_iterator _itDecodedBuffer;
              
-             
              std::array<u8, GSM_ENCODED_PACK_SIZE> _encodedArray;
              mods::utils::RWBuffer<u8> _encodedBuffer;
              

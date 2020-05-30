@@ -22,9 +22,9 @@ namespace mods
                   return _src->isFinished();
                }
              
-             void InternalCopySourceConverter::read(mods::utils::RWBuffer<u8>* buf, int len, CopyDestId id)
+             void InternalCopySourceConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len, CopyDestId id)
                {
-                  int read = 0;
+                  size_t read = 0;
                   auto idxBuffer = toUnderlying(id);
                   auto& out = *buf;
                   while(!_unconsumedBuffers.at(idxBuffer).empty() && read < len)
@@ -37,7 +37,7 @@ namespace mods
                     {
                        auto remainingBuffer = buf->slice<u8>(read, len-read);
                        _src->read(&remainingBuffer, len - read);
-                       for(int i=0; i < len-read; ++i)
+                       for(size_t i=0; i < len-read; ++i)
                          {
                             _unconsumedBuffers.at(1-idxBuffer).push_back(remainingBuffer[i]);
                          }

@@ -34,6 +34,12 @@ namespace mods
                   return bitsPerSample == BITS_IN_BYTE;
                }
              
+             static constexpr auto getOutputBitsPerSample() -> int
+               {
+                  constexpr int outputBitsPerSample = 16;
+                  return outputBitsPerSample;
+               }
+             
              static auto getBitsPerSampleRequirementsString() -> std::string&;
              
            private:
@@ -49,7 +55,7 @@ namespace mods
              
              WavConverter::ptr _src;
              static constexpr u32 _lookupTableSize = static_cast<u32>(std::numeric_limits<u8>::max())+1;
-             std::array<s16, /*256*/_lookupTableSize> _lookupTable {};
+             std::array<s16, _lookupTableSize> _lookupTable {};
           };
      } // namespace wav
 } // namespace mods

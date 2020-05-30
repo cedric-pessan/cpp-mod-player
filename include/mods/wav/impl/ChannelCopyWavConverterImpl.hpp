@@ -1,9 +1,8 @@
 #ifndef MODS_WAV_IMPL_CHANNELCOPYWAVCONVERTERIMPL_HPP
 #define MODS_WAV_IMPL_CHANNELCOPYWAVCONVERTERIMPL_HPP
 
+#include "mods/utils/DynamicRingBuffer.hpp"
 #include "mods/wav/WavConverter.hpp"
-
-#include <deque>
 
 namespace mods
 {
@@ -32,10 +31,10 @@ namespace mods
                   ~InternalCopySourceConverter() = default;
                   
                   auto isFinished(CopyDestId id) const -> bool;
-                  void read(mods::utils::RWBuffer<u8>* buf, int len, CopyDestId id);
+                  void read(mods::utils::RWBuffer<u8>* buf, size_t len, CopyDestId id);
                   
                 private:
-                  using UnconsumedBuffer = std::deque<u8>;
+                  using UnconsumedBuffer = mods::utils::DynamicRingBuffer<u8>;
                   std::array<UnconsumedBuffer,2> _unconsumedBuffers;
                   
                   WavConverter::ptr _src;
