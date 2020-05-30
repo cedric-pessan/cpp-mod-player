@@ -1,9 +1,8 @@
 #ifndef MODS_WAV_IMPL_MULTICHANNELMIXERIMPL_HPP
 #define MODS_WAV_IMPL_MULTICHANNELMIXERIMPL_HPP
 
+#include "mods/utils/DynamicRingBuffer.hpp"
 #include "mods/wav/WavConverter.hpp"
-
-#include <deque>
 
 namespace mods
 {
@@ -81,7 +80,7 @@ namespace mods
                   void computeMixingCoefficients();
                   auto mix(int idxOutBuffer, size_t idxSample) const -> double;
                   
-                  using UnconsumedBuffer = std::deque<double>;
+                  using UnconsumedBuffer = mods::utils::DynamicRingBuffer<double>;
                   std::array<UnconsumedBuffer,2> _unconsumedBuffers;
                   
                   std::vector<WavConverter::ptr> _channels;
