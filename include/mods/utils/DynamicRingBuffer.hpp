@@ -59,7 +59,7 @@ namespace mods
                     {
                        nextEnd = 0;
                     }
-                  if(nextEnd == _begin || _backend.size() == 0)
+                  if(nextEnd == _begin || _backend.empty())
                     {
                        increaseBackendSize();
                        push_back(val);

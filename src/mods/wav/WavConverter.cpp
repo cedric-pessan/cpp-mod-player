@@ -1,8 +1,8 @@
 
 #include "mods/wav/ALawConverter.hpp"
 #include "mods/wav/ChannelCopyWavConverter.hpp"
-#include "mods/wav/DemuxConverter.hpp"
 #include "mods/wav/DVIADPCMDecoderConverter.hpp"
+#include "mods/wav/DemuxConverter.hpp"
 #include "mods/wav/DivideConverter.hpp"
 #include "mods/wav/DownscaleWavConverter.hpp"
 #include "mods/wav/FillLSBConverter.hpp"

@@ -117,7 +117,7 @@ namespace mods
                        make_unique_enabler(make_unique_enabler&&) = delete;
                        auto operator=(const make_unique_enabler&) -> make_unique_enabler& = delete;
                        auto operator=(make_unique_enabler&&) -> make_unique_enabler& = delete;
-                       ~make_unique_enabler() = default;
+                       ~make_unique_enabler() override = default;
                     };
                   
                   std::vector<ptr> slaves;
