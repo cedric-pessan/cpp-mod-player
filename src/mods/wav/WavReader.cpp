@@ -294,6 +294,9 @@ namespace mods
 		  checkInit((decodedFormat.getBitsPerContainer() % 4) == 0, "Container length for DVI/ADPCM should be a multiple of 4");
 		  break;
                   
+                case WavAudioFormat::ADPCM:
+                  break;
+                  
                 default:
                     {
                        std::stringstream ss;

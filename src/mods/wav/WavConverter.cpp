@@ -1,4 +1,5 @@
 
+#include "mods/wav/ADPCMDecoderConverter.hpp"
 #include "mods/wav/ALawConverter.hpp"
 #include "mods/wav/ChannelCopyWavConverter.hpp"
 #include "mods/wav/DVIADPCMDecoderConverter.hpp"
@@ -114,6 +115,7 @@ namespace mods
                   break;
                   
                 case WavAudioFormat::DVI_ADPCM:
+                case WavAudioFormat::ADPCM:
                 case WavAudioFormat::GSM:
                 case WavAudioFormat::IEEE_FLOAT:
                 case WavAudioFormat::TRUSPEECH:
@@ -189,6 +191,16 @@ namespace mods
 		  bitsPerSample = DVIADPCMDecoderConverter::getOutputBitsPerSample();
                   uncompressedChannels.push_back(std::make_unique<DVIADPCMDecoderConverter>(std::move(inputStream)));
 		  break;
+                  
+                case WavAudioFormat::ADPCM:
+                  if(nbChannels != 1)
+                    {
+                       std::cout << "Warning: ADPCM only supports 1 channel" << std::endl;
+                    }
+                  uncompressedBitsPerContainer = WavBitsPerContainer::_16;
+                  bitsPerSample = ADPCMDecoderConverter::getOutputBitsPerSample();
+                  uncompressedChannels.push_back(std::make_unique<ADPCMDecoderConverter>(std::move(inputStream), bitsPerContainer));
+                  break;
                   
                 default:
                   std::cout << "WavConverter: unknown codec for uncompressing stage: 0x" << std::hex << toUnderlying(codec) << std::dec << std::endl;
