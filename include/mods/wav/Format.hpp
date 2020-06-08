@@ -15,7 +15,8 @@ namespace mods
            public:
              Format(mods::utils::RBuffer<FmtHeader>&& fmtHeader,
                     optional<mods::utils::RBuffer<ExtensibleHeader>>&& extensibleHeader,
-                    bool useChannelMask);
+                    bool useChannelMask,
+                    optional<mods::utils::RBuffer<u8>>&& metadataExtension);
              
              Format() = delete;
              Format(const Format&) = delete;
@@ -42,6 +43,7 @@ namespace mods
              mods::utils::RBuffer<FmtHeader> _fmtHeader;
              optional<mods::utils::RBuffer<ExtensibleHeader>> _extensibleHeader;
              bool _useChannelMask;
+             optional<mods::utils::RBuffer<u8>> _metadataExtension;
           };
      } // namespace wav
 } // namespace mods

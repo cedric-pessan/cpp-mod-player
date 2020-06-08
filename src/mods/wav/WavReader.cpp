@@ -272,7 +272,7 @@ namespace mods
                   metadataExtension = buf;
                }
              
-             Format decodedFormat(std::move(fmtHeader), std::move(extensibleHeader), useChannelMask);
+             Format decodedFormat(std::move(fmtHeader), std::move(extensibleHeader), useChannelMask, std::move(metadataExtension));
              
              switch(format) 
                {

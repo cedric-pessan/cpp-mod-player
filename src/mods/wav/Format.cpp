@@ -7,10 +7,12 @@ namespace mods
      {
         Format::Format(mods::utils::RBuffer<FmtHeader>&& fmtHeader,
                        optional<mods::utils::RBuffer<ExtensibleHeader>>&& extensibleHeader,
-                       bool useChannelMask)
+                       bool useChannelMask,
+                       optional<mods::utils::RBuffer<u8>>&& metadataExtension)
           : _fmtHeader(std::move(fmtHeader)),
           _extensibleHeader(std::move(extensibleHeader)),
-          _useChannelMask(useChannelMask)
+          _useChannelMask(useChannelMask),
+          _metadataExtension(std::move(metadataExtension))
             {
             }
         
