@@ -240,7 +240,8 @@ namespace mods
              
              if(extendedFmtHeader.has_value() &&
                 fmtHeader->getChunkHeader().getChunkSize() >= sizeof(ExtensibleHeader) - sizeof(ChunkHeader) &&
-                (*extendedFmtHeader)->getExtensionSize() == (sizeof(ExtensibleHeader) - sizeof(ExtendedFmtHeader)))
+                (*extendedFmtHeader)->getExtensionSize() == (sizeof(ExtensibleHeader) - sizeof(ExtendedFmtHeader)) &&
+                fmtHeader->getAudioFormat() == WavAudioFormat::EXTENSIBLE)
                {
                   mods::utils::RBuffer<ExtensibleHeader> buf = riffBuffer.slice<ExtensibleHeader>(offset, 1);
                   extensibleHeader = buf;
@@ -260,6 +261,15 @@ namespace mods
                             useChannelMask = true;
                          }
                     }
+               }
+             
+             optional<mods::utils::RBuffer<u8>> metadataExtension;
+             
+             if(extendedFmtHeader.has_value() &&
+                fmtHeader->getChunkHeader().getChunkSize() >= sizeof(ExtendedFmtHeader) + (*extendedFmtHeader)->getExtensionSize() - sizeof(ChunkHeader))
+               {
+                  mods::utils::RBuffer<u8> buf = riffBuffer.slice<u8>(offset + sizeof(ExtendedFmtHeader), (*extendedFmtHeader)->getExtensionSize());
+                  metadataExtension = buf;
                }
              
              Format decodedFormat(std::move(fmtHeader), std::move(extensibleHeader), useChannelMask);
