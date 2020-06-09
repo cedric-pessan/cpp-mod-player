@@ -76,8 +76,7 @@ namespace mods
           } // namespace
         
         // static
-        auto WavConverter::buildConverter(const mods::utils::RBuffer<u8>& buffer, int bitsPerSample, int bitsPerContainer, u32 nbChannels, int frequency, const StatCollector::sptr& statCollector, WavAudioFormat codec, u32 channelMask,
-                                          double peak) -> WavConverter::ptr
+        auto WavConverter::buildConverter(const mods::utils::RBuffer<u8>& data, const Format& format, const StatCollector::sptr& statCollector, double peak) -> WavConverter::ptr
           {
              /* pipeline:
               sampleReader
@@ -91,6 +90,13 @@ namespace mods
               downscale or dummy
               mux
              */
+             
+             auto codec = format.getAudioFormat();
+             auto bitsPerSample = format.getBitsPerSample();
+             auto bitsPerContainer = format.getBitsPerContainer();
+             auto nbChannels = format.getNumChannels();
+             auto frequency = format.getSampleRate();
+             auto channelMask = format.getChannelMask();
              
              u8 defaultValue = 0;
              switch(codec)
@@ -126,7 +132,7 @@ namespace mods
                }
              
              // read stage
-             auto inputStream = std::make_unique<ReaderWavConverter>(buffer, defaultValue, statCollector);
+             auto inputStream = std::make_unique<ReaderWavConverter>(data, defaultValue, statCollector);
              
              // uncompress stage
              auto uncompressedBitsPerContainer = static_cast<WavBitsPerContainer>(bitsPerContainer);
