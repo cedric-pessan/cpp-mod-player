@@ -2,6 +2,7 @@
 #define MODS_WAV_DVIADPCMDECODERCONVERTER_HPP
 
 #include "mods/wav/WavConverter.hpp"
+#include "mods/wav/impl/DVIADPCMDecoderConverterImpl.hpp"
 
 namespace mods
 {
@@ -10,7 +11,7 @@ namespace mods
 	class DVIADPCMDecoderConverter : public WavConverter
 	  {
 	   public:
-	     explicit DVIADPCMDecoderConverter(WavConverter::ptr src);
+	     DVIADPCMDecoderConverter(WavConverter::ptr src, u32 bitsPerContainer);
 	     
 	     DVIADPCMDecoderConverter() = delete;
 	     DVIADPCMDecoderConverter(const DVIADPCMDecoderConverter&) = delete;
@@ -30,21 +31,24 @@ namespace mods
 	     
 	   private:
 	     auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
-	     void ensureTempBufferSize(size_t len);
 	     auto decodeSample(int sample) -> s16;
 	     
 	     WavConverter::ptr _src;
+             u32 _blockSize;
              
              static constexpr u32 _defaultStepSize = 7;
 	     
 	     bool _sampleAvailable = false;
-	     int _sample = 0;
 	     u32 _stepSize = _defaultStepSize;
-	     int _newSample = 0;
+	     s16 _nextSample = 0;
+             int _newSample = 0;
 	     int _index = 0;
 	     
-	     std::vector<u8> _tempVec;
-             mods::utils::RWBuffer<u8> _temp;
+	     std::vector<u8> _encodedVec;
+             mods::utils::RWBuffer<u8> _encodedBuffer;
+             mods::utils::RWBuffer<u8> _dataBuffer;
+             mods::utils::RWBuffer<u8>::const_iterator _itDataBuffer;
+             mods::utils::RWBuffer<impl::DVIADPCMHeader> _header;
 	  };
      } // namespace wav
 } // namespace mods

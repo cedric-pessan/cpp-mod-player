@@ -8,92 +8,21 @@ namespace mods
 {
    namespace wav
      {
-	DVIADPCMDecoderConverter::DVIADPCMDecoderConverter(WavConverter::ptr src)
+	DVIADPCMDecoderConverter::DVIADPCMDecoderConverter(WavConverter::ptr src, u32 bitsPerContainer)
 	  : _src(std::move(src)),
-	  _temp(allocateNewTempBuffer(0))
+          _blockSize(bitsPerContainer / BITS_IN_BYTE),
+	  _encodedBuffer(allocateNewTempBuffer(_blockSize)),
+          _dataBuffer(_encodedBuffer.slice<u8>(sizeof(impl::DVIADPCMHeader), _blockSize - sizeof(impl::DVIADPCMHeader))),
+          _itDataBuffer(_dataBuffer.RBuffer<u8>::end()),
+          _header(_encodedBuffer.slice<impl::DVIADPCMHeader>(0, sizeof(impl::DVIADPCMHeader)))
 	    {
+               if(_blockSize <= sizeof(impl::DVIADPCMHeader))
+                 {
+                    std::cout << "Warning: block size is too small" << std::endl;
+                 }
 	    }
-	
-	auto DVIADPCMDecoderConverter::isFinished() const -> bool
-	  {
-	     return !_sampleAvailable && _src->isFinished();
-	  }
-	
-	void DVIADPCMDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
-	  {
-	     if((len & 1U) != 0)
-	       {
-		  std::cout << "Odd length in DVI/ADPCM not supported" << std::endl;
-	       }
-	     
-	     size_t samplesToRead = len / 2;
-	     if(_sampleAvailable)
-	       {
-		  --samplesToRead;
-	       }
-	     if((samplesToRead & 1U) != 0) 
-	       {
-		  ++samplesToRead;
-	       }
-	     size_t bytesToRead = samplesToRead / 2;
-	     
-	     ensureTempBufferSize(bytesToRead);
-	     auto inView = _temp.slice<u8>(0, bytesToRead);
-	     
-	     size_t samplesToWrite = len / 2;
-	     auto outView = buf->slice<s16>(0, samplesToWrite);
-	     
-	     _src->read(&inView, bytesToRead);
-	     
-	     size_t samplesWritten = 0;
-	     
-	     if(_sampleAvailable)
-	       {
-		  s16 newSample = decodeSample(_sample);
-		  outView[samplesWritten++] = newSample;
-		  _sampleAvailable = false;
-	       }
-             
-             static constexpr u8 nibbleMask = 0xFU;
-	     
-	     for(size_t i=0; i<bytesToRead; ++i)
-	       {
-		  u8 v = inView[i];
-		  _sample = static_cast<u8>(v >> 4U) & nibbleMask;
-		  s16 newSample = decodeSample(_sample);
-		  outView[samplesWritten++] = newSample;
-		  
-		  _sample = v & nibbleMask;
-		  if(samplesWritten < samplesToWrite)
-		    {
-		       newSample = decodeSample(_sample);
-		       outView[samplesWritten++] = newSample;
-		    }
-		  else
-		    {
-		       _sampleAvailable = true;
-		    }
-	       }
-	  }
-	
-	auto DVIADPCMDecoderConverter::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>
-	  {
-	     _tempVec.resize(len);
-	     u8* ptr = _tempVec.data();
-	     auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-	     auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
-	     return mods::utils::RWBuffer<u8>(buffer);
-	  }
         
-	void DVIADPCMDecoderConverter::ensureTempBufferSize(size_t len)
-	  {
-	     if(_temp.size() < len)
-	       {
-		  _temp = allocateNewTempBuffer(len);
-	       }
-	  }
-	
-	namespace
+        namespace
 	  {
 	     constexpr std::array<int, 16> indexTable
 	       {
@@ -117,6 +46,72 @@ namespace mods
 		    18500, 20350, 22385, 24623, 27086, 29794, 32767
 	       };
 	  } // namespace
+	
+	auto DVIADPCMDecoderConverter::isFinished() const -> bool
+	  {
+	     return !_sampleAvailable && _itDataBuffer == _dataBuffer.RBuffer<u8>::end() && _src->isFinished();
+	  }
+	
+	void DVIADPCMDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+	  {
+	     if((len & 1U) != 0)
+	       {
+		  std::cout << "Odd length in DVI/ADPCM not supported" << std::endl;
+	       }
+	     
+             size_t count = 0;
+             size_t nbElems = len / 2;
+             auto out = buf->slice<s16>(0, nbElems);
+             
+             static constexpr u8 nibbleMask = 0xFU;
+             
+             while(count < nbElems)
+               {
+                  if(_sampleAvailable)
+                    {
+                       out[count++] = _nextSample;
+                       _sampleAvailable = false;
+                    }
+                  else if(_itDataBuffer == _dataBuffer.RBuffer<u8>::end())
+                    {
+                       if(!isFinished())
+                         {
+                            _src->read(&_encodedBuffer, _blockSize);
+                            _itDataBuffer = _dataBuffer.RBuffer<u8>::begin();
+                            out[count++] = _header->getFirstSample();
+                            _newSample = _header->getFirstSample();
+                            _index = _header->getStepSizeTableIndex();
+                            _index = mods::utils::clamp(_index, 0, static_cast<int>(stepSizeTable.size()-1));
+                         }
+                       else
+                         {
+                            out[count++] = 0;
+                         }
+                    }
+                  else
+                    {
+                       u8 v = *_itDataBuffer;
+                       int sample = v & nibbleMask;
+                       _nextSample = decodeSample(sample);
+                       out[count++] = _nextSample;
+		  
+                       sample = static_cast<u8>(v >> 4U) & nibbleMask;
+		       _nextSample = decodeSample(sample);
+                       _sampleAvailable = true;
+                       
+                       ++_itDataBuffer;
+                    }
+               }
+	  }
+	
+	auto DVIADPCMDecoderConverter::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>
+	  {
+	     _encodedVec.resize(len);
+	     u8* ptr = _encodedVec.data();
+	     auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
+	     auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
+	     return mods::utils::RWBuffer<u8>(buffer);
+	  }
 	
 	auto DVIADPCMDecoderConverter::decodeSample(int sample) -> s16
 	  {

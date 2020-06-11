@@ -108,10 +108,30 @@ template<>
    auto operator=(u32leImpl&&) -> u32leImpl& = delete;
    ~u32leImpl() = delete;
 };
-#pragma pack(pop)
 
 using u16le = u16leImpl<NativeEndianness::value>;
 using u32le = u32leImpl<NativeEndianness::value>;
+
+class s16le 
+{
+ private:
+   u16le _value;
+   
+ public:
+   explicit operator s16() const
+     {
+        return static_cast<s16>(static_cast<u16>(_value));
+     }
+   
+   s16le() = delete;
+   s16le(const s16le&) = delete;
+   s16le(s16le&&) = delete;
+   auto operator=(const s16le&) -> s16le& = delete;
+   auto operator=(s16le&&) -> s16le& = delete;
+   ~s16le() = delete;
+};
+
+#pragma pack(pop)
 
 template<typename E>
   constexpr auto toUnderlying(E e) noexcept
