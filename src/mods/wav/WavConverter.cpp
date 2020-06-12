@@ -195,7 +195,7 @@ namespace mods
                     }
 		  uncompressedBitsPerContainer = WavBitsPerContainer::_16;
 		  bitsPerSample = DVIADPCMDecoderConverter::getOutputBitsPerSample();
-                  uncompressedChannels.push_back(std::make_unique<DVIADPCMDecoderConverter>(std::move(inputStream), bitsPerContainer));
+                  uncompressedChannels.push_back(std::make_unique<DVIADPCMDecoderConverter>(std::move(inputStream), format));
 		  break;
                   
                 case WavAudioFormat::ADPCM:

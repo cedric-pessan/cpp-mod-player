@@ -8,9 +8,9 @@ namespace mods
 {
    namespace wav
      {
-	DVIADPCMDecoderConverter::DVIADPCMDecoderConverter(WavConverter::ptr src, u32 bitsPerContainer)
+	DVIADPCMDecoderConverter::DVIADPCMDecoderConverter(WavConverter::ptr src, const Format& format)
 	  : _src(std::move(src)),
-          _blockSize(bitsPerContainer / BITS_IN_BYTE),
+          _blockSize(format.getBitsPerContainer() / BITS_IN_BYTE),
 	  _encodedBuffer(allocateNewTempBuffer(_blockSize)),
           _dataBuffer(_encodedBuffer.slice<u8>(sizeof(impl::DVIADPCMHeader), _blockSize - sizeof(impl::DVIADPCMHeader))),
           _itDataBuffer(_dataBuffer.RBuffer<u8>::end()),
@@ -20,6 +20,18 @@ namespace mods
                  {
                     std::cout << "Warning: block size is too small" << std::endl;
                  }
+               
+               if(format.getNumChannels() != 1)
+                 {
+                    std::cout << "Warning: DVIADPCMDecoverConverter: multi channel stream" << std::endl;
+                 }
+               
+               if(format.getBitsPerSample() != 4)
+                 {
+                    std::cout << "Warning: DVIADPCMDecoderConverter: stream is not 4 bits per sample" << std::endl;
+                 }
+               
+               // TODO: check align...
 	    }
         
         namespace

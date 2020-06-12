@@ -11,7 +11,7 @@ namespace mods
 	class DVIADPCMDecoderConverter : public WavConverter
 	  {
 	   public:
-	     DVIADPCMDecoderConverter(WavConverter::ptr src, u32 bitsPerContainer);
+	     DVIADPCMDecoderConverter(WavConverter::ptr src, const Format& format);
 	     
 	     DVIADPCMDecoderConverter() = delete;
 	     DVIADPCMDecoderConverter(const DVIADPCMDecoderConverter&) = delete;
