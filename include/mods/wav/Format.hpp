@@ -39,6 +39,10 @@ namespace mods
              
              auto getChannelMask() const noexcept -> u32;
              
+             auto hasMetaData() const noexcept -> bool;
+             
+             auto getMetaData() const noexcept -> mods::utils::RBuffer<u8>;
+             
            private:
              mods::utils::RBuffer<FmtHeader> _fmtHeader;
              optional<mods::utils::RBuffer<ExtensibleHeader>> _extensibleHeader;

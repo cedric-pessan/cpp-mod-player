@@ -76,5 +76,21 @@ namespace mods
                }
              return 0;
           }
+        
+        auto Format::hasMetaData() const noexcept -> bool
+          {
+             return _metadataExtension.has_value();
+          }
+        
+        auto Format::getMetaData() const noexcept -> mods::utils::RBuffer<u8>
+          {
+             if(!_metadataExtension.has_value())
+               {
+                  auto deleter = std::make_unique<mods::utils::RBufferBackend::EmptyDeleter>();
+                  auto backend = std::make_shared<mods::utils::RBufferBackend>(nullptr, 0, std::move(deleter));
+                  return mods::utils::RBuffer<u8>(backend);
+               }
+             return *_metadataExtension;
+          }
      } // namespace wav
 } // namespace mods

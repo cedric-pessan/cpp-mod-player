@@ -31,7 +31,21 @@ namespace mods
                     std::cout << "Warning: DVIADPCMDecoderConverter: stream is not 4 bits per sample" << std::endl;
                  }
                
+               if(!format.hasMetaData())
+                 {
+                    std::cout << "Warning: DVIADPCMDecoderConverter: wav does not have required format extension" << std::endl;
+                 }
+               
                // TODO: check align...
+               
+               auto metadata = format.getMetaData();
+               auto dviMetadata = metadata.slice<u16>(0,1);
+               u16 samplesPerBlock = dviMetadata[0];
+               
+               if(((samplesPerBlock-1)*4 + sizeof(impl::DVIADPCMHeader) * BITS_IN_BYTE) != format.getBitsPerContainer())
+                 {
+                    std::cout << "Warning: DVIADPCMDecoderConverter: number of samples per block does not match bits per container" << std::endl;
+                 }
 	    }
         
         namespace
