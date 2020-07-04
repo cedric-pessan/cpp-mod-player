@@ -1,5 +1,5 @@
-#ifndef MODS_WAV_ADPCMDECODERCONVERTERIMPL_HPP
-#define MODS_WAV_ADPCMDECODERCONVERTERIMPL_HPP
+#ifndef MODS_WAV_IMPL_ADPCMDECODERCONVERTERIMPL_HPP
+#define MODS_WAV_IMPL_ADPCMDECODERCONVERTERIMPL_HPP
 
 #include "mods/wav/WavConverter.hpp"
 #include "mods/wav/impl/ADPCMDecoderConverterImpl.hpp"
@@ -63,4 +63,4 @@ namespace mods
      } // namespace wav
 } // namespace mods
 
-#endif // MODS_WAV_ADPCMDECODERCONVERTERIMPL_HPP
+#endif // MODS_WAV_IMPL_ADPCMDECODERCONVERTERIMPL_HPP

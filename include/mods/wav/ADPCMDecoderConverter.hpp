@@ -55,8 +55,8 @@ namespace mods
              
              std::vector<u8> _encodedVec;
              mods::utils::RWBuffer<u8> _encodedBuffer;
-             mods::utils::RWBuffer<u8> _dataBuffer;
-             mods::utils::RWBuffer<u8>::const_iterator _itDataBuffer;
+             mods::utils::RBuffer<u8> _dataBuffer;
+             mods::utils::RBuffer<u8>::const_iterator _itDataBuffer;
              mods::utils::RBuffer<impl::ADPCMPreamble> _preamble;
 	  };
      } // namespace wav

@@ -37,7 +37,7 @@ namespace mods
                   for(size_t i=0; i<_channels.size(); ++i)
                     {
                        _channelsBuffers[i] = allocateNewTempBuffer(&_channelsVec[i], len * sizeof(double));
-                       _channelsViews[i] = _channelsBuffers[i].readOnlyslice<double>(0, len);
+                       _channelsViews[i] = _channelsBuffers[i].readOnlySlice<double>(0, len);
                     }
                }
              

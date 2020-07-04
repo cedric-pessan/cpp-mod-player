@@ -37,7 +37,7 @@ namespace mods
                  }
              
              template<typename T2>
-               auto readOnlyslice(size_t offset, size_t len) -> RBuffer<T2>
+               auto readOnlySlice(size_t offset, size_t len) -> RBuffer<T2>
                  {
                     return RBuffer<T>::template slice<T2>(offset, len);
                  }

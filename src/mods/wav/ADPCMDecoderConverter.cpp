@@ -15,9 +15,9 @@ namespace mods
           _coefs(format.getMetaData().slice<s16>(sizeof(impl::ADPCMExtension), (format.getMetaData().size() - sizeof(impl::ADPCMExtension)) / sizeof(s16))),
           _blockSize(initBlockSize()),
           _encodedBuffer(allocateNewTempBuffer(_blockSize)),
-          _dataBuffer(_encodedBuffer.slice<u8>(sizeof(impl::ADPCMPreamble), _blockSize - sizeof(impl::ADPCMPreamble))),
-          _itDataBuffer(_dataBuffer.RBuffer<u8>::end()),
-          _preamble(_encodedBuffer.slice<impl::ADPCMPreamble>(0, 1))
+          _dataBuffer(_encodedBuffer.readOnlySlice<u8>(sizeof(impl::ADPCMPreamble), _blockSize - sizeof(impl::ADPCMPreamble))),
+          _itDataBuffer(_dataBuffer.end()),
+          _preamble(_encodedBuffer.readOnlySlice<impl::ADPCMPreamble>(0, 1))
 	    {
                if(format.getNumChannels() != 1)
                  {
@@ -44,7 +44,7 @@ namespace mods
           {
              auto samplesPerBlock = _extension->getSamplesPerBlock();
              
-             if((samplesPerBlock & 1) != 0)
+             if((samplesPerBlock & 1U) != 0)
                {
                   std::cout << "Warning: ADPCMDecoderConverter: samples per block is odd" << std::endl;
                }
@@ -69,7 +69,7 @@ namespace mods
 	
 	auto ADPCMDecoderConverter::isFinished() const -> bool
 	  {
-             return !_sampleAvailable && _itDataBuffer == _dataBuffer.RBuffer<u8>::end() && _src->isFinished();
+             return !_sampleAvailable && _itDataBuffer == _dataBuffer.end() && _src->isFinished();
 	  }
         
         namespace
@@ -90,10 +90,12 @@ namespace mods
                   230, 230, 230, 230, 307, 409, 512, 614, 
                     768, 614, 512, 409, 307, 230, 230, 230 
                };
-          } // namesace
+          } // namespace
 	
 	void ADPCMDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
 	  {
+             using mods::utils::at;
+             
              if((len & 1U) != 0)
 	       {
 		  std::cout << "Odd length in ADPCM not supported" << std::endl;
@@ -132,8 +134,8 @@ namespace mods
                               }
                             else if(predictor * 2 + 1 < defaultCoefs.size())
                               {
-                                 _coef1 = defaultCoefs[predictor * 2 ];
-                                 _coef2 = defaultCoefs[predictor * 2 + 1];
+                                 _coef1 = at(defaultCoefs, predictor * 2);
+                                 _coef2 = at(defaultCoefs, predictor * 2 + 1);
                               }
                             else
                               {
@@ -169,12 +171,14 @@ namespace mods
 	
         auto ADPCMDecoderConverter::decodeSample(u8 sample) -> s16
           {
+             using mods::utils::at;
+             
              static constexpr s32 fixedPointCoefBase = 256;
              static constexpr s32 fixedPointAdaptationBase = 256;
+             static constexpr u32 nibleSignExtensionShift = 28U;
              
-             s32 errorDelta = sample;
-             errorDelta <<= 28;
-             errorDelta = mods::utils::arithmeticShifter::shiftRight(errorDelta, 28);
+             s32 errorDelta = static_cast<u32>(sample) << nibleSignExtensionShift;
+             errorDelta = mods::utils::arithmeticShifter::shiftRight(errorDelta, nibleSignExtensionShift);
              
              s32 predSample = (static_cast<s32>(_sample1) * _coef1 + static_cast<s32>(_sample2) * _coef2) / fixedPointCoefBase;
              s32 nextSample = predSample + _delta * errorDelta;
@@ -183,7 +187,7 @@ namespace mods
                                              static_cast<int>(std::numeric_limits<s16>::min()),
                                              static_cast<int>(std::numeric_limits<s16>::max()));
              
-             _delta = _delta * adaptationTable[sample] / fixedPointAdaptationBase;
+             _delta = _delta * at(adaptationTable,sample) / fixedPointAdaptationBase;
              
              return nextSample;
           }
