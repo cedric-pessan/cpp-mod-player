@@ -15,19 +15,47 @@ namespace mods
                {
                 private:
                   u8 blockPredictor;
-                  u16le initialDelta;
-                  u16le sample1;
-                  u16le sample2;
+                  s16le initialDelta;
+                  s16le sample1;
+                  s16le sample2;
                   
                 public:
-                  auto getSample1() const noexcept -> u16
+                  auto getBlockPredictor() const noexcept -> u8
                     {
-                       return static_cast<u16>(sample1);
+                       return blockPredictor;
                     }
                   
-                  auto getSample2() const noexcept -> u16
+                  auto getSample1() const noexcept -> s16
                     {
-                       return static_cast<u16>(sample2);
+                       return static_cast<s16>(sample1);
+                    }
+                  
+                  auto getSample2() const noexcept -> s16
+                    {
+                       return static_cast<s16>(sample2);
+                    }
+                  
+                  auto getInitialDelta() const noexcept -> s16
+                    {
+                       return static_cast<s16>(initialDelta);
+                    }
+               };
+             
+             struct ADPCMExtension
+               {
+                private:
+                  u16le samplesPerBlock;
+                  u16le numCoef;
+                  
+                public:
+                  auto getSamplesPerBlock() const noexcept -> u16
+                    {
+                       return static_cast<u16>(samplesPerBlock);
+                    }
+                  
+                  auto getNumCoef() const noexcept -> u16
+                    {
+                       return static_cast<u16>(numCoef);
                     }
                };
 #pragma pack(pop)

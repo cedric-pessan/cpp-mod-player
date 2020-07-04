@@ -164,9 +164,8 @@ namespace mods
                auto buildSlice(InternalBuf buf, size_t offset, size_t len) const -> Buf
                {
                   using BackendType = typename Buf::backend_type;
-                  using ValueType = typename BackendType::value_type;
                   auto backend = std::static_pointer_cast<BackendType>(_backend);
-                  size_t currentOffset = static_cast<ValueType*>(buf) - static_cast<ValueType*>(BackendType::Attorney::getBuffer(*backend));
+                  size_t currentOffset = static_cast<const u8*>(static_cast<const void*>(buf)) - BackendType::Attorney::getBuffer(*backend);
                   check(offset * sizeof(T) + len * sizeof(T2) <= _len * sizeof(T), "invalid slice limits");
                   return Buf(backend, currentOffset + offset * sizeof(T), len);
                }

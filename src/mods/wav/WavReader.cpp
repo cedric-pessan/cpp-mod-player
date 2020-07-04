@@ -2,6 +2,7 @@
 #include "mods/wav/Format.hpp"
 #include "mods/utils/FileUtils.hpp"
 #include "mods/utils/optional.hpp"
+#include "mods/wav/ADPCMDecoderConverter.hpp"
 #include "mods/wav/ALawConverter.hpp"
 #include "mods/wav/GSMDecoderConverter.hpp"
 #include "mods/wav/MuLawConverter.hpp"
@@ -304,6 +305,7 @@ namespace mods
 		  break;
                   
                 case WavAudioFormat::ADPCM:
+                  checkInit(ADPCMDecoderConverter::isExtensionSizeValid(decodedFormat.getMetaData().size()), "Invalid extension size for ADPCM decoder");
                   break;
                   
                 default:

@@ -11,7 +11,7 @@ namespace mods
 	class ADPCMDecoderConverter : public WavConverter
 	  {
 	   public:
-	     ADPCMDecoderConverter(WavConverter::ptr src, int bitsPerContainer);
+	     ADPCMDecoderConverter(WavConverter::ptr src, const Format& format);
 	     
 	     ADPCMDecoderConverter() = delete;
 	     ADPCMDecoderConverter(const ADPCMDecoderConverter&) = delete;
@@ -28,33 +28,36 @@ namespace mods
                   constexpr int outputBitsPerSample = 16;
                   return outputBitsPerSample;
                }
+             
+             static constexpr auto isExtensionSizeValid(size_t size) -> bool
+               {
+                  return size >= sizeof(impl::ADPCMExtension);
+               }
 	     
 	   private:
-             static constexpr auto getDecodedBufferSize(int bitsPerContainer) -> int
-               {
-                  return bitsPerContainer - sizeof(impl::ADPCMPreamble) + 2;
-               }
+             auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
+             auto initBlockSize() -> u32;
              
-             template<typename ARRAY>
-               static auto initializeRWBuffer(ARRAY& backArray) -> mods::utils::RWBuffer<typename ARRAY::value_type>;
-             
-             void decodeBlock();
-	     /*auto decodeSample(int sample) -> s16;*/
+	     auto decodeSample(u8 sample) -> s16;
 	     
 	     WavConverter::ptr _src;
-             
-             /*static constexpr u32 _defaultStepSize = 7;
 	     
-	     int _sample = 0;
-	     u32 _stepSize = _defaultStepSize;
-	     int _newSample = 0;
-	     int _index = 0;*/
+             bool _sampleAvailable = false;
+             s16 _sample1 = 0;
+             s16 _sample2 = 0;
+             s32 _coef1 = 0;
+             s32 _coef2 = 0;
+             s16 _delta = 0;
              
-             std::vector<s16> _decodedBuffer;
-             std::vector<s16>::const_iterator _itDecodedBuffer;
+             mods::utils::RBuffer<impl::ADPCMExtension> _extension;
+             mods::utils::RBuffer<s16> _coefs;
+             u32 _blockSize;
              
              std::vector<u8> _encodedVec;
              mods::utils::RWBuffer<u8> _encodedBuffer;
+             mods::utils::RWBuffer<u8> _dataBuffer;
+             mods::utils::RWBuffer<u8>::const_iterator _itDataBuffer;
+             mods::utils::RBuffer<impl::ADPCMPreamble> _preamble;
 	  };
      } // namespace wav
 } // namespace mods

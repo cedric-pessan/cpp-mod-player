@@ -14,7 +14,7 @@ namespace mods
 	  _encodedBuffer(allocateNewTempBuffer(_blockSize)),
           _dataBuffer(_encodedBuffer.slice<u8>(sizeof(impl::DVIADPCMHeader), _blockSize - sizeof(impl::DVIADPCMHeader))),
           _itDataBuffer(_dataBuffer.RBuffer<u8>::end()),
-          _header(_encodedBuffer.slice<impl::DVIADPCMHeader>(0, sizeof(impl::DVIADPCMHeader)))
+          _header(_encodedBuffer.slice<impl::DVIADPCMHeader>(0, 1))
 	    {
                if(_blockSize <= sizeof(impl::DVIADPCMHeader))
                  {
@@ -36,9 +36,12 @@ namespace mods
                     std::cout << "Warning: DVIADPCMDecoderConverter: wav does not have required format extension" << std::endl;
                  }
                
-               // TODO: check align...
-               
                auto metadata = format.getMetaData();
+               if(metadata.size() != sizeof(u16))
+                 {
+                    std::cout << "Warning: DVIADPCMDecoderConverter: wrong extension size" << std::endl;
+                 }
+               
                auto dviMetadata = metadata.slice<u16>(0,1);
                u16 samplesPerBlock = dviMetadata[0];
                

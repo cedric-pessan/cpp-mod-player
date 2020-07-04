@@ -205,7 +205,7 @@ namespace mods
                     }
                   uncompressedBitsPerContainer = WavBitsPerContainer::_16;
                   bitsPerSample = ADPCMDecoderConverter::getOutputBitsPerSample();
-                  uncompressedChannels.push_back(std::make_unique<ADPCMDecoderConverter>(std::move(inputStream), bitsPerContainer));
+                  uncompressedChannels.push_back(std::make_unique<ADPCMDecoderConverter>(std::move(inputStream), format));
                   break;
                   
                 default:
