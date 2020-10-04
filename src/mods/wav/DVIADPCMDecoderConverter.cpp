@@ -194,9 +194,13 @@ namespace mods
                }
              else if(_firstSampleInBlock)
                {
+                  using mods::utils::at;
+                  
                   _index = _header.getStepSizeTableIndex();
                   _index = mods::utils::clamp(_index, 0, static_cast<int>(stepSizeTable.size()-1));
+                  _stepSize = at(stepSizeTable, _index);
                   _firstSampleInBlock = false;
+                  _newSample = _header.getFirstSample();
                   return _header.getFirstSample();
                }
              else
