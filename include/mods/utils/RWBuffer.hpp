@@ -78,6 +78,7 @@ namespace mods
                   
                   auto operator*() const -> reference
                     {
+                       assert(check(_pos < _rwbuf.size(), "out of bound iterator dereferenced"));
                        return _rwbuf[_pos];
                     }
                   
@@ -88,6 +89,15 @@ namespace mods
                     }
                   
                 private:
+                  auto check(bool condition, const std::string& description) const -> bool
+                    {
+                       if(!condition)
+                         {
+                            throw std::out_of_range(description);
+                         }
+                       return true;
+                    }
+                  
                   size_type _pos;
                   RWBuffer<T>& _rwbuf;
                };

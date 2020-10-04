@@ -4,6 +4,7 @@
 #include "RBufferBackend.hpp"
 
 #include <cassert>
+#include <iostream>
 
 namespace mods
 {
@@ -105,6 +106,7 @@ namespace mods
                   
                   auto operator*() const -> const_reference
                     {
+                       assert(check(_pos < _rbuf->size(), "out of bound iterator dereferenced"));
                        return (*_rbuf)[_pos];
                     }
                   
@@ -120,7 +122,22 @@ namespace mods
                        return *this;
                     }
                   
+                  auto operator+(ssize_t n) -> const_iterator
+                    {
+                       auto it(*this);
+                       return it += n;
+                    }
+                  
                 private:
+                  auto check(bool condition, const std::string& description) const -> bool
+                    {
+                       if(!condition)
+                         {
+                            throw std::out_of_range(description);
+                         }
+                       return true;
+                    }
+                  
                   size_type _pos;
                   const RBuffer<T>* _rbuf;
                };

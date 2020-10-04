@@ -31,24 +31,60 @@ namespace mods
 	     
 	   private:
 	     auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
-	     auto decodeSample(int sample) -> s16;
 	     
 	     WavConverter::ptr _src;
              u32 _blockSize;
-             
-             static constexpr u32 _defaultStepSize = 7;
-	     
-	     bool _sampleAvailable = false;
-	     u32 _stepSize = _defaultStepSize;
-	     s16 _nextSample = 0;
-             int _newSample = 0;
-	     int _index = 0;
+             u16 _nbChannels;
 	     
 	     std::vector<u8> _encodedVec;
              mods::utils::RWBuffer<u8> _encodedBuffer;
-             mods::utils::RWBuffer<u8> _dataBuffer;
-             mods::utils::RWBuffer<u8>::const_iterator _itDataBuffer;
-             mods::utils::RWBuffer<impl::DVIADPCMHeader> _header;
+             mods::utils::RBuffer<u8> _dataBuffer;
+             mods::utils::RBuffer<impl::DVIADPCMHeader> _headers;
+             
+             class Decoder
+               {
+                public:
+                  Decoder(const mods::utils::RBuffer<u8> dataBuffer,
+                          const mods::utils::RBuffer<impl::DVIADPCMHeader> headers,
+                          int numChannel,
+                          int nbChannels);
+                  
+                  Decoder() = delete;
+                  Decoder(const Decoder&) = delete;
+                  Decoder(Decoder&&) = default;
+                  auto operator=(const Decoder&) -> Decoder& = delete;
+                  auto operator=(Decoder&&) -> Decoder& = delete;
+                  ~Decoder() = default;
+                  
+                  auto hasNextSampleInCurrentBlock() const -> bool;
+                  auto getSample() -> s16;
+                  
+                  void resetBuffer();
+                  
+                  auto decodeSample(int sample) -> s16;
+                  
+                private:
+                  bool _sampleAvailable = false;
+                  const mods::utils::RBuffer<u8> _dataBuffer;
+                  mods::utils::RBuffer<u8>::const_iterator _itDataBuffer;
+                  int _currentByteInDataWord = 0;
+                  bool _firstSampleInBlock = true;
+                  const impl::DVIADPCMHeader& _header;
+                  int _nbChannels;
+                  int _numChannel;
+                  
+                  static constexpr u32 _defaultStepSize = 7;
+                  
+                  u32 _stepSize = _defaultStepSize;
+                  int _index = 0;
+                  
+                  int _newSample = 0;
+                  
+                  s16 _nextSample = 0;
+               };
+             
+             std::vector<Decoder> _decoders;
+             size_t _currentChannel = 0;
 	  };
      } // namespace wav
 } // namespace mods

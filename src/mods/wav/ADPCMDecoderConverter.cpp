@@ -69,7 +69,7 @@ namespace mods
 	
 	auto ADPCMDecoderConverter::isFinished() const -> bool
 	  {
-             return !_sampleAvailable && _itDataBuffer == _dataBuffer.end() && _src->isFinished();
+             return !_sampleAvailable && _itDataBuffer >= _dataBuffer.end() && _src->isFinished();
 	  }
         
         namespace

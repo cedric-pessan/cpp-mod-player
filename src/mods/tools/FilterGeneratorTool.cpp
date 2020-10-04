@@ -27,7 +27,7 @@ namespace mods
                  }
              
              LowPassParam() = delete;
-             LowPassParam(const LowPassParam&) = delete;
+             LowPassParam(const LowPassParam&) = default;
              LowPassParam(LowPassParam&&) = delete;
              auto operator=(const LowPassParam&) -> LowPassParam& = default;
              auto operator=(LowPassParam&&) -> LowPassParam& = delete;

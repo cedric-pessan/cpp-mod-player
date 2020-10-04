@@ -189,10 +189,6 @@ namespace mods
                   break;
                   
                 case WavAudioFormat::DVI_ADPCM:
-                  if(nbChannels != 1)
-                    {
-                       std::cout << "Warning: DVI/ADPCM only supports 1 channel" << std::endl;
-                    }
 		  uncompressedBitsPerContainer = WavBitsPerContainer::_16;
 		  bitsPerSample = DVIADPCMDecoderConverter::getOutputBitsPerSample();
                   uncompressedChannels.push_back(std::make_unique<DVIADPCMDecoderConverter>(std::move(inputStream), format));
