@@ -44,8 +44,8 @@ namespace mods
              class Decoder
                {
                 public:
-                  Decoder(const mods::utils::RBuffer<u8> dataBuffer,
-                          const mods::utils::RBuffer<impl::DVIADPCMHeader> headers,
+                  Decoder(mods::utils::RBuffer<u8> dataBuffer,
+                          const mods::utils::RBuffer<impl::DVIADPCMHeader>& headers,
                           int numChannel,
                           int nbChannels);
                   

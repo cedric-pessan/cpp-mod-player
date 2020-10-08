@@ -13,8 +13,8 @@ namespace mods
           _blockSize(format.getBitsPerContainer() / BITS_IN_BYTE * format.getNumChannels()),
           _nbChannels(format.getNumChannels()),
 	  _encodedBuffer(allocateNewTempBuffer(_blockSize)),
-          _dataBuffer(_encodedBuffer.slice<u8>(sizeof(impl::DVIADPCMHeader) * _nbChannels, _blockSize - sizeof(impl::DVIADPCMHeader) * _nbChannels)),
-          _headers(_encodedBuffer.slice<impl::DVIADPCMHeader>(0, _nbChannels))
+          _dataBuffer(_encodedBuffer.readOnlySlice<u8>(sizeof(impl::DVIADPCMHeader) * _nbChannels, _blockSize - sizeof(impl::DVIADPCMHeader) * _nbChannels)),
+          _headers(_encodedBuffer.readOnlySlice<impl::DVIADPCMHeader>(0, _nbChannels))
 	    {
                if(_blockSize <= sizeof(impl::DVIADPCMHeader))
                  {
@@ -45,7 +45,7 @@ namespace mods
                     std::cout << "Warning: DVIADPCMDecoderConverter: number of samples per block does not match bits per container" << std::endl;
                  }
                
-               if((((samplesPerBlock - 1) * _nbChannels) % 8) !=  0)
+               if((((samplesPerBlock - 1) * _nbChannels) % (2 * sizeof(u32))) !=  0)
                  {
                     std::cout << "Warning: DVIADPCMDecoderConverter: samples per block must be a multiple of 8" << std::endl;
                  }
@@ -145,11 +145,11 @@ namespace mods
 	     return mods::utils::RWBuffer<u8>(buffer);
 	  }
         
-        DVIADPCMDecoderConverter::Decoder::Decoder(const mods::utils::RBuffer<u8> dataBuffer,
-                                                   const mods::utils::RBuffer<impl::DVIADPCMHeader> headers,
+        DVIADPCMDecoderConverter::Decoder::Decoder(mods::utils::RBuffer<u8> dataBuffer,
+                                                   const mods::utils::RBuffer<impl::DVIADPCMHeader>& headers,
                                                    int numChannel,
                                                    int nbChannels)
-          : _dataBuffer(dataBuffer),
+          : _dataBuffer(std::move(dataBuffer)),
           _itDataBuffer(_dataBuffer.end()),
           _header(headers[numChannel]),
           _nbChannels(nbChannels),
@@ -188,11 +188,11 @@ namespace mods
                   _sampleAvailable = false;
                   return _nextSample;
                }
-             else if(_itDataBuffer >= _dataBuffer.RBuffer<u8>::end())
+             if(_itDataBuffer >= _dataBuffer.RBuffer<u8>::end())
                {
                   return 0;
                }
-             else if(_firstSampleInBlock)
+             if(_firstSampleInBlock)
                {
                   using mods::utils::at;
                   
@@ -203,31 +203,29 @@ namespace mods
                   _newSample = _header.getFirstSample();
                   return _header.getFirstSample();
                }
+             
+             static constexpr u8 nibbleMask = 0xFU;
+             
+             u8 v = *_itDataBuffer;
+             int sample = v & nibbleMask;
+             s16 decodedSample = decodeSample(sample);
+             
+             sample = static_cast<u8>(v >> 4U) & nibbleMask;
+             _nextSample = decodeSample(sample);
+             _sampleAvailable = true;
+             
+             _currentByteInDataWord++;
+             if(_currentByteInDataWord == 4)
+               {
+                  _currentByteInDataWord = 0;
+                  _itDataBuffer += 1 + (_nbChannels-1) * 4;
+               }
              else
                {
-                  static constexpr u8 nibbleMask = 0xFU;
-                  
-                  u8 v = *_itDataBuffer;
-                  int sample = v & nibbleMask;
-                  s16 decodedSample = decodeSample(sample);
-		  
-                  sample = static_cast<u8>(v >> 4U) & nibbleMask;
-                  _nextSample = decodeSample(sample);
-                  _sampleAvailable = true;
-                  
-                  _currentByteInDataWord++;
-                  if(_currentByteInDataWord == 4)
-                    {
-                       _currentByteInDataWord = 0;
-                       _itDataBuffer += 1 + (_nbChannels-1) * 4;
-                    }
-                  else
-                    {
-                       ++_itDataBuffer;
-                    }
-                  
-                  return decodedSample;
+                  ++_itDataBuffer;
                }
+             
+             return decodedSample;
           }
 	
 	auto DVIADPCMDecoderConverter::Decoder::decodeSample(int sample) -> s16
