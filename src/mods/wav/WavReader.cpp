@@ -298,7 +298,10 @@ namespace mods
                   checkInit(GSMDecoderConverter::isValidAsBitsPerSample(decodedFormat.getBitsPerSample()), GSMDecoderConverter::getBitsPerSampleRequirementsString());
                   checkInit(extendedFmtHeader.has_value(), "GSM codec without extended fmt");
                   break;
-		  
+                  
+                case WavAudioFormat::OKI_ADPCM:
+                  break;
+                  
 		case WavAudioFormat::DVI_ADPCM:
 		  checkInit(decodedFormat.getBitsPerSample() == 4, "Samples should be 4 bits for DVI/ADPCM");
 		  checkInit((decodedFormat.getBitsPerContainer() % 4) == 0, "Container length for DVI/ADPCM should be a multiple of 4");

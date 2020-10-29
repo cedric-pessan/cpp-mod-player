@@ -56,6 +56,7 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/MuLawConverter.cpp
                          src/mods/wav/MultiChannelMixer.cpp
                          src/mods/wav/MultiplexerWavConverter.cpp
+                         src/mods/wav/OKIADPCMDecoderConverter.cpp
                          src/mods/wav/ReaderWavConverter.cpp
                          src/mods/wav/ResampleConverter.cpp
                          src/mods/wav/ResamplePositiveIntegerFactor.cpp

@@ -14,6 +14,7 @@ namespace mods
              static const std::string MU_LAW = "MU_LAW";
              static const std::string TRUSPEECH = "TRUSPEECH";
              static const std::string GSM = "GSM";
+             static const std::string OKI_ADPCM = "OKI/ADPCM";
 	     static const std::string DVI_ADPCM = "DVI/ADPCM";
              static const std::string EXTENSIBLE = "EXTENSIBLE";
              switch(fmt)
@@ -32,6 +33,8 @@ namespace mods
                   return TRUSPEECH;
                 case WavAudioFormat::GSM:
                   return GSM;
+                case WavAudioFormat::OKI_ADPCM:
+                  return OKI_ADPCM;
 		case WavAudioFormat::DVI_ADPCM:
 		  return DVI_ADPCM;
                 case WavAudioFormat::EXTENSIBLE:

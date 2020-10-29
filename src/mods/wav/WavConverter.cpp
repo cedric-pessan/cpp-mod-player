@@ -12,6 +12,7 @@
 #include "mods/wav/MuLawConverter.hpp"
 #include "mods/wav/MultiChannelMixer.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
+#include "mods/wav/OKIADPCMDecoderConverter.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
 #include "mods/wav/ResampleConverter.hpp"
 #include "mods/wav/ResamplePositiveIntegerFactor.hpp"
@@ -121,6 +122,7 @@ namespace mods
                   break;
                   
                 case WavAudioFormat::DVI_ADPCM:
+                case WavAudioFormat::OKI_ADPCM:
                 case WavAudioFormat::ADPCM:
                 case WavAudioFormat::GSM:
                 case WavAudioFormat::IEEE_FLOAT:
@@ -193,6 +195,12 @@ namespace mods
 		  bitsPerSample = DVIADPCMDecoderConverter::getOutputBitsPerSample();
                   uncompressedChannels.push_back(std::make_unique<DVIADPCMDecoderConverter>(std::move(inputStream), format));
 		  break;
+                  
+                case WavAudioFormat::OKI_ADPCM:
+                  uncompressedBitsPerContainer = WavBitsPerContainer::_16;
+                  bitsPerSample = OKIADPCMDecoderConverter::getOutputBitsPerSample();
+                  uncompressedChannels.push_back(std::make_unique<OKIADPCMDecoderConverter>(std::move(inputStream), format));
+                  break;
                   
                 case WavAudioFormat::ADPCM:
                   if(nbChannels != 1)
