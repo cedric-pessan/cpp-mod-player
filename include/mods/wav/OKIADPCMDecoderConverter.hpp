@@ -55,7 +55,7 @@ namespace mods
                   auto hasNextSampleInCurrentBlock() const -> bool;
                   auto getSample() -> s16;
                   
-                  void resetBuffer(mods::utils::RBuffer<u8> encodedBuffer);
+                  void resetBuffer(const mods::utils::RBuffer<u8>& encodedBuffer);
                   
                   auto decodeSample(int sample) -> s16;
                   
@@ -67,7 +67,8 @@ namespace mods
                   int _nbChannels;
                   int _numChannel;
                   
-                  int _index = 16;
+                  constexpr static int _initialIndex = 16;
+                  int _index = _initialIndex;
                   u32 _stepSize;
                   
                   int _newSample = 0;

@@ -98,7 +98,7 @@ namespace mods
                     }
                   
                   s16 sample = _decoders[_currentChannel].getSample();
-                  out[count++] = sample << 4;
+                  out[count++] = static_cast<u16>(sample) << 4U;
                   ++_currentChannel;
                   if(_currentChannel == _decoders.size())
                     {
@@ -135,7 +135,7 @@ namespace mods
           {
           }
         
-        void OKIADPCMDecoderConverter::Decoder::resetBuffer(mods::utils::RBuffer<u8> encodedBuffer)
+        void OKIADPCMDecoderConverter::Decoder::resetBuffer(const mods::utils::RBuffer<u8>& encodedBuffer)
           {
              _sampleAvailable = false;
              _encodedBuffer = encodedBuffer;
@@ -218,9 +218,11 @@ namespace mods
 		  difference = -difference;
 	       }
 	     _newSample += difference;
-             _newSample = mods::utils::clamp(_newSample, 
-                                             -2048,
-                                             2047);
+             
+             static constexpr int minSample = -2048;
+             static constexpr int maxSample = 2047;
+             
+             _newSample = mods::utils::clamp(_newSample, minSample , maxSample);
 	     
 	     _index += at(indexTable, originalSample);
 	     _index = mods::utils::clamp(_index, 0, static_cast<int>(stepSizeTable.size()-1));
