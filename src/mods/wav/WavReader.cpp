@@ -115,9 +115,13 @@ namespace mods
                checkInit(headerBuffer->getChunkID() == getRIFF(), "Not a RIFF file");
                bool incompleteRiff = false;
                
-               if(_fileBuffer.size() < headerBuffer->getChunkSize() - sizeof(ChunkHeader))
+               auto riffChunkSize = headerBuffer->getChunkSize();
+               if((riffChunkSize & 1U) != 0) // padding
                  {
-                    std::cout << "Warning: RIFF chunk not complete" << std::endl;
+                    ++riffChunkSize;
+                 }
+               if(_fileBuffer.size() < riffChunkSize + sizeof(ChunkHeader))
+                 {
                     incompleteRiff = true;
                  }
                
@@ -127,7 +131,7 @@ namespace mods
                
                auto riffLength = incompleteRiff ? 
                  _fileBuffer.size() - sizeof(RiffHeader) :
-                 riffHeader->getChunkHeader().getChunkSize() - sizeof(RiffHeader) + sizeof(ChunkHeader);
+                 riffChunkSize - sizeof(RiffHeader) + sizeof(ChunkHeader);
                auto riffBuffer = _fileBuffer.slice<u8>(sizeof(RiffHeader), riffLength);
                
                using mods::utils::RBuffer;
@@ -139,6 +143,11 @@ namespace mods
                size_t offset = 0;
                while(offset < riffBuffer.size())
                  {
+                    if((riffBuffer.size() - offset) < sizeof(ChunkHeader))
+                      {
+                         std::cout << "Warning: Incomplete last chunk" << std::endl;
+                         break;
+                      }
                     auto chunkHeader = riffBuffer.slice<ChunkHeader>(offset, 1);
                     
                     if(chunkHeader->getChunkID() == getFMT())
