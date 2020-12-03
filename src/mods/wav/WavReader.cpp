@@ -103,6 +103,11 @@ namespace mods
                   static const std::string ADTL = "adtl";
                   return ADTL;
                }
+             auto getIPRD() -> const std::string&
+               {
+                  static const std::string IPRD = "IPRD";
+                  return IPRD;
+               }
           } // namespace
         
         WavReader::WavReader(const std::string& filename)
@@ -483,6 +488,10 @@ namespace mods
                   else if(chunkHeader->getChunkID() == getICMT())
                     {
                        description << "comment:";
+                    }
+                  else if(chunkHeader->getChunkID() == getIPRD())
+                    {
+                       description << "title:";
                     }
                   else
                     {
