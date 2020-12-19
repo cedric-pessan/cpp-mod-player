@@ -11,7 +11,10 @@ namespace mods
         namespace impl
           {
 #pragma pack(push,1)
-             struct ADPCMPreamble
+             template<int NBCHANNELS> struct ADPCMPreamble;
+             
+             template<>
+               struct ADPCMPreamble<1>
                {
                 private:
                   u8 blockPredictor;
@@ -39,6 +42,16 @@ namespace mods
                     {
                        return static_cast<s16>(initialDelta);
                     }
+               };
+             
+             template<>
+               struct ADPCMPreamble<2>
+               {
+                private:
+                  mods::utils::PackedArray<u8,2> blockPredictor;
+                  mods::utils::PackedArray<s16le,2> initialDelta;
+                  mods::utils::PackedArray<s16le,2> sample1;
+                  mods::utils::PackedArray<s16le,2> sample2;
                };
              
              struct ADPCMExtension

@@ -9,21 +9,17 @@ namespace mods
 {
    namespace wav
      {
-	ADPCMDecoderConverter::ADPCMDecoderConverter(WavConverter::ptr src, const Format& format)
-	  : _src(std::move(src)),
+        template<int NB_CHANNELS>
+          ADPCMDecoderConverter<NB_CHANNELS>::ADPCMDecoderConverter(WavConverter::ptr src, const Format& format)
+            : _src(std::move(src)),
           _extension(format.getMetaData().slice<impl::ADPCMExtension>(0,1)),
           _coefs(format.getMetaData().slice<s16>(sizeof(impl::ADPCMExtension), (format.getMetaData().size() - sizeof(impl::ADPCMExtension)) / sizeof(s16))),
           _blockSize(initBlockSize()),
           _encodedBuffer(allocateNewTempBuffer(_blockSize)),
-          _dataBuffer(_encodedBuffer.readOnlySlice<u8>(sizeof(impl::ADPCMPreamble), _blockSize - sizeof(impl::ADPCMPreamble))),
-          _itDataBuffer(_dataBuffer.end()),
-          _preamble(_encodedBuffer.readOnlySlice<impl::ADPCMPreamble>(0, 1))
+          _dataBuffer(_encodedBuffer.readOnlySlice<u8>(sizeof(Preamble), _blockSize - sizeof(Preamble))),
+          _itDataBuffer(_dataBuffer.end())/*,
+          _preamble(_encodedBuffer.readOnlySlice<impl::ADPCMPreamble>(0, 1))*/
 	    {
-               if(format.getNumChannels() != 1)
-                 {
-                    std::cout << "Warning: ADPCMDecoderConverter: multi channel stream" << std::endl;
-                 }
-               
                if(format.getBitsPerSample() != 4)
                  {
                     std::cout << "Warning: ADPCMDecoderConverter: stream is not 4 bits per sample" << std::endl;
@@ -40,7 +36,8 @@ namespace mods
                  }
 	    }
         
-        auto ADPCMDecoderConverter::initBlockSize() -> u32
+        template<int NB_CHANNELS>
+          auto ADPCMDecoderConverter<NB_CHANNELS>::initBlockSize() -> u32
           {
              auto samplesPerBlock = _extension->getSamplesPerBlock();
              
@@ -55,10 +52,11 @@ namespace mods
              
              auto samplesAfterPreamble = samplesPerBlock - 2;
              
-             return samplesAfterPreamble / 2 + sizeof(impl::ADPCMPreamble);
+             return samplesAfterPreamble / 2 * NB_CHANNELS + sizeof(Preamble);
           }
         
-        auto ADPCMDecoderConverter::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>
+        template<int NB_CHANNELS>
+          auto ADPCMDecoderConverter<NB_CHANNELS>::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>
           {
              _encodedVec.resize(len);
              u8* ptr = _encodedVec.data();
@@ -67,12 +65,13 @@ namespace mods
              return mods::utils::RWBuffer<u8>(buffer);
           }
 	
-	auto ADPCMDecoderConverter::isFinished() const -> bool
+        template<int NB_CHANNELS>
+          auto ADPCMDecoderConverter<NB_CHANNELS>::isFinished() const -> bool
 	  {
              return !_sampleAvailable && _itDataBuffer >= _dataBuffer.end() && _src->isFinished();
 	  }
         
-        namespace
+        /*namespace
           {
              constexpr std::array<s16, 14> defaultCoefs
                {
@@ -190,6 +189,9 @@ namespace mods
              _delta = _delta * at(adaptationTable,sample) / fixedPointAdaptationBase;
              
              return nextSample;
-          }
+          }*/
+        
+        template class ADPCMDecoderConverter<1>;
+        template class ADPCMDecoderConverter<2>;
      } // namespace wav
 } // namespace mods

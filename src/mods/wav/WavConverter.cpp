@@ -203,13 +203,21 @@ namespace mods
                   break;
                   
                 case WavAudioFormat::ADPCM:
-                  if(nbChannels != 1)
+                  if(nbChannels > 2)
                     {
-                       std::cout << "Warning: ADPCM only supports 1 channel" << std::endl;
+                       std::cout << "Warning: ADPCM only supports up to 2 channels" << std::endl;
                     }
                   uncompressedBitsPerContainer = WavBitsPerContainer::_16;
-                  bitsPerSample = ADPCMDecoderConverter::getOutputBitsPerSample();
-                  uncompressedChannels.push_back(std::make_unique<ADPCMDecoderConverter>(std::move(inputStream), format));
+                  if(nbChannels == 2)
+                    {
+                       bitsPerSample = ADPCMDecoderConverter<2>::getOutputBitsPerSample();
+                       uncompressedChannels.push_back(std::make_unique<ADPCMDecoderConverter<2>>(std::move(inputStream), format));
+                    }
+                  else
+                    {
+                       bitsPerSample = ADPCMDecoderConverter<1>::getOutputBitsPerSample();
+                       uncompressedChannels.push_back(std::make_unique<ADPCMDecoderConverter<1>>(std::move(inputStream), format));
+                    }
                   break;
                   
                 default:

@@ -8,7 +8,8 @@ namespace mods
 {
    namespace wav
      {
-	class ADPCMDecoderConverter : public WavConverter
+        template<int NB_CHANNELS>
+          class ADPCMDecoderConverter : public WavConverter
 	  {
 	   public:
 	     ADPCMDecoderConverter(WavConverter::ptr src, const Format& format);
@@ -35,19 +36,21 @@ namespace mods
                }
 	     
 	   private:
+             using Preamble = impl::ADPCMPreamble<NB_CHANNELS>;
+             
              auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
              auto initBlockSize() -> u32;
              
-	     auto decodeSample(u8 sample) -> s16;
+	     /*auto decodeSample(u8 sample) -> s16;*/
 	     
 	     WavConverter::ptr _src;
 	     
              bool _sampleAvailable = false;
-             s16 _sample1 = 0;
+             /*s16 _sample1 = 0;
              s16 _sample2 = 0;
              s32 _coef1 = 0;
              s32 _coef2 = 0;
-             s16 _delta = 0;
+             s16 _delta = 0;*/
              
              mods::utils::RBuffer<impl::ADPCMExtension> _extension;
              mods::utils::RBuffer<s16> _coefs;
@@ -57,7 +60,7 @@ namespace mods
              mods::utils::RWBuffer<u8> _encodedBuffer;
              mods::utils::RBuffer<u8> _dataBuffer;
              mods::utils::RBuffer<u8>::const_iterator _itDataBuffer;
-             mods::utils::RBuffer<impl::ADPCMPreamble> _preamble;
+             /*mods::utils::RBuffer<impl::ADPCMPreamble> _preamble;*/
 	  };
      } // namespace wav
 } // namespace mods

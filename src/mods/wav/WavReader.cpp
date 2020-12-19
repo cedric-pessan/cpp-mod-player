@@ -322,7 +322,14 @@ namespace mods
 		  break;
                   
                 case WavAudioFormat::ADPCM:
-                  checkInit(ADPCMDecoderConverter::isExtensionSizeValid(decodedFormat.getMetaData().size()), "Invalid extension size for ADPCM decoder");
+                  if(decodedFormat.getNumChannels() == 2)
+                    {
+                       checkInit(ADPCMDecoderConverter<2>::isExtensionSizeValid(decodedFormat.getMetaData().size()), "Invalid extension size for ADPCM decoder");
+                    }
+                  else
+                    {
+                       checkInit(ADPCMDecoderConverter<1>::isExtensionSizeValid(decodedFormat.getMetaData().size()), "Invalid extension size for ADPCM decoder");
+                    }
                   break;
                   
                 default:
