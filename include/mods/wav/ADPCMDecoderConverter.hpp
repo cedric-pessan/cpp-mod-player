@@ -40,17 +40,11 @@ namespace mods
              
              auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
              auto initBlockSize() -> u32;
-             
-	     /*auto decodeSample(u8 sample) -> s16;*/
 	     
 	     WavConverter::ptr _src;
 	     
              bool _sampleAvailable = false;
-             /*s16 _sample1 = 0;
-             s16 _sample2 = 0;
-             s32 _coef1 = 0;
-             s32 _coef2 = 0;
-             s16 _delta = 0;*/
+	     s16 _nextSample = 0;
              
              mods::utils::RBuffer<impl::ADPCMExtension> _extension;
              mods::utils::RBuffer<s16> _coefs;
@@ -60,7 +54,9 @@ namespace mods
              mods::utils::RWBuffer<u8> _encodedBuffer;
              mods::utils::RBuffer<u8> _dataBuffer;
              mods::utils::RBuffer<u8>::const_iterator _itDataBuffer;
-             /*mods::utils::RBuffer<impl::ADPCMPreamble> _preamble;*/
+             mods::utils::RBuffer<Preamble> _preamble;
+	     
+	     std::array<impl::ADPCMChannelDecoder, NB_CHANNELS> _decoders;
 	  };
      } // namespace wav
 } // namespace mods

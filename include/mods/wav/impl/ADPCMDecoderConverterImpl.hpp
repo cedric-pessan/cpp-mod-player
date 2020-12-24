@@ -23,23 +23,27 @@ namespace mods
                   s16le sample2;
                   
                 public:
-                  auto getBlockPredictor() const noexcept -> u8
+                  auto getBlockPredictor(size_t channel) const noexcept -> u8
                     {
+		       assert(channel == 0);
                        return blockPredictor;
                     }
                   
-                  auto getSample1() const noexcept -> s16
+                  auto getSampleTMinus1(size_t channel) const noexcept -> s16
                     {
+		       assert(channel == 0);
                        return static_cast<s16>(sample1);
                     }
                   
-                  auto getSample2() const noexcept -> s16
+                  auto getSampleTMinus2(size_t channel) const noexcept -> s16
                     {
+		       assert(channel == 0);
                        return static_cast<s16>(sample2);
                     }
                   
-                  auto getInitialDelta() const noexcept -> s16
+                  auto getInitialDelta(size_t channel) const noexcept -> s16
                     {
+		       assert(channel == 0);
                        return static_cast<s16>(initialDelta);
                     }
                };
@@ -52,6 +56,30 @@ namespace mods
                   mods::utils::PackedArray<s16le,2> initialDelta;
                   mods::utils::PackedArray<s16le,2> sample1;
                   mods::utils::PackedArray<s16le,2> sample2;
+		  
+		public:
+		  auto getBlockPredictor(size_t channel) const noexcept -> u8
+		    {
+		       assert(channel < 1);
+		       return blockPredictor[channel];
+		    }
+		  
+		  auto getSampleTMinus1(size_t channel) const noexcept -> s16
+		    {
+		       assert(channel < 1);
+		       return static_cast<s16>(sample1[channel]);
+		    }
+		  
+		  auto getSampleTMinus2(size_t channel) const noexcept -> s16
+		    {
+		       assert(channel < 1);
+		       return static_cast<s16>(sample2[channel]);
+		    }
+		  
+		  auto getInitialDelta(size_t channel) const noexcept -> s16
+                    {
+                       return static_cast<s16>(initialDelta[channel]);
+                    }
                };
              
              struct ADPCMExtension
@@ -72,7 +100,30 @@ namespace mods
                     }
                };
 #pragma pack(pop)
-          } // namespace impl
+	     
+	     class ADPCMChannelDecoder
+	       {
+		public:
+		  ADPCMChannelDecoder() = default;
+		  ADPCMChannelDecoder(const ADPCMChannelDecoder&) = delete;
+		  ADPCMChannelDecoder(ADPCMChannelDecoder&&) = delete;
+		  auto operator=(const ADPCMChannelDecoder&) -> ADPCMChannelDecoder& = delete;
+		  auto operator=(ADPCMChannelDecoder&&) -> ADPCMChannelDecoder& = delete;
+		  ~ADPCMChannelDecoder() = default;
+		  
+		  void initDecoder(s16 sampleTMinus1, s16 sampleTMinus2, size_t predictor, const mods::utils::RBuffer<s16>& coefs, s16 initialDelta);
+		  auto getSampleTMinus2() -> s16;
+		  auto getSampleTMinus1() -> s16;
+		  auto decodeSample(u8 sample) -> s16;
+		  
+		private:
+		  s16 _sampleTMinus1 = 0;
+		  s16 _sampleTMinus2 = 0;
+		  s32 _coef1 = 0;
+		  s32 _coef2 = 0;
+		  s16 _delta = 0;
+	       };
+	  } // namespace impl
      } // namespace wav
 } // namespace mods
 
