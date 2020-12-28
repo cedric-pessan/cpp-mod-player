@@ -25,7 +25,7 @@ namespace mods
                     std::cout << "Warning: ADPCMDecoderConverter: stream is not 4 bits per sample" << std::endl;
                  }
                
-               if(_blockSize != format.getBitsPerContainer() / BITS_IN_BYTE)
+               if(_blockSize != format.getBitsPerContainer() * NB_CHANNELS / BITS_IN_BYTE)
                  {
                     std::cout << "Warning: ADPCMDecoderConverter: blocks contain padding" << std::endl;
                  }
