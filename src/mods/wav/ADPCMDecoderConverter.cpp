@@ -217,6 +217,11 @@ namespace mods
 		  
 		  _delta = _delta * at(adaptationTable,sample) / fixedPointAdaptationBase;
 		  
+		  if(_delta < 16) 
+		    {
+		       _delta = 16;
+		    }
+		  
 		  _sampleTMinus2 = _sampleTMinus1;
 		  _sampleTMinus1 = nextSample;
 		  
