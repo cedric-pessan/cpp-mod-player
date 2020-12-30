@@ -94,6 +94,8 @@ namespace mods
 	template<int NB_CHANNELS>
 	  void ADPCMDecoderConverter<NB_CHANNELS>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
 	    {
+               using mods::utils::at;
+               
 	       if((len & 1U) != 0)
 		 {
 		    std::cout << "Odd length in ADPCM not supported" << std::endl;
@@ -119,17 +121,17 @@ namespace mods
 			      _src->read(&_encodedBuffer, _blockSize);
 			      for(int i=0; i<NB_CHANNELS; ++i)
 				{
-				   _decoders[i].initDecoder(_preamble->getSampleTMinus1(i), _preamble->getSampleTMinus2(i), _preamble->getBlockPredictor(i), _coefs, _preamble->getInitialDelta(i));
+				   at(_decoders, i).initDecoder(_preamble->getSampleTMinus1(i), _preamble->getSampleTMinus2(i), _preamble->getBlockPredictor(i), _coefs, _preamble->getInitialDelta(i));
 				}
 			      _itDataBuffer = _dataBuffer.RBuffer<u8>::begin();
 			      
 			      for(int i=0; i<NB_CHANNELS; ++i) 
 				{
-				   out[count++] = _decoders[i].getSampleTMinus2();
+				   out[count++] = at(_decoders, i).getSampleTMinus2();
 				}
 			      for(int i=0; i<NB_CHANNELS; ++i) 
 				{
-				   out[count++] = _decoders[i].getSampleTMinus1();
+				   out[count++] = at(_decoders, i).getSampleTMinus1();
 				}
 			   }
 			 else
@@ -145,14 +147,7 @@ namespace mods
 			 out[count++] = _nextSample;
 			 
 			 sample = v & nibbleMask;
-			 if(NB_CHANNELS == 1)
-			   {
-			      _nextSample = _decoders[0].decodeSample(sample);
-			   }
-			 else
-			   {
-			      _nextSample = _decoders[1].decodeSample(sample);
-			   }
+                         _nextSample = _decoders.back().decodeSample(sample);
 			 _sampleAvailable = true;
 			 
 			 ++_itDataBuffer;
@@ -217,9 +212,11 @@ namespace mods
 		  
 		  _delta = _delta * at(adaptationTable,sample) / fixedPointAdaptationBase;
 		  
-		  if(_delta < 16) 
+                  static constexpr s16 MIN_ALLOWED_DELTA = 16;
+                  
+		  if(_delta < MIN_ALLOWED_DELTA) 
 		    {
-		       _delta = 16;
+		       _delta = MIN_ALLOWED_DELTA;
 		    }
 		  
 		  _sampleTMinus2 = _sampleTMinus1;

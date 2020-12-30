@@ -23,25 +23,23 @@ namespace mods
                   s16le sample2;
                   
                 public:
-                  auto getBlockPredictor(size_t channel) const noexcept -> u8
+                  auto getBlockPredictor(size_t /* channel */) const noexcept -> u8
                     {
-		       assert(channel == 0);
                        return blockPredictor;
                     }
                   
-                  auto getSampleTMinus1(size_t channel) const noexcept -> s16
+                  auto getSampleTMinus1(size_t /* channel */) const noexcept -> s16
                     {
-		       assert(channel == 0);
                        return static_cast<s16>(sample1);
                     }
                   
-                  auto getSampleTMinus2(size_t channel) const noexcept -> s16
+                  auto getSampleTMinus2(size_t /* channel */) const noexcept -> s16
                     {
 		       assert(channel == 0);
                        return static_cast<s16>(sample2);
                     }
                   
-                  auto getInitialDelta(size_t channel) const noexcept -> s16
+                  auto getInitialDelta(size_t /* channel */) const noexcept -> s16
                     {
 		       assert(channel == 0);
                        return static_cast<s16>(initialDelta);

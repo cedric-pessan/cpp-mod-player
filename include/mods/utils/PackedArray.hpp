@@ -1,6 +1,7 @@
 #ifndef MODS_UTILS_PACKEDARRAY_HPP
 #define MODS_UTILS_PACKEDARRAY_HPP
 
+#include <cassert>
 #include <cstddef>
 
 namespace mods
@@ -26,7 +27,8 @@ namespace mods
              
              auto operator[](std::size_t index) const -> const T&
                {
-                  return _array[index];
+                  assert(index >= 0 && index < SIZE);
+                  return _array[index]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
                }
              
            private:
