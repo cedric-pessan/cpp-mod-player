@@ -1,7 +1,7 @@
 
+#include "mods/StandardFrequency.hpp"
 #include "mods/wav/ResampleConverter.hpp"
-
-#include <iostream>
+#include "mods/wav/ResampleParameters.hpp"
 
 namespace mods
 {
@@ -290,38 +290,6 @@ namespace mods
                   return _v[idx];
                }
           } // namespace impl
-        
-        DynamicResampleParameters::DynamicResampleParameters(int inFrequency, int outFrequency)
-          : _resampleFraction(mods::utils::ConstFraction(inFrequency, outFrequency).reduce()),
-          _designer(inFrequency * getInterpolationFactor(), // sampleFrequency
-                    std::min(inFrequency, outFrequency) / _nyquistFactor) // cutoffFrequency
-            {
-            }
-        
-        auto DynamicResampleParameters::getNumTaps() const -> int
-          {
-             return _designer.getTaps().size();
-          }
-        
-        auto DynamicResampleParameters::getResampleFraction() const -> const mods::utils::ConstFraction&
-          {
-             return _resampleFraction;
-          }
-        
-        auto DynamicResampleParameters::getInterpolationFactor() const -> int
-          {
-             return getResampleFraction().getDenominator();
-          }
-        
-        auto DynamicResampleParameters::getDecimationFactor() const -> int
-          {
-             return getResampleFraction().getNumerator();
-          }
-        
-        auto DynamicResampleParameters::getTap(size_t i) const -> double
-          {
-             return _designer.getTaps()[i];
-          }
         
         template class ResampleConverter<StaticResampleParameters<StandardFrequency::_22000, StandardFrequency::_44100>>;
         template class ResampleConverter<StaticResampleParameters<StandardFrequency::_8000,  StandardFrequency::_44100>>;

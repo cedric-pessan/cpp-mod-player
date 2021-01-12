@@ -1,4 +1,5 @@
 
+#include "mods/StandardFrequency.hpp"
 #include "mods/wav/ADPCMDecoderConverter.hpp"
 #include "mods/wav/ALawConverter.hpp"
 #include "mods/wav/ChannelCopyWavConverter.hpp"
@@ -15,6 +16,7 @@
 #include "mods/wav/OKIADPCMDecoderConverter.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
 #include "mods/wav/ResampleConverter.hpp"
+#include "mods/wav/ResampleParameters.hpp"
 #include "mods/wav/ResamplePositiveIntegerFactor.hpp"
 #include "mods/wav/ToDoubleConverter.hpp"
 #include "mods/wav/TruspeechDecoderConverter.hpp"
