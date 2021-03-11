@@ -15,12 +15,18 @@ include(TestBigEndian)
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 
 Find_Package(SDL REQUIRED)
+Find_Package(OpenCL)
+
+if(OpenCL_FOUND)
+set(WITH_OPENCL 1)
+endif()
 
 include_directories(${SDL_INCLUDE_DIR}
                     ${CMAKE_CURRENT_BINARY_DIR}/include
                     ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 configure_file(include/mods/utils/nativeEndian.hpp.in include/mods/utils/nativeEndian.hpp)
+configure_file(include/config.hpp.in include/config.hpp)
 
 add_executable(filter_generator src/mods/tools/FilterGeneratorTool.cpp
                                 src/mods/utils/bessel.cpp
@@ -57,6 +63,7 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/MultiChannelMixer.cpp
                          src/mods/wav/MultiplexerWavConverter.cpp
                          src/mods/wav/OKIADPCMDecoderConverter.cpp
+                         src/mods/wav/OpenCLResampleConverter.cpp
                          src/mods/wav/ReaderWavConverter.cpp
                          src/mods/wav/ResampleConverter.cpp
                          src/mods/wav/ResampleParameters.cpp
@@ -72,6 +79,7 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/WavTypes.cpp
                          src/mods/utils/bessel.cpp
                          src/mods/utils/BitReader.cpp
+                         src/mods/utils/OpenCLManager.cpp
                          src/mods/utils/FileUtils.cpp
 			 src/mods/utils/FirFilterDesigner.cpp
                          src/mods/utils/RBufferBackend.cpp

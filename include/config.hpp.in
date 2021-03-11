@@ -1,0 +1,10 @@
+#ifndef CONFIG_HPP
+#define CONFIG_HPP
+
+#if ${WITH_OPENCL} > 0
+#define WITH_OPENCL
+#else
+#undef WITH_OPENCL
+#endif
+
+#endif // CONFIG_HPP

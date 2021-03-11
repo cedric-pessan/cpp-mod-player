@@ -1,5 +1,6 @@
 
 #include "mods/StandardFrequency.hpp"
+#include "mods/utils/OpenCLManager.hpp"
 #include "mods/wav/ADPCMDecoderConverter.hpp"
 #include "mods/wav/ALawConverter.hpp"
 #include "mods/wav/ChannelCopyWavConverter.hpp"
@@ -14,6 +15,7 @@
 #include "mods/wav/MultiChannelMixer.hpp"
 #include "mods/wav/MultiplexerWavConverter.hpp"
 #include "mods/wav/OKIADPCMDecoderConverter.hpp"
+#include "mods/wav/OpenCLConverterTypes.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
 #include "mods/wav/ResampleConverter.hpp"
 #include "mods/wav/ResampleParameters.hpp"
@@ -425,7 +427,15 @@ namespace mods
                     {
                        using ParamType = StaticResampleParameters<StandardFrequency::_8000, StandardFrequency::_44100>;
                        ParamType params;
-                       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                       if(mods::utils::OpenCLManager::isEnabled())
+                         {
+                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType>::ResampleConverterImpl;
+                            resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(upscaledChannels[i]), params));
+                         }
+                       else
+                         {
+                            resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                         }
                     }
                   break;
 		  
@@ -434,7 +444,15 @@ namespace mods
 		    {
                        using ParamType = StaticResampleParameters<StandardFrequency::_10000, StandardFrequency::_44100>;
                        ParamType params;
-		       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                       if(mods::utils::OpenCLManager::isEnabled())
+                         {
+                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType>::ResampleConverterImpl;
+                            resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(upscaledChannels[i]), params));
+                         }
+                       else
+                         {
+                            resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                         }
 		    }
 		  break;
 		  
@@ -450,7 +468,15 @@ namespace mods
                     {
                        using ParamType = StaticResampleParameters<StandardFrequency::_22000, StandardFrequency::_44100>;
                        ParamType params;
-                       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                       if(mods::utils::OpenCLManager::isEnabled())
+                         {
+                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType>::ResampleConverterImpl;
+                            resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(upscaledChannels[i]), params));
+                         }
+                       else
+                         {
+                            resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                         }
                     }
                   break;
                   
@@ -473,7 +499,15 @@ namespace mods
                     {
                        using ParamType = StaticResampleParameters<StandardFrequency::_48000, StandardFrequency::_44100>;
                        ParamType params;
-                       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                       if(mods::utils::OpenCLManager::isEnabled())
+                         {
+                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType>::ResampleConverterImpl;
+                            resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(upscaledChannels[i]), params));
+                         }
+                       else
+                         {
+                            resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                         }
                     }
                   break;
                   
@@ -483,7 +517,15 @@ namespace mods
 		    {
                        using ParamType = DynamicResampleParameters;
                        ParamType params(frequency, toUnderlying(StandardFrequency::_44100));
-		       resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                       if(mods::utils::OpenCLManager::isEnabled())
+                         {
+                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType>::ResampleConverterImpl;
+                            resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(upscaledChannels[i]), params));
+                         }
+                       else
+                         {
+                            resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                         }
 		    }
                }
              
