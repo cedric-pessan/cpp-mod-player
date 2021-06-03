@@ -44,7 +44,7 @@ namespace mods
              
              auto operator[](size_type pos) -> reference
                {
-                  assert(this->template check(pos < this->template size(), "out of bound RWBuffer"));
+                  assert(this->check(pos < this->size(), "out of bound RWBuffer"));
                   return *(_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                }
              

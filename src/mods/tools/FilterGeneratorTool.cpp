@@ -91,13 +91,13 @@ namespace mods
                }
              
              size_t pos = 0;
-             size_t incPos;
+             size_t incPos = 0;
              while((incPos = unixFilename.find("include/", pos+1)) != std::string::npos)
                {
                   pos = incPos;
                }
              
-             if(pos != 0 || unixFilename.find("include/") == 0)
+             if(pos != 0 || unixFilename.rfind("include/", 0) == 0)
                {
                   pos += std::string("include/").size();
                }
@@ -133,7 +133,7 @@ namespace mods
              double cutoffFrequency = param.getCutoffFrequency() / static_cast<double>(param.getCutoffFrequencyDivider());
              std::cout << "Generate " << cutoffFrequency << "Hz low pass filter on a " << param.getSampleFrequency() << "Hz sampling rate" << std::endl;
              mods::utils::FirFilterDesigner fir(param.getSampleFrequency(), cutoffFrequency);
-             auto& taps = fir.getTaps();
+             const auto& taps = fir.getTaps();
              
              auto filterName = param.getFilterName();
              
@@ -210,7 +210,7 @@ namespace mods
              
              openCpp(outcpp);
              
-             for(auto& lowPassParam : getLowPassParams())
+             for(const auto& lowPassParam : getLowPassParams())
                {
                   generateLowPassFilter(lowPassParam, out, outcpp);
                }
@@ -237,7 +237,7 @@ auto main(int argc, char** argv) -> int
      }
    
    auto deleter = std::make_unique<mods::utils::RBufferBackend::EmptyDeleter>();
-   auto argvp = static_cast<u8*>(static_cast<void*>(argv));
+   auto* argvp = static_cast<u8*>(static_cast<void*>(argv));
    auto argBuffer = std::make_shared<mods::utils::RBufferBackend>(argvp, argc * sizeof(char*), std::move(deleter));
    const mods::utils::RBuffer<char*> args(argBuffer);
    

@@ -53,20 +53,17 @@ namespace mods
                {
                   if(shift < 0)
                     {
-                       return *this << -shift;
+                       return doLeftShift(-shift);
                     }
-                  auto n = static_cast<u32>(shift.getValue());
-                  return mods::utils::arithmeticShifter::shiftRight(_value, n);
+                  return doRightShift(shift);
                }
              auto operator<<(const GSMInt16& shift) const -> GSMInt16
                {
                   if(shift < 0)
                     {
-                       return *this >> -shift;
+                       return doRightShift(-shift);
                     }
-                  u32 x = static_cast<u32>(_value);
-                  auto n = static_cast<u32>(shift.getValue());
-                  return x << n;
+                  return doLeftShift(shift);
                }
              
              auto operator-() const -> GSMInt16
@@ -165,6 +162,19 @@ namespace mods
              constexpr void signExtend()
                {
                   _value = static_cast<s32>(static_cast<s16>(_value));
+               }
+             
+             auto doLeftShift(const GSMInt16& shift) const -> GSMInt16
+               {
+                  u32 x = static_cast<u32>(_value);
+                  auto n = static_cast<u32>(shift.getValue());
+                  return x << n;
+               }
+             
+             auto doRightShift(const GSMInt16& shift) const -> GSMInt16
+               {
+                  auto n = static_cast<u32>(shift.getValue());
+                  return mods::utils::arithmeticShifter::shiftRight(_value, n);
                }
              
              s32 _value = 0;

@@ -48,7 +48,7 @@ namespace mods
                     {
                        return false;
                     }
-                  for(auto& channel : _channels) 
+                  for(const auto& channel : _channels) 
                     {
                        if(!channel->isFinished())
                          {
@@ -148,7 +148,7 @@ namespace mods
                        _coefficients.at(i).resize(_channels.size(), 0.0);
                     }
                   
-                  for(auto& descriptor : channelDescriptors)
+                  for(const auto& descriptor : channelDescriptors)
                     {
                        if((_channelMask & mask) != 0)
                          {
@@ -177,7 +177,7 @@ namespace mods
                   
                   // loop that assigns remaining channels
                   mask = 1;
-                  for(auto& descriptor : channelDescriptors)
+                  for(const auto& descriptor : channelDescriptors)
                     {
                        if(idxChannel >= _channels.size())
                          {
@@ -214,10 +214,10 @@ namespace mods
              auto InternalMultiChannelMixerSourceConverter::mix(int idxOutBuffer, size_t idxSample) const -> double
                {
                   double sample = 0.0;
-                  auto& coefficients = _coefficients.at(idxOutBuffer);
+                  const auto& coefficients = _coefficients.at(idxOutBuffer);
                   for(size_t i=0; i<_channels.size(); ++i)
                     {
-                       auto& view = _channelsViews[i];
+                       const auto& view = _channelsViews[i];
                        sample += coefficients[i] * view[idxSample];
                     }
                   return sample;

@@ -15,7 +15,7 @@ namespace mods
      {
         void SoundPlayer::s_ccallback(void* udata, Uint8* stream, int len)
           {
-             auto sp = static_cast<SoundPlayer*>(udata);
+             auto* sp = static_cast<SoundPlayer*>(udata);
              sp->callback(stream, len);
           }
      }
@@ -55,7 +55,7 @@ namespace mods
    void SoundPlayer::play(ModuleReader::ptr reader)
      {
         sendModuleInfo(*reader);
-        auto& entry = addReaderToPlayList(std::move(reader));
+        const auto& entry = addReaderToPlayList(std::move(reader));
         SDL_PauseAudio(0);
         waitUntilFinished(entry);
         SDL_PauseAudio(1);

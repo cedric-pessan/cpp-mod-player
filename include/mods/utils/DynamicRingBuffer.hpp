@@ -55,15 +55,27 @@ namespace mods
              void push_back(const value_type& val)
                {
                   auto nextEnd = _end + 1;
-                  if(nextEnd == _backend.size())
+                  if(nextEnd >= _backend.size())
                     {
                        nextEnd = 0;
+                       if(_backend.empty())
+                         {
+                            increaseBackendSize();
+                            nextEnd = _end + 1;
+                            if(nextEnd == _backend.size())
+                              {
+                                 nextEnd = 0;
+                              }
+                         }
                     }
-                  if(nextEnd == _begin || _backend.empty())
+                  if(nextEnd == _begin)
                     {
                        increaseBackendSize();
-                       push_back(val);
-                       return;
+                       nextEnd = _end + 1;
+                       if(nextEnd == _backend.size())
+                         {
+                             nextEnd = 0;
+                         }
                     }
                   _backend[_end] = val;
                   _end = nextEnd;

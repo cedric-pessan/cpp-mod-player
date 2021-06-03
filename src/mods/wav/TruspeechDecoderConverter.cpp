@@ -451,18 +451,18 @@ namespace mods
              s32 off = (t / offset2Factor) + at(_offset1, shiftRight(subframe, 1)) + baseOffset;
              off = mods::utils::clamp(off, 0, _filterBufferLength-1);
              size_t idx0 = _filterBufferLength - 1 - off;
-             auto it1 = tmp.begin() + _filterBuffer.size();
-             auto& filter = at(order2Coeffs, t % order2Coeffs.size());
+             size_t idx1 = _filterBuffer.size();
+             const auto& filter = at(order2Coeffs, t % order2Coeffs.size());
              
              static constexpr int roundConstant = 0x2000;
              static constexpr int fixedPointShift = 14;
-             for(size_t i=0; i<_newVector.size(); ++i,++it1)
+             for(size_t i=0; i<_newVector.size(); ++i,++idx1)
                {
                   s16 v = shiftRight(at(tmp, idx0)   * at(filter,0) + 
                                      at(tmp, idx0+1) * at(filter,1) + roundConstant, fixedPointShift);
                   ++idx0;
                   at(_newVector, i) = v;
-                  *it1 = v;
+                  at(tmp, idx1) = v;
                }
           }
         
@@ -488,7 +488,7 @@ namespace mods
              static constexpr int coef1Shift = 15;
              int coef = shiftRight(at(_pulsepos, subframe), coef1Shift);
              size_t idxPulseValue = buf.size()/2;
-             auto it2 = tmp.begin();
+             size_t idx2 = 0;
              for(size_t i=0, j=3; (i < buf.size()/2) && (j > 0); ++i)
                {
                   auto t = at(pulseValues, idxPulseValue);
@@ -499,8 +499,8 @@ namespace mods
                     }
                   else
                     {
-                       buf[i] = *it2;
-                       ++it2;
+                       buf[i] = at(tmp, idx2);
+                       ++idx2;
                        idxPulseValue += buf.size()/2;
                        --j;
                     }
@@ -518,8 +518,8 @@ namespace mods
                     }
                   else
                     {
-                       buf[i] = *it2;
-                       ++it2;
+                       buf[i] = at(tmp, idx2);
+                       ++idx2;
                        idxPulseValue += buf.size()/2;
                        --j;
                     }

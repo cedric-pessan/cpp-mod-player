@@ -182,12 +182,12 @@ namespace mods
 		  _delta = initialDelta;
 	       }
 	     
-	     auto ADPCMChannelDecoder::getSampleTMinus2() -> s16
+	     auto ADPCMChannelDecoder::getSampleTMinus2() const -> s16
 	       {
 		  return _sampleTMinus2;
 	       }
 	     
-	     auto ADPCMChannelDecoder::getSampleTMinus1() -> s16
+	     auto ADPCMChannelDecoder::getSampleTMinus1() const -> s16
 	       {
 		  return _sampleTMinus1;
 	       }

@@ -3,6 +3,7 @@
 #include "mods/utils/impl/unix/FileUtils.h"
 
 #include <fcntl.h>
+#include <string>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>

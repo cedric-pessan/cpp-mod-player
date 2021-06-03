@@ -224,8 +224,8 @@ namespace mods
                
                checkInit(optFmt.has_value() && optData.has_value(), "Wav file should have at least a fmt and data chunk");
                
-               auto& fmt = *optFmt;
-               auto& data = *optData;
+               const auto& fmt = *optFmt;
+               const auto& data = *optData;
                _statCollector = std::make_shared<StatCollector>();
                _converter = WavConverter::buildConverter(data, fmt, _statCollector, peak);
                _length = data.size();
@@ -267,7 +267,7 @@ namespace mods
                {
                   if(extensibleHeader.has_value())
                     {
-                       auto& ext = *extensibleHeader;
+                       const auto& ext = *extensibleHeader;
                        format = ext->getAudioFormat();
                        
                        if(!((fmtHeader->getNumChannels() == 1 && ext->getChannelMask() == 1) || (fmtHeader->getNumChannels() == 2 && ext->getChannelMask() == 3) || ext->getChannelMask() == 0))

@@ -161,7 +161,7 @@ namespace mods
              auto interpolationFactor = _resampleParameters.getInterpolationFactor();
              for(int i = 0; i < _resampleParameters.getNumTaps(); ++i) 
                {
-                  auto& sampleWithZeros = _history.getSample(idxSampleWithZeros++);
+                  const auto& sampleWithZeros = _history.getSample(idxSampleWithZeros++);
                   i += sampleWithZeros.numberOfZeros();
                   if(i < _resampleParameters.getNumTaps()) 
                     {

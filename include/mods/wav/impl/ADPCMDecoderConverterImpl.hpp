@@ -35,13 +35,11 @@ namespace mods
                   
                   auto getSampleTMinus2(size_t /* channel */) const noexcept -> s16
                     {
-		       assert(channel == 0);
                        return static_cast<s16>(sample2);
                     }
                   
                   auto getInitialDelta(size_t /* channel */) const noexcept -> s16
                     {
-		       assert(channel == 0);
                        return static_cast<s16>(initialDelta);
                     }
                };
@@ -58,24 +56,25 @@ namespace mods
 		public:
 		  auto getBlockPredictor(size_t channel) const noexcept -> u8
 		    {
-		       assert(channel < 1);
+		       assert(channel < 2);
 		       return blockPredictor[channel];
 		    }
 		  
 		  auto getSampleTMinus1(size_t channel) const noexcept -> s16
 		    {
-		       assert(channel < 1);
+		       assert(channel < 2);
 		       return static_cast<s16>(sample1[channel]);
 		    }
 		  
 		  auto getSampleTMinus2(size_t channel) const noexcept -> s16
 		    {
-		       assert(channel < 1);
+		       assert(channel < 2);
 		       return static_cast<s16>(sample2[channel]);
 		    }
 		  
 		  auto getInitialDelta(size_t channel) const noexcept -> s16
                     {
+                       assert(channel < 2);
                        return static_cast<s16>(initialDelta[channel]);
                     }
                };
@@ -110,8 +109,8 @@ namespace mods
 		  ~ADPCMChannelDecoder() = default;
 		  
 		  void initDecoder(s16 sampleTMinus1, s16 sampleTMinus2, size_t predictor, const mods::utils::RBuffer<s16>& coefs, s16 initialDelta);
-		  auto getSampleTMinus2() -> s16;
-		  auto getSampleTMinus1() -> s16;
+		  auto getSampleTMinus2() const -> s16;
+		  auto getSampleTMinus1() const -> s16;
 		  auto decodeSample(u8 sample) -> s16;
 		  
 		private:

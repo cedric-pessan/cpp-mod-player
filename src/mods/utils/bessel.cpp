@@ -86,7 +86,7 @@ namespace mods
                   
                   if(x < 0)
                     {
-                       return i0(-x);
+                       x = -x;
                     }
                   if(x <= limitBetweenPolynoms)
                     {

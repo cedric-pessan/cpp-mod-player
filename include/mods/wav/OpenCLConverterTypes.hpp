@@ -17,8 +17,8 @@ namespace mods
              OpenCLConverterTypes() = delete;
              OpenCLConverterTypes(const OpenCLConverterTypes&) = delete;
              OpenCLConverterTypes(OpenCLConverterTypes&&) = delete;
-             OpenCLConverterTypes& operator=(const OpenCLConverterTypes&) = delete;
-             OpenCLConverterTypes& operator=(OpenCLConverterTypes&&) = delete;
+             auto operator=(const OpenCLConverterTypes&) -> OpenCLConverterTypes& = delete;
+             auto operator=(OpenCLConverterTypes&&) -> OpenCLConverterTypes& = delete;
              ~OpenCLConverterTypes() = delete;
              
 #ifdef WITH_OPENCL

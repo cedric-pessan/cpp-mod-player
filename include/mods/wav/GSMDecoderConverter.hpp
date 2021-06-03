@@ -51,11 +51,11 @@ namespace mods
              void RPEGridPosition(int subframe);
              void longTermPrediction(int subframe);
              void shortTermSynthesis();
-             void LARDecode();
-             void LARInterpolation_0_12();
-             void LARInterpolation_13_26();
-             void LARInterpolation_27_39();
-             void LARInterpolation_40_159();
+             void larDecode();
+             void larInterpolation_0_12();
+             void larInterpolation_13_26();
+             void larInterpolation_27_39();
+             void larInterpolation_40_159();
              void computeReflectionCoefficients();
              void shortTermSynthesisFiltering(int k_start, int k_end);
              void deEmphasisFiltering();
@@ -79,57 +79,57 @@ namespace mods
              bool _evenFrame = true;
              mods::utils::BitReader<mods::utils::ByteSwap::None, mods::utils::BitOrder::LsbToMsb> _bitReader;
              
-             constexpr static int _numberOfLARCoefficients = 8;
+             constexpr static int _numberOfLarCoefficients = 8;
              
-             std::array<GSMInt16, _numberOfLARCoefficients> _LARc;
+             std::array<GSMInt16, _numberOfLarCoefficients> _larC;
              
-             using LARppArray = std::array<GSMInt16, _numberOfLARCoefficients>;
-             std::array<LARppArray, 2> _LARpp;
-             int _currentLARpp = 0;
+             using larPPArray = std::array<GSMInt16, _numberOfLarCoefficients>;
+             std::array<larPPArray, 2> _larPP;
+             int _currentLarPP = 0;
              
-             std::array<GSMInt16, _numberOfLARCoefficients> _LARp;
+             std::array<GSMInt16, _numberOfLarCoefficients> _larP;
              
-             std::array<GSMInt16, _numberOfLARCoefficients> _rp;
+             std::array<GSMInt16, _numberOfLarCoefficients> _rp;
              
-             std::array<GSMInt16, _numberOfLARCoefficients+1> _v;
+             std::array<GSMInt16, _numberOfLarCoefficients+1> _v;
              
              std::array<GSMInt16, GSM_DECODED_FRAME_SAMPLES> _sr;
              
              GSMInt16 _msr;
              std::array<GSMInt16, GSM_DECODED_FRAME_SAMPLES> _sro;
              
-             constexpr static std::array<int, 8> _LAR_SIZES
+             constexpr static std::array<int, 8> _larSizes
                {
                   6, 6, 5, 5, 4, 4, 3, 3
                };
              
-             constexpr static std::array<GSMInt16, 8> _FAC
+             constexpr static std::array<GSMInt16, 8> _fac
                {
                   18431, 20479, 22527, 24575, 26623, 28671, 30719, 32767
                };
              
-             constexpr static std::array<GSMInt16, 4> _QLB
+             constexpr static std::array<GSMInt16, 4> _qlb
                {
                   3277, 11469, 21299, 32767
                };
              
-             constexpr static std::array<GSMInt16, 8> _MIC
+             constexpr static std::array<GSMInt16, 8> _mic
                {
                   -32, -32, -16, -16, -8, -8, -4, -4
                };
              
-             constexpr static std::array<GSMInt16, 8> _B
+             constexpr static std::array<GSMInt16, 8> _b
                {
                   0, 0, 2048, -2560, 94, -1792, -341, -1144
                };
              
-             constexpr static std::array<GSMInt16, 8> _INVA
+             constexpr static std::array<GSMInt16, 8> _inva
                {
                   13107, 13107, 13107, 13107, 19223, 17476, 31454, 29708
                };
              
              constexpr static int _numberOfRPEPulses = 13;
-             constexpr static int _RPEBlockSize = 40;
+             constexpr static int _rpeBlockSize = 40;
              
              struct SubFrame
                {
@@ -144,14 +144,14 @@ namespace mods
                   
                   // temporaries
                   std::array<GSMInt16, _numberOfRPEPulses> xp;
-                  std::array<GSMInt16, _RPEBlockSize> ep;
+                  std::array<GSMInt16, _rpeBlockSize> ep;
                };
              
              std::array<SubFrame, 4> _subframes;
              
-             constexpr static int _INITIAL_NRP = 40;
+             constexpr static int _initialNRP = 40;
              
-             GSMInt16 _nrp = _INITIAL_NRP;
+             GSMInt16 _nrp = _initialNRP;
              
              constexpr static int LTP_LAG_SIZE = 7;
              constexpr static int LTP_GAIN_SIZE = 2;
@@ -176,10 +176,10 @@ namespace mods
                   void slideOrigin(int offset);
                   
                 private:
-                  constexpr static int _ARRAY_SIZE = 160;
+                  constexpr static int _ringArraySize = 160;
                   
                   int _origin = 0;
-                  std::array<GSMInt16, _ARRAY_SIZE> _array;
+                  std::array<GSMInt16, _ringArraySize> _array;
                };
              
              RingArray _drp;

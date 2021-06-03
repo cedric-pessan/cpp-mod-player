@@ -52,7 +52,7 @@ namespace mods
           {
              if(_extensibleHeader.has_value())
                {
-                  auto& extensibleHeader = *_extensibleHeader;
+                  const auto& extensibleHeader = *_extensibleHeader;
                   return extensibleHeader->getValidBitsPerSample();
                }
              return _fmtHeader->getBitsPerSample();
@@ -71,7 +71,7 @@ namespace mods
           {
              if(_useChannelMask && _extensibleHeader.has_value())
                {
-                  auto& extensibleHeader = *_extensibleHeader;
+                  const auto& extensibleHeader = *_extensibleHeader;
                   return extensibleHeader->getChannelMask();
                }
              return 0;

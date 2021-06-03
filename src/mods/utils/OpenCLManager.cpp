@@ -9,16 +9,12 @@ namespace mods
    namespace utils
      {
 #ifdef WITH_OPENCL
-        bool OpenCLManager::isEnabled()
+        auto OpenCLManager::isEnabled() -> bool
           {
-             if(getenv("DISABLE_OPENCL") != nullptr)
-               {
-                  return false;
-               }
-             return true;
+             return getenv("DISABLE_OPENCL") == nullptr;
           }
 #else // WITH_OPENCL
-        bool OpenCLManager::isEnabled()
+        auto OpenCLManager::isEnabled() -> bool
           {
              return false;
           }

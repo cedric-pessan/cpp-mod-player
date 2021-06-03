@@ -5,12 +5,12 @@ namespace mods
 {
    namespace wav
      {
-        constexpr std::array<int, 8> GSMDecoderConverter::_LAR_SIZES;
-        constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_FAC;
-        constexpr std::array<GSMInt16, 4> GSMDecoderConverter::_QLB;
-        constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_MIC;
-        constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_B;
-        constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_INVA;
+        constexpr std::array<int, 8> GSMDecoderConverter::_larSizes;
+        constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_fac;
+        constexpr std::array<GSMInt16, 4> GSMDecoderConverter::_qlb;
+        constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_mic;
+        constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_b;
+        constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_inva;
         
         GSMDecoderConverter::GSMDecoderConverter(WavConverter::ptr src)
           : _src(std::move(src)),
@@ -93,9 +93,9 @@ namespace mods
         void GSMDecoderConverter::readParameters()
           {
              using mods::utils::at;
-             for(size_t i=0; i<_LARc.size(); ++i)
+             for(size_t i=0; i<_larC.size(); ++i)
                {
-                  at(_LARc,i) = _bitReader.read(at(_LAR_SIZES,i));
+                  at(_larC,i) = _bitReader.read(at(_larSizes,i));
                }
              
              for(int i=0; i<4; ++i)
@@ -154,7 +154,7 @@ namespace mods
              
              static constexpr int exponentOffset = 6;
              
-             GSMInt16 temp1 = at(_FAC, mantissa.getValue());
+             GSMInt16 temp1 = at(_fac, mantissa.getValue());
              GSMInt16 temp2 = exponentOffset - exponent;
              GSMInt16 temp3 = 1 << (temp2 - 1);
              
@@ -216,7 +216,7 @@ namespace mods
                }
              _nrp = Nr;
              
-             auto& brp = at(_QLB,bcr.getValue());
+             const auto& brp = at(_qlb,bcr.getValue());
              
              for(size_t k=0; k<erp.size(); ++k)
                {
@@ -224,7 +224,7 @@ namespace mods
                   _drp[k] = at(erp,k) + drpp;
                }
              
-             _drp.slideOrigin(_RPEBlockSize);
+             _drp.slideOrigin(_rpeBlockSize);
           }
         
         namespace
@@ -257,23 +257,23 @@ namespace mods
         
         void GSMDecoderConverter::shortTermSynthesis()
           {
-             LARDecode();
+             larDecode();
              
-             for(auto& param : shortTermSynthesisParameters)
+             for(const auto& param : shortTermSynthesisParameters)
                {
                   switch(param.kRange)
                     {
                      case ShortTermSynthesisFilteringRanges::range_0_12:
-                       LARInterpolation_0_12();
+                       larInterpolation_0_12();
                        break;
                      case ShortTermSynthesisFilteringRanges::range_13_26:
-                       LARInterpolation_13_26();
+                       larInterpolation_13_26();
                        break;
                      case ShortTermSynthesisFilteringRanges::range_27_39:
-                       LARInterpolation_27_39();
+                       larInterpolation_27_39();
                        break;
                      case ShortTermSynthesisFilteringRanges::range_40_159:
-                       LARInterpolation_40_159();
+                       larInterpolation_40_159();
                        break;
                     }
                   computeReflectionCoefficients();
@@ -281,71 +281,71 @@ namespace mods
                }
           }
         
-        void GSMDecoderConverter::LARDecode()
+        void GSMDecoderConverter::larDecode()
           {
              using mods::utils::at;
              
-             _currentLARpp = 1 - _currentLARpp;
-             auto& LARpp = at(_LARpp, _currentLARpp);
+             _currentLarPP = 1 - _currentLarPP;
+             auto& larPP = at(_larPP, _currentLarPP);
              
              static constexpr int scaleShift = 10;
              
-             for(size_t i=0; i<LARpp.size(); ++i)
+             for(size_t i=0; i<larPP.size(); ++i)
                {
-                  GSMInt16 temp1 = (at(_LARc,i) + at(_MIC,i)) << scaleShift;
-                  GSMInt16 temp2 = at(_B,i) << 1;
+                  GSMInt16 temp1 = (at(_larC,i) + at(_mic,i)) << scaleShift;
+                  GSMInt16 temp2 = at(_b,i) << 1;
                   temp1 -= temp2;
-                  temp1 = at(_INVA,i).mult_round(temp1);
-                  at(LARpp,i) = temp1 + temp1;
+                  temp1 = at(_inva,i).mult_round(temp1);
+                  at(larPP,i) = temp1 + temp1;
                }
           }
         
-        void GSMDecoderConverter::LARInterpolation_0_12()
+        void GSMDecoderConverter::larInterpolation_0_12()
           {
              using mods::utils::at;
-             auto& LARppOld = at(_LARpp,1-_currentLARpp);
-             auto& LARpp = at(_LARpp,_currentLARpp);
+             auto& larPPOld = at(_larPP,1-_currentLarPP);
+             auto& larPP = at(_larPP,_currentLarPP);
              
-             for(int i=0; i<_numberOfLARCoefficients; ++i)
+             for(int i=0; i<_numberOfLarCoefficients; ++i)
                {
-                  at(_LARp,i) = (at(LARppOld,i) >> 2) + (at(LARpp,i) >> 2);
-                  at(_LARp,i) += (at(LARppOld,i) >> 1);
+                  at(_larP,i) = (at(larPPOld,i) >> 2) + (at(larPP,i) >> 2);
+                  at(_larP,i) += (at(larPPOld,i) >> 1);
                }
           }
         
-        void GSMDecoderConverter::LARInterpolation_13_26()
+        void GSMDecoderConverter::larInterpolation_13_26()
           {
              using mods::utils::at;
-             auto& LARppOld = at(_LARpp,1-_currentLARpp);
-             auto& LARpp = at(_LARpp,_currentLARpp);
+             auto& larPPOld = at(_larPP,1-_currentLarPP);
+             auto& larPP = at(_larPP,_currentLarPP);
              
-             for(int i=0; i<_numberOfLARCoefficients; ++i)
+             for(int i=0; i<_numberOfLarCoefficients; ++i)
                {
-                  at(_LARp,i) = (at(LARppOld,i) >> 1) + (at(LARpp,i) >> 1);
+                  at(_larP,i) = (at(larPPOld,i) >> 1) + (at(larPP,i) >> 1);
                }
           }
         
-        void GSMDecoderConverter::LARInterpolation_27_39()
+        void GSMDecoderConverter::larInterpolation_27_39()
           {
              using mods::utils::at;
-             auto& LARppOld = at(_LARpp,1-_currentLARpp);
-             auto& LARpp = at(_LARpp,_currentLARpp);
+             auto& larPPOld = at(_larPP,1-_currentLarPP);
+             auto& larPP = at(_larPP,_currentLarPP);
              
-             for(int i=0; i<_numberOfLARCoefficients; ++i)
+             for(int i=0; i<_numberOfLarCoefficients; ++i)
                {
-                  at(_LARp,i) = (at(LARppOld,i) >> 2) + (at(LARpp,i) >> 2);
-                  at(_LARp,i) += (at(LARpp,i) >> 1);
+                  at(_larP,i) = (at(larPPOld,i) >> 2) + (at(larPP,i) >> 2);
+                  at(_larP,i) += (at(larPP,i) >> 1);
                }
           }
         
-        void GSMDecoderConverter::LARInterpolation_40_159()
+        void GSMDecoderConverter::larInterpolation_40_159()
           {
              using mods::utils::at;
-             auto& LARpp = at(_LARpp,_currentLARpp);
+             auto& larPP = at(_larPP,_currentLarPP);
              
-             for(int i=0; i<_numberOfLARCoefficients; ++i)
+             for(int i=0; i<_numberOfLarCoefficients; ++i)
                {
-                  at(_LARp,i) = at(LARpp,i);
+                  at(_larP,i) = at(larPP,i);
                }
           }
         
@@ -355,7 +355,7 @@ namespace mods
              
              for(size_t i=0; i<_rp.size(); ++i)
                {
-                  GSMInt16 temp = at(_LARp,i).abs();
+                  GSMInt16 temp = at(_larP,i).abs();
                   static constexpr int segment2BaseValue = 11059;
                   static constexpr int segment3Begin = 20070;
                   if(temp < segment2BaseValue)
@@ -372,7 +372,7 @@ namespace mods
                        temp = (temp >> 2) + segment3Offset;
                     }
                   at(_rp,i) = temp;
-                  if(at(_LARp,i) < 0)
+                  if(at(_larP,i) < 0)
                     {
                        at(_rp,i) = -at(_rp,i);
                     }
@@ -430,11 +430,11 @@ namespace mods
              int idx = index.getValue() + _origin;
              if(idx < 0)
                {
-                  idx += _ARRAY_SIZE;
+                  idx += _ringArraySize;
                }
-             if(idx >= _ARRAY_SIZE)
+             if(idx >= _ringArraySize)
                {
-                  idx -= _ARRAY_SIZE;
+                  idx -= _ringArraySize;
                }
              return _array.at(idx);
           }
@@ -442,9 +442,9 @@ namespace mods
         void GSMDecoderConverter::RingArray::slideOrigin(int offset)
           {
              _origin += offset;
-             if(_origin >= _ARRAY_SIZE)
+             if(_origin >= _ringArraySize)
                {
-                  _origin -= _ARRAY_SIZE;
+                  _origin -= _ringArraySize;
                }
           }
         

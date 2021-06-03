@@ -53,7 +53,7 @@ namespace mods
              
              auto operator[](size_type pos) const -> const_reference
                {
-                  assert(check(pos < _len, "out of bound RBuffer[]"));
+                  assert(check(pos < _len, static_cast<const char*>("out of bound RBuffer[]")));
                   return *(_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                }
              

@@ -247,7 +247,7 @@ namespace mods
                     }
                   
                   auto demuxConverter = std::make_unique<DemuxConverter>(std::move(uncompressedChannels.back()), nbChannels, toUnderlying(demuxBitsPerContainer));
-                  auto firstChannels = demuxConverter->getFirstChannels();
+                  auto* firstChannels = demuxConverter->getFirstChannels();
                   for(auto& channel : *firstChannels)
                     {
                        demuxedChannels.push_back(std::move(channel));

@@ -83,7 +83,7 @@ namespace mods
 	
 	auto DVIADPCMDecoderConverter::isFinished() const -> bool
 	  {
-             for(auto& decoder : _decoders)
+             for(const auto& decoder : _decoders)
                {
                   if(!decoder.hasNextSampleInCurrentBlock())
                     {

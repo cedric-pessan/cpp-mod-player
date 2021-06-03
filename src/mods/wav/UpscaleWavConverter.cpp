@@ -41,9 +41,8 @@ namespace mods
                
                for(int i = nbElems-1; i>=0; --i)
                  {
-                    TOut value = inView[i];
-                    u32 v = static_cast<u32>(value);
-                    value = (v << shiftLeftValue()) | ((v >> shiftRightValue()) & maskValue());
+                    u32 v = static_cast<u8>(inView[i]);
+                    TOut value = (v << shiftLeftValue()) | ((v >> shiftRightValue()) & maskValue());
                     outView[i] = value;
                  }
             }
