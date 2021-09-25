@@ -21,7 +21,9 @@ namespace mods
              auto operator=(FirFilterDesigner&&) -> FirFilterDesigner& = delete;
              ~FirFilterDesigner() = default;
              
-             auto getTaps() const -> const std::vector<double>&;
+             using TapsType = std::vector<double>;
+             
+             auto getTaps() const -> const TapsType&;
              
            private:
              void optimizeFilter();
@@ -29,7 +31,7 @@ namespace mods
 	     double _sampleFrequency;
 	     double _cutOff;
 	     
-	     std::vector<double> _taps;
+	     TapsType _taps;
           };
      } // namespace utils
 } // namespace mods

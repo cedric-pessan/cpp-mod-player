@@ -275,7 +275,7 @@ namespace mods
                   return _begin == _end;
                }
              
-             auto History::getSample(size_t i) -> const SampleWithZeros&
+             auto History::getSample(size_t i) -> SampleWithZeros&
                {
                   size_t idx = _begin + i;
                   if(idx >= _v.size())
@@ -289,6 +289,54 @@ namespace mods
                     }
                   return _v[idx];
                }
+             
+             auto History::begin() -> History::iterator
+               {
+                  return iterator(*this, 0);
+               }
+             
+             auto History::end() -> History::iterator
+               {
+                  return iterator(*this, size());
+               }
+             
+             auto History::size() const -> size_t
+               {
+                  if(isEmpty())
+                    {
+                       return 0;
+                    }
+                  if(_begin < _end)
+                    {
+                       return _end - _begin;
+                    }
+                  size_t size = _v.size() - _begin;
+                  size += _end;
+                  return size;
+               }
+             
+             History::Iterator::Iterator(History& history, size_t idx)
+               : _history(history),
+               _idx(idx)
+                 {
+                 }
+             
+             auto History::Iterator::operator-(const Iterator& it) const -> History::difference_type
+               {
+                  return _idx - it._idx;
+               }
+             
+             auto History::Iterator::operator*() const -> History::reference
+               {
+                  return _history.getSample(_idx);
+               }
+             
+             auto History::Iterator::operator++() -> History::Iterator&
+               {
+                  ++_idx;
+                  return *this;
+               }
+             
           } // namespace impl
         
         template class ResampleConverter<StaticResampleParameters<StandardFrequency::_22000, StandardFrequency::_44100>>;

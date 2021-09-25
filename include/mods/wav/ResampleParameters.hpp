@@ -56,6 +56,11 @@ namespace mods
                   using mods::utils::at;
                   return at(FilterType::taps, i);
                }
+             
+             constexpr static auto getTaps() -> const typename FilterType::TapsType&
+               {
+                  return FilterType::taps;
+               }
           };
         
         class DynamicResampleParameters
@@ -77,6 +82,8 @@ namespace mods
              auto getDecimationFactor() const -> int;
              
              auto getTap(size_t i) const -> double;
+             
+             auto getTaps() const -> const typename mods::utils::FirFilterDesigner::TapsType&;
              
            private:
              auto getResampleFraction() const -> const mods::utils::ConstFraction&;

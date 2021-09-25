@@ -36,5 +36,10 @@ namespace mods
           {
              return _designer.getTaps()[i];
           }
+        
+        auto DynamicResampleParameters::getTaps() const -> const typename mods::utils::FirFilterDesigner::TapsType&
+          {
+             return _designer.getTaps();
+          }
      } // namespace wav
 } // namespace mods

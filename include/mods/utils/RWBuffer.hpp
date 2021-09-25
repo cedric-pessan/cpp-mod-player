@@ -50,6 +50,13 @@ namespace mods
              
              class iterator
                {
+                public:
+                  using value_type = T;
+                  using iterator_category = std::random_access_iterator_tag;
+                  using difference_type = std::ptrdiff_t;
+                  using pointer = value_type*;
+                  using reference = value_type&;
+                  
                 private:
                   iterator(RWBuffer<T>& rwbuf, size_type pos)
                     : _pos(pos),
@@ -86,6 +93,11 @@ namespace mods
                     {
                        ++_pos;
                        return *this;
+                    }
+                  
+                  auto operator-(const iterator& it) const -> difference_type
+                    {
+                       return _pos - it._pos;
                     }
                   
                 private:

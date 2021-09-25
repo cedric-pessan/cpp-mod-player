@@ -3,6 +3,8 @@
 
 #include "mods/utils/types.hpp"
 
+#include <utility>
+
 namespace mods
 {
    /*
@@ -17,6 +19,14 @@ namespace mods
           : _value()
           {
           }
+        
+        template<typename... Args>
+          constexpr explicit optional(Args&&... args)
+            {
+               ::new(&_value.value)T(std::forward<Args>(args)...);
+               _hasValue = true;
+            }
+        
         ~optional()
           {
              cleanValue();
@@ -46,6 +56,11 @@ namespace mods
         constexpr auto operator*() const& -> const T&
           {
              return _value.value; // NOLINT(cppcoreguidelines-pro-type-union-access)
+          }
+        
+        constexpr auto operator->() const -> const T*
+          {
+             return std::addressof(_value.value);
           }
         
         optional(optional&& o) noexcept

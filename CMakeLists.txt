@@ -22,6 +22,7 @@ set(WITH_OPENCL 1)
 endif()
 
 include_directories(${SDL_INCLUDE_DIR}
+                    ${OpenCL_INCLUDE_DIR}
                     ${CMAKE_CURRENT_BINARY_DIR}/include
                     ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -88,7 +89,7 @@ add_executable(modreader src/main.cpp
                          ${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp
                          ${CMAKE_CURRENT_BINARY_DIR}/src/mods/utils/Filters.cpp)
 
-target_link_libraries(modreader ${SDL_LIBRARY})
+target_link_libraries(modreader ${SDL_LIBRARY} ${OpenCL_LIBRARY})
 
 set_property(TARGET filter_generator PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 set_property(TARGET modreader PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
