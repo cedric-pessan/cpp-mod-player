@@ -86,7 +86,7 @@ namespace mods
              auto getTaps() const -> const typename mods::utils::FirFilterDesigner::TapsType&;
              
            private:
-             auto getResampleFraction() const -> const mods::utils::ConstFraction&;
+             auto getResampleFraction() const -> const mods::utils::ConstFraction&;;
              
              static constexpr double _nyquistFactor = 2.0;
              

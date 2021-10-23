@@ -22,30 +22,28 @@ namespace mods
              ~ResampleConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
-           private:
-             auto getNextDecimatedSample() -> double;
-             void updateHistory();
+           protected:
              void removeFromHistory();
              void addToHistory();
-             auto calculateInterpolatedSample() -> double;
+             
+             PARAMETERS _resampleParameters;
+             impl::History _history;
+             
+           private:
              auto getNextSample() -> double;
              auto nextSampleExists() const -> bool;
              auto initBuffer() -> mods::utils::RWBuffer<u8>;
              
              WavConverter::ptr _src;
-             PARAMETERS _resampleParameters;
              int _zerosToNextInterpolatedSample = 0;
              
              std::vector<u8> _inputVec;
              mods::utils::RWBuffer<u8> _inputBuffer;
              mods::utils::RWBuffer<double> _inputBufferAsDouble;
              size_t _currentSample;
-             
-             impl::History _history;
           };
      } // namespace wav
-} // namespace mods*/
+} // namespace mods
 
 #endif // MODS_WAV_RESAMPLECONVERTER_HPP

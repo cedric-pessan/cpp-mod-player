@@ -17,9 +17,9 @@
 #include "mods/wav/OKIADPCMDecoderConverter.hpp"
 #include "mods/wav/OpenCLConverterTypes.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
-#include "mods/wav/ResampleConverter.hpp"
 #include "mods/wav/ResampleParameters.hpp"
 #include "mods/wav/ResamplePositiveIntegerFactor.hpp"
+#include "mods/wav/SoftwareResampleConverter.hpp"
 #include "mods/wav/ToDoubleConverter.hpp"
 #include "mods/wav/TruspeechDecoderConverter.hpp"
 #include "mods/wav/UnpackToTypeConverter.hpp"
@@ -434,7 +434,7 @@ namespace mods
                          }
                        else
                          {
-                            resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
                          }
                     }
                   break;
@@ -451,7 +451,7 @@ namespace mods
                          }
                        else
                          {
-                            resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
                          }
 		    }
 		  break;
@@ -475,7 +475,7 @@ namespace mods
                          }
                        else
                          {
-                            resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
                          }
                     }
                   break;
@@ -506,7 +506,7 @@ namespace mods
                          }
                        else
                          {
-                            resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
                          }
                     }
                   break;
@@ -524,7 +524,7 @@ namespace mods
                          }
                        else
                          {
-                            resampledChannels.push_back(std::make_unique<ResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
+                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType>>(std::move(upscaledChannels[i]), params));
                          }
 		    }
                }

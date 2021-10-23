@@ -69,6 +69,7 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/ResampleConverter.cpp
                          src/mods/wav/ResampleParameters.cpp
                          src/mods/wav/ResamplePositiveIntegerFactor.cpp
+                         src/mods/wav/SoftwareResampleConverter.cpp
                          src/mods/wav/StatCollector.cpp
                          src/mods/wav/ToDoubleConverter.cpp
                          src/mods/wav/TruspeechDecoderConverter.cpp

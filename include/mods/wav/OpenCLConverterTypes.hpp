@@ -24,7 +24,7 @@ namespace mods
 #ifdef WITH_OPENCL
              using ResampleConverterImpl = OpenCLResampleConverter<PARAMETERS>;
 #else // WITH_OPENCL
-             using ResampleConverterImpl = ResampleConverter<PARAMETERS>;
+             using ResampleConverterImpl = SoftwareResampleConverter<PARAMETERS>;
 #endif // WITH_OPENCL
              
           };

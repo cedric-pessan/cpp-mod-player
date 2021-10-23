@@ -1,5 +1,5 @@
 
-#include "mods/StandardFrequency.hpp"
+/*#include "mods/StandardFrequency.hpp"*/
 #include "mods/wav/ResampleConverter.hpp"
 #include "mods/wav/ResampleParameters.hpp"
 
@@ -9,13 +9,13 @@ namespace mods
      {
         template<typename PARAMETERS>
           ResampleConverter<PARAMETERS>::ResampleConverter(WavConverter::ptr src, PARAMETERS resampleParameters)
-            : _src(std::move(src)),
-          _resampleParameters(std::move(resampleParameters)),
+            : _resampleParameters(std::move(resampleParameters)),
+          _history(_resampleParameters.getNumTaps()),
+          _src(std::move(src)),
           _inputVec(((_resampleParameters.getNumTaps() / _resampleParameters.getInterpolationFactor())+1) * sizeof(double)),
           _inputBuffer(initBuffer()),
           _inputBufferAsDouble(_inputBuffer.slice<double>(0, _inputVec.size() / sizeof(double))),
-          _currentSample(_resampleParameters.getNumTaps()),
-          _history(_resampleParameters.getNumTaps())
+          _currentSample(_resampleParameters.getNumTaps())
             {
                using impl::SampleWithZeros;
                _history.push_back(SampleWithZeros(0.0, _resampleParameters.getNumTaps()-1));
@@ -35,38 +35,6 @@ namespace mods
           {
              return _src->isFinished() && _history.isEmpty();
           }
-        
-        template<typename PARAMETERS>
-          void ResampleConverter<PARAMETERS>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
-            {
-               if((len % sizeof(double)) != 0)
-                 {
-                    std::cout << "TODO: wrong buffer length in ResampleConverter" << std::endl;
-                 }
-               
-               auto nbElems = len / sizeof(double);
-               
-               auto outView = buf->slice<double>(0, nbElems);
-               
-               for(size_t i=0; i<nbElems; ++i)
-                 {
-                    outView[i] = getNextDecimatedSample();
-                 }
-            }
-        
-        template<typename PARAMETERS>
-          auto ResampleConverter<PARAMETERS>::getNextDecimatedSample() -> double
-            {
-               updateHistory();
-               return calculateInterpolatedSample();
-            }
-        
-        template<typename PARAMETERS>
-          void ResampleConverter<PARAMETERS>::updateHistory()
-            {
-               removeFromHistory();
-               addToHistory();
-            }
         
         template<typename PARAMETERS>
           void ResampleConverter<PARAMETERS>::removeFromHistory()
@@ -152,24 +120,6 @@ namespace mods
                       }
                  }
             }
-        
-        template<typename PARAMETERS>
-          auto ResampleConverter<PARAMETERS>::calculateInterpolatedSample() -> double
-          {
-             double sample = 0.0;
-             int idxSampleWithZeros = 0;
-             auto interpolationFactor = _resampleParameters.getInterpolationFactor();
-             for(int i = 0; i < _resampleParameters.getNumTaps(); ++i) 
-               {
-                  const auto& sampleWithZeros = _history.getSample(idxSampleWithZeros++);
-                  i += sampleWithZeros.numberOfZeros();
-                  if(i < _resampleParameters.getNumTaps()) 
-                    {
-                       sample += sampleWithZeros.sample() * interpolationFactor * _resampleParameters.getTap(i);
-                    }
-               }
-             return sample;
-          }
         
         template<typename PARAMETERS>
           auto ResampleConverter<PARAMETERS>::getNextSample() -> double
@@ -267,6 +217,24 @@ namespace mods
                   if(_end == _v.size())
                     {
                        _end = 0;
+                    }
+                  if(_begin == _end) // resize
+                    {
+                       auto oldSize = _v.size();
+                       std::vector<SampleWithZeros> newVec(oldSize * 2);
+                       newVec[0] = _v[_begin];
+                       ++_begin;
+                       if(_begin == _v.size())
+                         {
+                            _begin = 0;
+                         }
+                       for(size_t i=1; i<oldSize; ++i) 
+                         {
+                            newVec[i] = getSample(i-1);
+                         }
+                       _v = std::move(newVec);
+                       _begin = 0;
+                       _end =  oldSize;
                     }
                }
              
