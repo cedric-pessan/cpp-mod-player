@@ -25,6 +25,8 @@ include_directories(${SDL_INCLUDE_DIR}
                     ${OpenCL_INCLUDE_DIR}
                     ${CMAKE_CURRENT_BINARY_DIR}/include
                     ${CMAKE_CURRENT_SOURCE_DIR}/include)
+                    
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/contrib/include)
 
 configure_file(include/mods/utils/nativeEndian.hpp.in include/mods/utils/nativeEndian.hpp)
 configure_file(include/config.hpp.in include/config.hpp)

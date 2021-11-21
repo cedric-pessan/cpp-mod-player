@@ -27,13 +27,16 @@ namespace mods
              void removeFromHistory();
              void addToHistory();
              
-             PARAMETERS _resampleParameters;
-             impl::History _history;
+             auto getHistory() -> impl::History&;
+             auto getResampleParameters() const -> const PARAMETERS&;
              
            private:
              auto getNextSample() -> double;
              auto nextSampleExists() const -> bool;
              auto initBuffer() -> mods::utils::RWBuffer<u8>;
+             
+             PARAMETERS _resampleParameters;
+             impl::History _history;
              
              WavConverter::ptr _src;
              int _zerosToNextInterpolatedSample = 0;

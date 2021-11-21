@@ -24,51 +24,56 @@ namespace mods
         
         namespace
           {
-             const std::string firKernelSource = R"OpenCL(
+             auto getFirKernelSource() -> const std::string&
+               {
+                  static const std::string firKernelSource = R"OpenCL(
 
-               kernel void firFilter(global double* output,
-                                     global const int* zeros,
-                                     global const double* samples,
-                                     global const double* taps) {
-                 unsigned int idxItem = get_global_id(0);
-                 unsigned int toSkip = idxItem * decimationFactor;
-                 double sample = 0.0;
+                    kernel void firFilter(global double* output,
+                                          global const int* zeros,
+                                          global const double* samples,
+                                          global const double* taps) {
+                      unsigned int idxItem = get_global_id(0);
+                      unsigned int toSkip = idxItem * decimationFactor;
+                      double sample = 0.0;
 
-                 // position and do first tap
-                 unsigned int currentIdx = 0;
-                 unsigned int remainingZeros = zeros[currentIdx];
-                 while(toSkip > 0) {
-                   if(remainingZeros > 0) {
-                     if(toSkip > remainingZeros) {
-                       toSkip -= remainingZeros;
-                       remainingZeros = 0;
-                     } else {
-                       remainingZeros -= toSkip;
-                       toSkip = 0;
-                     }
-                   } else {
-                     --toSkip;
-                     ++currentIdx;
-                     remainingZeros = zeros[currentIdx];
-                   }
-                 }
-                 
-                 if(remainingZeros < numTaps) {
-                   sample += samples[currentIdx++] * interpolationFactor * taps[remainingZeros+1];
-                 }
-                 
-                 // loop after first tap
-                 for(unsigned int i=remainingZeros+2; i<numTaps; ++i) {
-                   i += zeros[currentIdx];
-                   if(i < numTaps) {
-                     sample += samples[currentIdx++] * interpolationFactor * taps[i];
-                   }
-                 }
-                 
-                 output[idxItem] = sample;
+                      // position and do first tap
+                      unsigned int currentIdx = 0;
+                      unsigned int remainingZeros = zeros[currentIdx];
+                      while(toSkip > 0) {
+                        if(remainingZeros > 0) {
+                          if(toSkip > remainingZeros) {
+                            toSkip -= remainingZeros;
+                            remainingZeros = 0;
+                          } else {
+                            remainingZeros -= toSkip;
+                            toSkip = 0;
+                          }
+                        } else {
+                          --toSkip;
+                          ++currentIdx;
+                          remainingZeros = zeros[currentIdx];
+                        }
+                      }
+                     
+                      if(remainingZeros < numTaps) {
+                        sample += samples[currentIdx++] * interpolationFactor * taps[remainingZeros+1];
+                      }
+                     
+                      // loop after first tap
+                      for(unsigned int i=remainingZeros+2; i<numTaps; ++i) {
+                        i += zeros[currentIdx];
+                        if(i < numTaps) {
+                          sample += samples[currentIdx++] * interpolationFactor * taps[i];
+                        }
+                      }
+                      
+                      output[idxItem] = sample;
+                    }
+
+                  )OpenCL";
+                  
+                  return firKernelSource;
                }
-
-             )OpenCL";
           } // namespace
         
         template<typename PARAMETERS>
@@ -76,13 +81,13 @@ namespace mods
           {
              try
                {
-                  auto& resampleParameters = ResampleConverter<PARAMETERS>::_resampleParameters;
+                  auto& resampleParameters = ResampleConverter<PARAMETERS>::getResampleParameters();
                   
                   std::stringstream ss;
                   ss << "constant unsigned int interpolationFactor = " << resampleParameters.getInterpolationFactor() << ";" << std::endl;
                   ss << "constant unsigned int decimationFactor = " << resampleParameters.getDecimationFactor() << ";" << std::endl;
                   ss << "constant unsigned int numTaps = " << resampleParameters.getNumTaps() << ";" << std::endl;
-                  ss << firKernelSource;
+                  ss << getFirKernelSource();
                   
                   cl::Program program(_context, ss.str(), true);
                   return program;
@@ -102,7 +107,7 @@ namespace mods
         template<typename PARAMETERS>
           auto OpenCLResampleConverter<PARAMETERS>::buildTapsBuffer() -> cl::Buffer
           {
-             auto& resampleParameters = ResampleConverter<PARAMETERS>::_resampleParameters;
+             auto& resampleParameters = ResampleConverter<PARAMETERS>::getResampleParameters();
              
              std::vector<double> taps(resampleParameters.getTaps().begin(),
                                       resampleParameters.getTaps().end());
@@ -128,7 +133,7 @@ namespace mods
                
                using SampleHistoryCollection = mods::utils::TransformedCollection<impl::History, std::function<double&(impl::SampleWithZeros&)>>;
                using ZeroHistoryCollection = mods::utils::TransformedCollection<impl::History, std::function<int&(impl::SampleWithZeros&)>>;
-               auto& history = ResampleConverter<PARAMETERS>::_history;
+               auto& history = ResampleConverter<PARAMETERS>::getHistory();
                
                SampleHistoryCollection sampleHistory(history, [](impl::SampleWithZeros& sampleWithZeros) -> double& {
                   return sampleWithZeros.sample();
@@ -139,7 +144,7 @@ namespace mods
                
                cl::Buffer sampleBuffer(_context, sampleHistory.begin(), sampleHistory.end(), true);
                cl::Buffer zerosBuffer(_context, zeroHistory.begin(), zeroHistory.end(), true);
-               cl::Buffer outputBuffer(_context, CL_MEM_WRITE_ONLY, nbElems * sizeof(double));
+               cl::Buffer outputBuffer(_context, CL_MEM_WRITE_ONLY, nbElems * sizeof(double)); // NOLINT(hicpp-signed-bitwise)
                
                cl::NDRange global(nbElems);
                _firFilterKernel(cl::EnqueueArgs(_queue, global),

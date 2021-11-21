@@ -11,20 +11,10 @@ namespace mods
    namespace utils
      {
 #ifdef WITH_OPENCL
-        std::unique_ptr<OpenCLManager::OpenCLConfig> OpenCLManager::_config;
-        std::mutex OpenCLManager::_configInitMutex;
-        
         auto OpenCLManager::getConfig() -> const OpenCLConfig&
           {
-             if(!_config)
-               {
-                  std::lock_guard<std::mutex> lock(_configInitMutex);;
-                  if(!_config)
-                    {
-                       _config = std::make_unique<OpenCLConfig>();
-                    }
-               }
-             return *_config;
+             static OpenCLConfig config;
+             return config;
           }
         
         auto OpenCLManager::isEnabled() -> bool
@@ -79,7 +69,7 @@ namespace mods
                          }
                        
                        auto type = d.getInfo<CL_DEVICE_TYPE>();
-                       if(type == CL_DEVICE_TYPE_GPU) 
+                       if(type == CL_DEVICE_TYPE_GPU) // NOLINT(hicpp-signed-bitwise)
                          {
                             _enabled = true;
                             gpuPlatform = true;
@@ -151,8 +141,8 @@ namespace mods
                   return mods::optional<std::pair<int, int>>();
                }
              
-             int major = ::atoi(majorString.c_str());
-             int minor = ::atoi(minorString.c_str());
+             u64 major = ::strtol(majorString.c_str(), nullptr, 0);
+             u64 minor = ::strtol(minorString.c_str(), nullptr, 0);
              
              return mods::optional<std::pair<int, int>>(major, minor);
           }

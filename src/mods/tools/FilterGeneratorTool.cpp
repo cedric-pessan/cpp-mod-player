@@ -154,7 +154,8 @@ namespace mods
              out << "      auto operator=(LowPassFilter&&) -> LowPassFilter& = delete;" << std::endl;
              out << "      ~LowPassFilter() = delete;" << std::endl;
              out << std::endl;
-             out << "      using TapsType = std::array<double, " << taps.size() << ">;" << std::endl;
+             out << "      constexpr static int numberOfTaps = " << taps.size() << ";" << std::endl;
+             out << "      using TapsType = std::array<double, numberOfTaps>;" << std::endl;
              out << std::endl;
              out << "      static const TapsType taps;" << std::endl;
              

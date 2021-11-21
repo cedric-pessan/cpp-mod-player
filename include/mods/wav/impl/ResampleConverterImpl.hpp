@@ -81,7 +81,7 @@ namespace mods
                   class Iterator
                     {
                      public:
-                       Iterator(History& history, size_t idx);
+                       Iterator(History* history, size_t idx);
                        
                        Iterator() = delete;
                        Iterator(const Iterator&) = default;

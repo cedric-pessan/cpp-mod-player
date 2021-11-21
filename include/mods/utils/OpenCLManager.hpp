@@ -8,11 +8,11 @@
 #include <mutex>
 
 #ifdef WITH_OPENCL
-# define CL_TARGET_OPENCL_VERSION 120
-# define CL_HPP_TARGET_OPENCL_VERSION 120
-# define CL_HPP_MINIMUM_OPENCL_VERSION 120
+# define CL_TARGET_OPENCL_VERSION 120      // NOLINT(cppcoreguidelines-macro-usage)
+# define CL_HPP_TARGET_OPENCL_VERSION 120  // NOLINT(cppcoreguidelines-macro-usage)
+# define CL_HPP_MINIMUM_OPENCL_VERSION 120 // NOLINT(cppcoreguidelines-macro-usage)
 # define CL_HPP_ENABLE_EXCEPTIONS
-# include "CL/opencl.hpp"
+# include <CL/opencl.hpp>
 #endif // WITH_OPENCL
 
 namespace mods
@@ -32,7 +32,6 @@ namespace mods
              static auto isEnabled() -> bool;
              
 #ifdef WITH_OPENCL
-           public:
              static auto getContext() -> cl::Context;
              
            private:
@@ -57,9 +56,6 @@ namespace mods
                };
              
              static auto getConfig() -> const OpenCLConfig&;
-             
-             static std::unique_ptr<OpenCLConfig> _config;
-             static std::mutex _configInitMutex;
 #endif // WITH_OPENCL
           };
      } // namespace utils

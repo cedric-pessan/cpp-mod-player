@@ -27,9 +27,9 @@ namespace mods
              using difference_type = std::ptrdiff_t;
              using size_type = std::size_t;
              
-             TransformedCollection(C& collection, const F& transform)
+             TransformedCollection(C& collection, F transform)
                : _collection(collection),
-               _transform(transform)
+               _transform(std::move(transform))
                  {
                  }
              
@@ -63,15 +63,15 @@ namespace mods
                   using pointer = value_type*;
                   using reference = value_type&;
                   
-                  Iterator(const typename C::iterator& internalIt, const F& transform)
+                  Iterator(const typename C::iterator& internalIt, F transform)
                     : _internalIt(internalIt),
-                    _transform(transform)
+                    _transform(std::move(transform))
                       {
                       }
                   
                   Iterator() = delete;
                   Iterator(const Iterator&) = default;
-                  Iterator(Iterator&&) = default;
+                  Iterator(Iterator&&) noexcept = default;
                   auto operator=(const Iterator&) -> Iterator& = delete;
                   auto operator=(Iterator&&) -> Iterator& = delete;
                   ~Iterator() = default;

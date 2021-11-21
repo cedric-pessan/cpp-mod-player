@@ -23,7 +23,7 @@ namespace mods
         template<typename... Args>
           constexpr explicit optional(Args&&... args)
             {
-               ::new(&_value.value)T(std::forward<Args>(args)...);
+               ::new(&_value.value)T(std::forward<Args>(args)...); // NOLINT(cppcoreguidelines-pro-type-union-access)
                _hasValue = true;
             }
         
@@ -60,7 +60,7 @@ namespace mods
         
         constexpr auto operator->() const -> const T*
           {
-             return std::addressof(_value.value);
+             return std::addressof(_value.value); // NOLINT(cppcoreguidelines-pro-type-union-access)
           }
         
         optional(optional&& o) noexcept

@@ -138,6 +138,18 @@ namespace mods
                return _currentSample < _inputBufferAsDouble.size() || !_src->isFinished();
             }
         
+        template<typename PARAMETERS>
+          auto ResampleConverter<PARAMETERS>::getResampleParameters() const -> const PARAMETERS&
+          {
+             return _resampleParameters;
+          }
+        
+        template<typename PARAMETERS>
+          auto ResampleConverter<PARAMETERS>::getHistory() -> impl::History&
+            {
+               return _history;
+            }
+        
         namespace impl
           {
              SampleWithZeros::SampleWithZeros(double sample, int zeros)
@@ -260,12 +272,12 @@ namespace mods
              
              auto History::begin() -> History::iterator
                {
-                  return iterator(*this, 0);
+                  return { this, 0 };
                }
              
              auto History::end() -> History::iterator
                {
-                  return iterator(*this, size());
+                  return { this, size() };
                }
              
              auto History::size() const -> size_t
@@ -283,8 +295,8 @@ namespace mods
                   return size;
                }
              
-             History::Iterator::Iterator(History& history, size_t idx)
-               : _history(history),
+             History::Iterator::Iterator(History* history, size_t idx)
+               : _history(*history),
                _idx(idx)
                  {
                  }

@@ -47,8 +47,8 @@ namespace mods
         template<typename PARAMETERS>
           auto SoftwareResampleConverter<PARAMETERS>::calculateInterpolatedSample() -> double
           {
-             auto& resampleParameters = ResampleConverter<PARAMETERS>::_resampleParameters;
-             auto& history = ResampleConverter<PARAMETERS>::_history;
+             auto& resampleParameters = ResampleConverter<PARAMETERS>::getResampleParameters();
+             auto& history = ResampleConverter<PARAMETERS>::getHistory();
              
              double sample = 0.0;
              int idxSampleWithZeros = 0;
