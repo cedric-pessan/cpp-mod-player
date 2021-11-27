@@ -13,7 +13,8 @@ namespace mods
    enum struct ModuleFormat
      {
         WAV,
-        UNKNOWN
+          MOD,
+          UNKNOWN
      };
    
    class ModuleReader

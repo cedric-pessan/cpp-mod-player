@@ -1,5 +1,6 @@
 
 #include "mods/ModuleReader.hpp"
+#include "mods/mod/ModReader.hpp"
 #include "mods/wav/WavReader.hpp"
 
 namespace mods
@@ -10,6 +11,10 @@ namespace mods
         if(format == "wav")
           {
              return ModuleFormat::WAV;
+          }
+        if(format == "mod")
+          {
+             return ModuleFormat::MOD;
           }
         
         return ModuleFormat::UNKNOWN;
@@ -23,6 +28,9 @@ namespace mods
           {
            case ModuleFormat::WAV:
              reader = std::make_unique<wav::WavReader>(filename);
+             break;
+           case ModuleFormat::MOD:
+             reader = std::make_unique<mod::ModReader>();
              break;
            case ModuleFormat::UNKNOWN:
              // keep null reader
