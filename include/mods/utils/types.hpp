@@ -65,6 +65,47 @@ template<>
 };
 
 template<Endianness endianness>
+  class u16beImpl
+{
+ private:
+   mods::utils::PackedArray<u8, 2> _v;
+   
+ public:
+   /*explicit operator u16() const
+     {
+        return static_cast<u16>(_v[0]) |
+          static_cast<u16>(static_cast<u16>(_v[1]) << BITS_IN_BYTE);
+     }*/
+   
+   u16beImpl() = delete;
+   u16beImpl(const u16beImpl&) = delete;
+   u16beImpl(u16beImpl&&) = delete;
+   auto operator=(const u16beImpl&) -> u16beImpl& = delete;
+   auto operator=(u16beImpl&&) -> u16beImpl& = delete;
+   ~u16beImpl() = delete;
+};
+
+template<>
+  class u16beImpl<Endianness::BigEndian>
+{
+ private:
+   u16 _value;
+   
+ public:
+   /*explicit operator u16() const
+     {
+        return _value;
+     }*/
+   
+   u16beImpl() = delete;
+   u16beImpl(const u16beImpl&) = delete;
+   u16beImpl(u16beImpl&&) = delete;
+   auto operator=(const u16beImpl&) -> u16beImpl& = delete;
+   auto operator=(u16beImpl&&) -> u16beImpl& = delete;
+   ~u16beImpl() = delete;
+};
+
+template<Endianness endianness>
   class u32leImpl
 {
  private:
@@ -111,6 +152,7 @@ template<>
 
 using u16le = u16leImpl<NativeEndianness::value>;
 using u32le = u32leImpl<NativeEndianness::value>;
+using u16be = u16beImpl<NativeEndianness::value>;
 
 class s16le 
 {
@@ -129,6 +171,20 @@ class s16le
    auto operator=(const s16le&) -> s16le& = delete;
    auto operator=(s16le&&) -> s16le& = delete;
    ~s16le() = delete;
+};
+
+class s16be
+{
+ private:
+   u16be _value;
+   
+ public:
+   s16be() = delete;
+   s16be(const s16be&) = delete;
+   s16be(s16be&&) = delete;
+   auto operator=(const s16be&) -> s16be& = delete;
+   auto operator=(s16be&&) -> s16be& = delete;
+   ~s16be() = delete;
 };
 
 #pragma pack(pop)

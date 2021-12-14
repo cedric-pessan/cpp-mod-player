@@ -13,6 +13,8 @@ namespace mods
           class PackedArray
           {
            public:
+             using value_type = T;
+             
              PackedArray() = delete;
              PackedArray(const PackedArray&) = delete;
              PackedArray(PackedArray&&) = delete;
@@ -29,6 +31,55 @@ namespace mods
                {
                   assert(index >= 0 && index < SIZE);
                   return _array[index]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+               }
+             
+             class Iterator
+               {
+                public:
+                  using value_type = PackedArray::value_type;
+                  using const_reference = const value_type&;
+                  
+                  Iterator(const PackedArray& packedArray, size_t pos) :
+                    _packedArray(packedArray),
+                    _pos(pos)
+                      {
+                      }
+                  
+                  Iterator() = delete;
+                  Iterator(const Iterator&) = delete;
+                  Iterator(Iterator&&) = default;
+                  auto operator=(const Iterator&) -> Iterator& = delete;
+                  auto operator=(Iterator&&) -> Iterator& = delete;
+                  ~Iterator() = default;
+                  
+                  auto operator!=(const Iterator& it) -> bool
+                    {
+                       return _pos != it._pos;
+                    }
+                  
+                  auto operator++() -> Iterator&
+                    {
+                       ++_pos;
+                       return *this;
+                    }
+                  
+                  auto operator*() const -> const_reference
+                    {
+                       return _packedArray[_pos];
+                    }
+                  
+                  const PackedArray<T, SIZE>& _packedArray;
+                  size_t _pos;
+               };
+             
+             auto begin() const -> Iterator
+               {
+                  return Iterator(*this, 0);
+               }
+             
+             auto end() const -> Iterator
+               {
+                  return Iterator(*this, SIZE);
                }
              
            private:

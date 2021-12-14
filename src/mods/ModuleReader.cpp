@@ -30,7 +30,7 @@ namespace mods
              reader = std::make_unique<wav::WavReader>(filename);
              break;
            case ModuleFormat::MOD:
-             reader = std::make_unique<mod::ModReader>();
+             reader = std::make_unique<mod::ModReader>(filename);
              break;
            case ModuleFormat::UNKNOWN:
              // keep null reader
