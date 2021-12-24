@@ -10,17 +10,14 @@ namespace mods
      {
         ModReader::ModReader(const std::string& fileName)
           : _fileBuffer(mods::utils::FileUtils::mapFile(fileName)),
+          _notParsedBuffer(_fileBuffer.slice<u8>(0, _fileBuffer.size())),
           _songTitle(initializeSongTitle()),
           _numberOfInstruments(detectNumberOfInstruments()),
           _instruments(initializeInstruments())
             {
-             /*check16;
-             check32; -> checktitles;
-             _instruments = _instrumentRawBuffer.slice<Instrument>(s_songTitleLength, s_legacyNumberOfInstruments);
-             checkinstrumentTitles;*/
             }
         
-        auto ModReader::initializeSongTitle() const -> std::string
+        auto ModReader::initializeSongTitle() -> std::string
           {
              using SongArray = mods::utils::PackedArray<char, _songFieldLength>;
              
@@ -36,18 +33,58 @@ namespace mods
                     }
                }
              
+             _notParsedBuffer = _notParsedBuffer.slice<u8>(_songFieldLength, _notParsedBuffer.size() - _songFieldLength);
              return std::string(array.data(), length);
           }
         
         auto ModReader::detectNumberOfInstruments() const -> u32
           {
-             std::cout << "TODO: ModReader::detectNumberOfInstruments() const" << std::endl;
-             return 0;
+             constexpr static int oldModNumberOfInstruments = 16;
+             constexpr static int newModNumberOfInstruments = 32;
+             
+             constexpr static int minValidAscii = 0x20;
+             constexpr static int maxValidAscii = 0x7E;
+             
+             checkInit(_notParsedBuffer.size() >= oldModNumberOfInstruments * sizeof(Instrument),
+                       "File is too small for 16 instruments");
+             
+             if(_notParsedBuffer.size() < newModNumberOfInstruments * sizeof(Instrument))
+               {
+                  return newModNumberOfInstruments;
+               }
+             
+             auto tmp = _notParsedBuffer.slice<Instrument>(0, newModNumberOfInstruments);
+             
+             for(auto& instrument : tmp) 
+               {
+                  bool ascii = true;
+                  for(auto& c : instrument.getSampleName())
+                    {
+                       if(c == '\0')
+                         {
+                            break;
+                         }
+                       if(c < minValidAscii && c > maxValidAscii)
+                         {
+                            ascii = false;
+                            break;
+                         }
+                    }
+                  if(!ascii)
+                    {
+                       return oldModNumberOfInstruments;
+                    }
+               }
+             
+             return newModNumberOfInstruments;
           }
         
-        auto ModReader::initializeInstruments() const -> mods::utils::RBuffer<Instrument>
+        auto ModReader::initializeInstruments() -> mods::utils::RBuffer<Instrument>
           {
-             return _fileBuffer.slice<Instrument>(_songFieldLength, _numberOfInstruments);
+             auto instruments = _fileBuffer.slice<Instrument>(_songFieldLength, _numberOfInstruments);
+             _notParsedBuffer = _notParsedBuffer.slice<u8>(_numberOfInstruments * sizeof(Instrument),
+                                                           _notParsedBuffer.size() - _numberOfInstruments * sizeof(Instrument));
+             return instruments;
           }
         
         auto ModReader::isFinished() const -> bool

@@ -26,8 +26,8 @@ namespace mods
              auto getProgressInfo() const -> std::string override;
              
            private:
-             auto initializeSongTitle() const -> std::string;
-             auto initializeInstruments() const -> mods::utils::RBuffer<Instrument>;
+             auto initializeSongTitle() -> std::string;
+             auto initializeInstruments() -> mods::utils::RBuffer<Instrument>;
              auto detectNumberOfInstruments() const -> u32;
              
              auto getSongTitle() const -> std::string;
@@ -35,6 +35,7 @@ namespace mods
              constexpr static int _songFieldLength = 20;
              
              const mods::utils::RBuffer<u8> _fileBuffer;
+             mods::utils::RBuffer<u8> _notParsedBuffer;
              std::string _songTitle;
              u32 _numberOfInstruments;
              mods::utils::RBuffer<Instrument> _instruments;
