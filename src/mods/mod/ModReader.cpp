@@ -13,7 +13,8 @@ namespace mods
           _notParsedBuffer(_fileBuffer.slice<u8>(0, _fileBuffer.size())),
           _songTitle(initializeSongTitle()),
           _numberOfInstruments(detectNumberOfInstruments()),
-          _instruments(initializeInstruments())
+          _instruments(initializeInstruments()),
+          _numberOfPatterns(initializeNumberOfPatterns())
             {
             }
         
@@ -87,15 +88,47 @@ namespace mods
              return instruments;
           }
         
+        auto ModReader::initializeNumberOfPatterns() -> size_t
+          {
+             u8 numberOfPatterns = _notParsedBuffer[0];
+             _notParsedBuffer = _notParsedBuffer.slice<u8>(1, _notParsedBuffer.size() - 1);
+             return numberOfPatterns;
+          }
+        
         auto ModReader::isFinished() const -> bool
           {
-             std::cout << "TODO: ModReader::isFinished() const" << std::endl;
-             return false;
+             return _currentPatternIndex >= _numberOfPatterns && _patternReader.isFinished();
           }
         
         void ModReader::read(mods::utils::RWBuffer<u8>* buf, int len)
           {
-             std::cout << "TODO: ModReader::read(mods::utils::RWBuffer<u8>*, int)" << std::endl;
+             size_t nbElems = len / sizeof(s16);
+             auto output = buf->slice<s16>(0, nbElems);
+             
+             size_t written = 0;
+             while(written < nbElems && !isFinished())
+               {
+                  if(!_patternReader.isTickFinished())
+                    {
+                       auto tickBuffer = _patternReader.readTickBuffer(nbElems - written);
+                       for(auto& elem : tickBuffer)
+                         {
+                            output[written++] = elem;
+                         }
+                    }
+                  else if(!_patternReader.isFinished())
+                    {
+                       _patternReader.readNextTick();
+                    }
+                  else
+                    {
+                       ++_currentPatternIndex;
+                       if(_currentPatternIndex < _numberOfPatterns)
+                         {
+                            _patternReader.setPattern();
+                         }
+                    }
+               }
           }
         
         auto ModReader::getInfo() const -> std::string

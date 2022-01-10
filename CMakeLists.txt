@@ -53,6 +53,7 @@ add_executable(modreader src/main.cpp
                          src/mods/SoundPlayer.cpp
                          src/mods/mod/Instrument.cpp
                          src/mods/mod/ModReader.cpp
+                         src/mods/mod/PatternReader.cpp
                          src/mods/wav/ADPCMDecoderConverter.cpp
                          src/mods/wav/ALawConverter.cpp
                          src/mods/wav/ChannelCopyWavConverter.cpp

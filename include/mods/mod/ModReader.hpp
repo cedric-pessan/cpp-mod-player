@@ -3,6 +3,7 @@
 
 #include "mods/ModuleReader.hpp"
 #include "mods/mod/Instrument.hpp"
+#include "mods/mod/PatternReader.hpp"
 
 namespace mods
 {
@@ -29,6 +30,7 @@ namespace mods
              auto initializeSongTitle() -> std::string;
              auto initializeInstruments() -> mods::utils::RBuffer<Instrument>;
              auto detectNumberOfInstruments() const -> u32;
+             auto initializeNumberOfPatterns() -> size_t;
              
              auto getSongTitle() const -> std::string;
              
@@ -39,6 +41,10 @@ namespace mods
              std::string _songTitle;
              u32 _numberOfInstruments;
              mods::utils::RBuffer<Instrument> _instruments;
+             size_t _numberOfPatterns;
+             
+             PatternReader _patternReader;
+             size_t _currentPatternIndex = 0;
           };
      } // namespace mod
 } // namespace mods

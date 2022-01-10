@@ -51,6 +51,11 @@ namespace mods
                   return _len;
                }
              
+             auto empty() const noexcept -> bool
+               {
+                  return size() == 0;
+               }
+             
              auto operator[](size_type pos) const -> const_reference
                {
                   assert(check(pos < _len, static_cast<const char*>("out of bound RBuffer[]")));
