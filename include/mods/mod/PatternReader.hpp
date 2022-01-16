@@ -1,6 +1,7 @@
 #ifndef MODS_MOD_PATTERNREADER_HPP
 #define MODS_MOD_PATTERNREADER_HPP
 
+#include "mods/mod/ChannelState.hpp"
 #include "mods/utils/RWBuffer.hpp"
 #include "mods/utils/types.hpp"
 
@@ -13,7 +14,9 @@ namespace mods
         class PatternReader
           {
            public:
-             PatternReader() /*= default*/;
+             PatternReader(size_t nbChannels);
+             
+             PatternReader() = delete;
              PatternReader(const PatternReader&) = delete;
              PatternReader(PatternReader&&) = delete;
              auto operator=(const PatternReader&) -> PatternReader& = delete;
@@ -32,10 +35,14 @@ namespace mods
              
              auto isLineFinished() const -> bool;
              
+             auto readAndMixSample() const -> s16;
+             
              static constexpr u32 _numberOfLines = 64;
              static constexpr u32 _defaultSpeed = 6;
+             static constexpr u32 _defaultBpm = 125;
              
              u32 _speed = _defaultSpeed;
+             u32 _bpm = _defaultBpm;
              
              u32 _currentLine = 0;
              u32 _currentTick = 0;
@@ -43,6 +50,8 @@ namespace mods
              std::vector<u8> _tickVec;
              mods::utils::RWBuffer<s16> _tickBuffer;
              mods::utils::RBuffer<s16> _unreadTickBuffer;
+             
+             std::vector<ChannelState> _channels;
           };
      } // namespace mod
 } // namespace mods

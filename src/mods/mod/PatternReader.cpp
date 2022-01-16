@@ -7,10 +7,14 @@ namespace mods
 {
    namespace mod
      {
-        PatternReader::PatternReader()
+        PatternReader::PatternReader(size_t nbChannels)
           : _tickBuffer(allocateTickBuffer(computeTickBufferLength())),
           _unreadTickBuffer(_tickBuffer.slice<s16>(0, 0))
             {
+               for(size_t i=0; i<nbChannels; ++i)
+                 {
+                    _channels.emplace_back();
+                 }
             }
         
         auto PatternReader::allocateTickBuffer(size_t len) -> mods::utils::RWBuffer<s16>
@@ -24,8 +28,16 @@ namespace mods
         
         auto PatternReader::computeTickBufferLength() const -> size_t
           {
-             std::cout << "TODO: PatternReader::computeTickBufferLength() const" << std::endl;
-             return 0;
+             static constexpr size_t outputFrequency = 44100;
+             static constexpr size_t secondPerMinute = 60;
+             static constexpr size_t linesPerBeat = 4;
+             
+             size_t minuteLength = outputFrequency * secondPerMinute;
+             
+             size_t beatLength = minuteLength / _bpm;
+             
+             size_t lineLength = beatLength / linesPerBeat;
+             return lineLength / _speed;
           }
         
         auto PatternReader::isFinished() const -> bool
@@ -56,7 +68,27 @@ namespace mods
         
         void PatternReader::readNextTick()
           {
-             std::cout << "TODO: PatternReader::readNextTick()" << std::endl;
+             bool left = true;
+             for(s16& outputSample : _tickBuffer)
+               {
+                  if(left)
+                    {
+                       outputSample = readAndMixSample();
+                    }
+                  else
+                    {
+                       outputSample = readAndMixSample();
+                    }
+                  left = !left;
+               }
+             
+             _unreadTickBuffer = _tickBuffer.slice<s16>(0, _tickBuffer.size());
+          }
+        
+        auto PatternReader::readAndMixSample() const -> s16
+          {
+             std::cout << "TODO: PatternReader::readAndMixSample()" << std::endl;
+             return 0;
           }
      } // namespace mod
 } // namespace mods

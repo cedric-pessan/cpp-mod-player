@@ -8,17 +8,27 @@ namespace mods
 {
    namespace mod
      {
+        namespace
+          {
+             constexpr static int oldModNumberOfInstruments = 15;
+             constexpr static int newModNumberOfInstruments = 31;
+          } // namespace
+        
         ModReader::ModReader(const std::string& fileName)
           : _fileBuffer(mods::utils::FileUtils::mapFile(fileName)),
           _notParsedBuffer(_fileBuffer.slice<u8>(0, _fileBuffer.size())),
-          _songTitle(initializeSongTitle()),
+          _songTitle(parseSongTitle()),
           _numberOfInstruments(detectNumberOfInstruments()),
-          _instruments(initializeInstruments()),
-          _numberOfPatterns(initializeNumberOfPatterns())
+          _instruments(parseInstruments()),
+          _numberOfPatterns(parseNumberOfPatterns()),
+          _endJumpPosition(parseEndJumpPosition()),
+          _patternsOrderList(parsePatternsTable()),
+          _nbChannels(getNumberOfChannelsFromFormatTag()),
+          _patternReader(_nbChannels)
             {
             }
         
-        auto ModReader::initializeSongTitle() -> std::string
+        auto ModReader::parseSongTitle() -> std::string
           {
              using SongArray = mods::utils::PackedArray<char, _songFieldLength>;
              
@@ -40,9 +50,6 @@ namespace mods
         
         auto ModReader::detectNumberOfInstruments() const -> u32
           {
-             constexpr static int oldModNumberOfInstruments = 16;
-             constexpr static int newModNumberOfInstruments = 32;
-             
              constexpr static int minValidAscii = 0x20;
              constexpr static int maxValidAscii = 0x7E;
              
@@ -51,7 +58,7 @@ namespace mods
              
              if(_notParsedBuffer.size() < newModNumberOfInstruments * sizeof(Instrument))
                {
-                  return newModNumberOfInstruments;
+                  return oldModNumberOfInstruments;
                }
              
              auto tmp = _notParsedBuffer.slice<Instrument>(0, newModNumberOfInstruments);
@@ -80,7 +87,7 @@ namespace mods
              return newModNumberOfInstruments;
           }
         
-        auto ModReader::initializeInstruments() -> mods::utils::RBuffer<Instrument>
+        auto ModReader::parseInstruments() -> mods::utils::RBuffer<Instrument>
           {
              auto instruments = _fileBuffer.slice<Instrument>(_songFieldLength, _numberOfInstruments);
              _notParsedBuffer = _notParsedBuffer.slice<u8>(_numberOfInstruments * sizeof(Instrument),
@@ -88,11 +95,51 @@ namespace mods
              return instruments;
           }
         
-        auto ModReader::initializeNumberOfPatterns() -> size_t
+        auto ModReader::parseNumberOfPatterns() -> size_t
           {
+             checkInit(_notParsedBuffer.size() > 0, "File is too small to contain number of patterns");
+             
              u8 numberOfPatterns = _notParsedBuffer[0];
              _notParsedBuffer = _notParsedBuffer.slice<u8>(1, _notParsedBuffer.size() - 1);
              return numberOfPatterns;
+          }
+        
+        auto ModReader::parseEndJumpPosition() -> size_t
+          {
+             checkInit(_notParsedBuffer.size() > 0, "File is too small to contain end jump position");
+             
+             u8 endJumpPosition = _notParsedBuffer[0];
+             _notParsedBuffer = _notParsedBuffer.slice<u8>(1, _notParsedBuffer.size() - 1);
+             return endJumpPosition;
+          }
+        
+        auto ModReader::parsePatternsTable() -> mods::utils::RBuffer<u8>
+          {
+             constexpr static size_t patternTableLength = 128;
+             
+             checkInit(_notParsedBuffer.size() >= patternTableLength, "File is too small to contain patterns table");
+             
+             auto table = _notParsedBuffer.slice<u8>(0, patternTableLength);
+             _notParsedBuffer = _notParsedBuffer.slice<u8>(patternTableLength, _notParsedBuffer.size() - patternTableLength);
+             return table;
+          }
+        
+        auto ModReader::getNumberOfChannelsFromFormatTag() -> size_t
+          {
+             constexpr static size_t tagSize = 4;
+             
+             if(_instruments.size() == oldModNumberOfInstruments)
+               {
+                  std::cout << "TODO: ModReader::getNumberOfChannelsFromFormatTag() const, 16 instruments mod" << std::endl;
+               }
+             
+             checkInit(_notParsedBuffer.size() >= tagSize, "File is too small to contain format tag");
+             
+             std::string tag(_notParsedBuffer.begin(), _notParsedBuffer.begin() + tagSize);
+             _notParsedBuffer = _notParsedBuffer.slice<u8>(tagSize, _notParsedBuffer.size() - tagSize);
+             
+             std::cout << "Unknown format tag:" << tag << std::endl;
+             return 0;
           }
         
         auto ModReader::isFinished() const -> bool

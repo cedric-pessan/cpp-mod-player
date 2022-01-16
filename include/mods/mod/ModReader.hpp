@@ -27,10 +27,13 @@ namespace mods
              auto getProgressInfo() const -> std::string override;
              
            private:
-             auto initializeSongTitle() -> std::string;
-             auto initializeInstruments() -> mods::utils::RBuffer<Instrument>;
+             auto parseSongTitle() -> std::string;
+             auto parseInstruments() -> mods::utils::RBuffer<Instrument>;
              auto detectNumberOfInstruments() const -> u32;
-             auto initializeNumberOfPatterns() -> size_t;
+             auto parseNumberOfPatterns() -> size_t;
+             auto parseEndJumpPosition() -> size_t;
+             auto parsePatternsTable() -> mods::utils::RBuffer<u8>;
+             auto getNumberOfChannelsFromFormatTag() -> size_t;
              
              auto getSongTitle() const -> std::string;
              
@@ -42,6 +45,11 @@ namespace mods
              u32 _numberOfInstruments;
              mods::utils::RBuffer<Instrument> _instruments;
              size_t _numberOfPatterns;
+             size_t _endJumpPosition;
+             
+             mods::utils::RBuffer<u8> _patternsOrderList;
+             
+             size_t _nbChannels;
              
              PatternReader _patternReader;
              size_t _currentPatternIndex = 0;
