@@ -14,7 +14,9 @@ namespace mods
         class PatternReader
           {
            public:
-             PatternReader(size_t nbChannels);
+             PatternReader(size_t nbChannels,
+                           const mods::utils::RBuffer<Note>& patternBuffer,
+                           const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers);
              
              PatternReader() = delete;
              PatternReader(const PatternReader&) = delete;
@@ -25,9 +27,14 @@ namespace mods
              
              auto isFinished() const -> bool;
              auto isTickFinished() const -> bool;
-             auto readTickBuffer(size_t nbElems) const -> mods::utils::RBuffer<s16>;
+             auto readTickBuffer(size_t nbElems) -> mods::utils::RBuffer<s16>;
              void readNextTick();
              void setPattern();
+             
+             auto constexpr static getNumberOfLines() -> size_t
+               {
+                  return _numberOfLines;
+               }
              
            private:
              auto computeTickBufferLength() const -> size_t;
@@ -35,7 +42,9 @@ namespace mods
              
              auto isLineFinished() const -> bool;
              
-             auto readAndMixSample() const -> s16;
+             auto readAndMixSample(const std::vector<ChannelState*>& channels) const -> s16;
+             
+             void decodeLine();
              
              static constexpr u32 _numberOfLines = 64;
              static constexpr u32 _defaultSpeed = 6;
@@ -52,6 +61,10 @@ namespace mods
              mods::utils::RBuffer<s16> _unreadTickBuffer;
              
              std::vector<ChannelState> _channels;
+             std::vector<ChannelState*> _leftChannels;
+             std::vector<ChannelState*> _rightChannels;
+             
+             mods::utils::RBuffer<Note> _patternBuffer;
           };
      } // namespace mod
 } // namespace mods

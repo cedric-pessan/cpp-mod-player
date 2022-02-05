@@ -18,5 +18,10 @@ namespace mods
                }
              return std::string(_sampleName.data(), length);
           }
+        
+        auto Instrument::getSampleLength() const -> size_t
+          {
+             return static_cast<u16>(_sampleLength) * 2;
+          }
      } // namespace mod
 } // namespace mods

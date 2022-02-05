@@ -34,6 +34,9 @@ namespace mods
              auto parseEndJumpPosition() -> size_t;
              auto parsePatternsTable() -> mods::utils::RBuffer<u8>;
              auto getNumberOfChannelsFromFormatTag() -> size_t;
+             auto parsePatternsBuffer() -> mods::utils::RBuffer<Note>;
+             auto parseSampleBuffers() -> std::vector<mods::utils::RBuffer<u8>>;
+             auto getPatternBuffer(size_t patternIndex) -> mods::utils::RBuffer<Note>;
              
              auto getSongTitle() const -> std::string;
              
@@ -50,6 +53,9 @@ namespace mods
              mods::utils::RBuffer<u8> _patternsOrderList;
              
              size_t _nbChannels;
+             
+             mods::utils::RBuffer<Note> _patterns;
+             std::vector<mods::utils::RBuffer<u8>> _sampleBuffers;
              
              PatternReader _patternReader;
              size_t _currentPatternIndex = 0;

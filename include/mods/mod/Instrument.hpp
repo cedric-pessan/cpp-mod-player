@@ -23,15 +23,17 @@ namespace mods
              
              auto getSampleName() const -> std::string;
              
+             auto getSampleLength() const -> size_t;
+             
            private:
              static constexpr int _sampleNameLength = 22;
              
              mods::utils::PackedArray<char, _sampleNameLength> _sampleName;
-             s16be _sampleLength;
+             u16be _sampleLength;
              s8 _fineTune;
              u8 _volume;
-             s16be _repeatOffset;
-             s16be _repeatLength;
+             u16be _repeatOffset;
+             u16be _repeatLength;
           };
 #pragma pack(pop)
      } // namespace mod

@@ -1,4 +1,5 @@
 
+#include "mods/mod/Note.hpp"
 #include "mods/mod/PatternReader.hpp"
 
 #include <iostream>
@@ -7,13 +8,48 @@ namespace mods
 {
    namespace mod
      {
-        PatternReader::PatternReader(size_t nbChannels)
+        namespace
+          {
+             enum struct ChannelLocation
+               {
+                  LEFT,
+                    RIGHT
+               };
+             
+             constexpr size_t channelGroupSize = 4;
+             
+             constexpr std::array<ChannelLocation, channelGroupSize> channelLocationInGroup
+               {
+                  ChannelLocation::LEFT, 
+                    ChannelLocation::RIGHT, 
+                    ChannelLocation::RIGHT,
+                    ChannelLocation::LEFT
+               };
+          } // namespace
+        
+        PatternReader::PatternReader(size_t nbChannels, 
+                                     const mods::utils::RBuffer<Note>& patternBuffer,
+                                     const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers)
           : _tickBuffer(allocateTickBuffer(computeTickBufferLength())),
-          _unreadTickBuffer(_tickBuffer.slice<s16>(0, 0))
+          _unreadTickBuffer(_tickBuffer.slice<s16>(0, 0)),
+          _patternBuffer(patternBuffer)
             {
+               using mods::utils::at;
+               
                for(size_t i=0; i<nbChannels; ++i)
                  {
-                    _channels.emplace_back();
+                    _channels.emplace_back(sampleBuffers);
+                 }
+               for(size_t i=0; i<nbChannels; ++i)
+                 {
+                    if(at(channelLocationInGroup, i % channelGroupSize) == ChannelLocation::LEFT)
+                      {
+                         _leftChannels.push_back(&_channels[i]);
+                      }
+                    else
+                      {
+                         _rightChannels.push_back(&_channels[i]);
+                      }
                  }
             }
         
@@ -55,10 +91,16 @@ namespace mods
              return _unreadTickBuffer.empty();
           }
         
-        auto PatternReader::readTickBuffer(size_t nbElems) const -> mods::utils::RBuffer<s16>
+        auto PatternReader::readTickBuffer(size_t nbElems) -> mods::utils::RBuffer<s16>
           {
-             std::cout << "TODO: PatternReader::readTickBuffer(size_t) const" << std::endl;
-             return mods::utils::RBuffer<s16>(nullptr);
+             auto size = nbElems;
+             if(size > _unreadTickBuffer.size())
+               {
+                  size = _unreadTickBuffer.size();
+               }
+             auto buf = _unreadTickBuffer.slice<s16>(0, size);
+             _unreadTickBuffer = _unreadTickBuffer.slice<s16>(size, _unreadTickBuffer.size() - size);
+             return buf;
           }
         
         void PatternReader::setPattern()
@@ -68,27 +110,51 @@ namespace mods
         
         void PatternReader::readNextTick()
           {
+             if(_currentTick == 0)
+               {
+                  decodeLine();
+               }
+             
              bool left = true;
              for(s16& outputSample : _tickBuffer)
                {
                   if(left)
                     {
-                       outputSample = readAndMixSample();
+                       outputSample = readAndMixSample(_leftChannels);
                     }
                   else
                     {
-                       outputSample = readAndMixSample();
+                       outputSample = readAndMixSample(_rightChannels);
                     }
                   left = !left;
                }
              
              _unreadTickBuffer = _tickBuffer.slice<s16>(0, _tickBuffer.size());
+             ++_currentTick;
+             if(_currentTick == _speed)
+               {
+                  std::cout << "TODO: last tick of line" << std::endl;
+               }
           }
         
-        auto PatternReader::readAndMixSample() const -> s16
+        auto PatternReader::readAndMixSample(const std::vector<ChannelState*>& channels) const -> s16
           {
-             std::cout << "TODO: PatternReader::readAndMixSample()" << std::endl;
-             return 0;
+             s32 sample = 0;
+             for(auto* channel : channels)
+               {
+                  sample += channel->readNextSample();
+               }
+             sample /= channels.size();
+             return static_cast<s16>(sample);
+          }
+        
+        void PatternReader::decodeLine()
+          {
+             for(size_t i=0; i < _channels.size(); ++i)
+               {
+                  auto note = _patternBuffer.slice<Note>(_currentLine * _channels.size() + i, 1);
+                  _channels[i].updateChannelToNewLine(note);
+               }
           }
      } // namespace mod
 } // namespace mods

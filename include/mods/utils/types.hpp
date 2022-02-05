@@ -71,11 +71,11 @@ template<Endianness endianness>
    mods::utils::PackedArray<u8, 2> _v;
    
  public:
-   /*explicit operator u16() const
+   explicit operator u16() const
      {
-        return static_cast<u16>(_v[0]) |
-          static_cast<u16>(static_cast<u16>(_v[1]) << BITS_IN_BYTE);
-     }*/
+        return static_cast<u16>(static_cast<u16>(_v[0]) << BITS_IN_BYTE) |
+          static_cast<u16>(_v[1]);
+     }
    
    u16beImpl() = delete;
    u16beImpl(const u16beImpl&) = delete;
@@ -92,10 +92,10 @@ template<>
    u16 _value;
    
  public:
-   /*explicit operator u16() const
+   explicit operator u16() const
      {
         return _value;
-     }*/
+     }
    
    u16beImpl() = delete;
    u16beImpl(const u16beImpl&) = delete;

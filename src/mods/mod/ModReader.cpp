@@ -1,7 +1,9 @@
 
 #include "mods/mod/ModReader.hpp"
+#include "mods/mod/Note.hpp"
 #include "mods/utils/FileUtils.hpp"
 
+#include <map>
 #include <sstream>
 
 namespace mods
@@ -12,6 +14,15 @@ namespace mods
           {
              constexpr static int oldModNumberOfInstruments = 15;
              constexpr static int newModNumberOfInstruments = 31;
+             
+             auto getTagsToChans() -> const std::map<std::string, size_t>&
+               {
+                  static const std::map<std::string, size_t> tagsToChans
+                    {
+                       { "M.K." , 4 }
+                    };
+                  return tagsToChans;
+               }
           } // namespace
         
         ModReader::ModReader(const std::string& fileName)
@@ -24,7 +35,9 @@ namespace mods
           _endJumpPosition(parseEndJumpPosition()),
           _patternsOrderList(parsePatternsTable()),
           _nbChannels(getNumberOfChannelsFromFormatTag()),
-          _patternReader(_nbChannels)
+          _patterns(parsePatternsBuffer()),
+          _sampleBuffers(parseSampleBuffers()),
+          _patternReader(_nbChannels, getPatternBuffer(_currentPatternIndex), _sampleBuffers)
             {
             }
         
@@ -101,6 +114,9 @@ namespace mods
              
              u8 numberOfPatterns = _notParsedBuffer[0];
              _notParsedBuffer = _notParsedBuffer.slice<u8>(1, _notParsedBuffer.size() - 1);
+             
+             checkInit(numberOfPatterns > 0, "A module should contain at least one pattern");
+             
              return numberOfPatterns;
           }
         
@@ -130,7 +146,7 @@ namespace mods
              
              if(_instruments.size() == oldModNumberOfInstruments)
                {
-                  std::cout << "TODO: ModReader::getNumberOfChannelsFromFormatTag() const, 16 instruments mod" << std::endl;
+                  std::cout << "TODO: ModReader::getNumberOfChannelsFromFormatTag() const, 15 instruments mod" << std::endl;
                }
              
              checkInit(_notParsedBuffer.size() >= tagSize, "File is too small to contain format tag");
@@ -138,8 +154,61 @@ namespace mods
              std::string tag(_notParsedBuffer.begin(), _notParsedBuffer.begin() + tagSize);
              _notParsedBuffer = _notParsedBuffer.slice<u8>(tagSize, _notParsedBuffer.size() - tagSize);
              
+             auto& tagsToChans = getTagsToChans();
+             auto it = tagsToChans.find(tag);
+             if(it != tagsToChans.end())
+               {
+                  return it->second;
+               }
+             
              std::cout << "Unknown format tag:" << tag << std::endl;
              return 0;
+          }
+        
+        auto ModReader::parsePatternsBuffer() -> mods::utils::RBuffer<Note>
+          {
+             size_t maxPatternIndex = 0;
+             for(auto p : _patternsOrderList)
+               {
+                  if(p > maxPatternIndex)
+                    {
+                       maxPatternIndex = p;
+                    }
+               }
+             
+             auto numberOfNotes = (maxPatternIndex + 1) * _nbChannels * PatternReader::getNumberOfLines();
+             auto patternsBufferLength = numberOfNotes * sizeof(Note);
+             
+             checkInit(_notParsedBuffer.size() >= patternsBufferLength, "File is too small to contain the patterns table");
+             
+             auto patterns = _notParsedBuffer.slice<Note>(0, numberOfNotes);
+             _notParsedBuffer = _notParsedBuffer.slice<u8>(patternsBufferLength, _notParsedBuffer.size() - patternsBufferLength);
+             return patterns;
+          }
+        
+        auto ModReader::parseSampleBuffers() -> std::vector<mods::utils::RBuffer<u8>>
+          {
+             std::vector<mods::utils::RBuffer<u8>> bufs;
+             
+             for(auto& instrument : _instruments)
+               {
+                  size_t length = instrument.getSampleLength();
+                  
+                  checkInit(_notParsedBuffer.size() >= length, "File is too small to contain all instruments");
+                  
+                  bufs.push_back(_notParsedBuffer.slice<u8>(0, length));
+                  _notParsedBuffer = _notParsedBuffer.slice<u8>(length, _notParsedBuffer.size() - length);
+               }
+             
+             return bufs;
+          }
+        
+        auto ModReader::getPatternBuffer(size_t patternIndex) -> mods::utils::RBuffer<Note>
+          {
+             auto p = _patternsOrderList[patternIndex];
+             if(p != 0)
+               std::cout << "TODO: getPatternBuffer:" << static_cast<int>(p) << std::endl;
+             return _patterns.slice<Note>(p, _nbChannels * PatternReader::getNumberOfLines());
           }
         
         auto ModReader::isFinished() const -> bool
