@@ -206,14 +206,13 @@ namespace mods
         auto ModReader::getPatternBuffer(size_t patternIndex) -> mods::utils::RBuffer<Note>
           {
              auto p = _patternsOrderList[patternIndex];
-             if(p != 0)
-               std::cout << "TODO: getPatternBuffer:" << static_cast<int>(p) << std::endl;
-             return _patterns.slice<Note>(p, _nbChannels * PatternReader::getNumberOfLines());
+             auto patternBufferLength = _nbChannels * PatternReader::getNumberOfLines();
+             return _patterns.slice<Note>(p * patternBufferLength, _nbChannels * PatternReader::getNumberOfLines());
           }
         
         auto ModReader::isFinished() const -> bool
           {
-             return _currentPatternIndex >= _numberOfPatterns && _patternReader.isFinished();
+             return _currentPatternIndex >= _numberOfPatterns;
           }
         
         void ModReader::read(mods::utils::RWBuffer<u8>* buf, int len)
@@ -241,7 +240,7 @@ namespace mods
                        ++_currentPatternIndex;
                        if(_currentPatternIndex < _numberOfPatterns)
                          {
-                            _patternReader.setPattern();
+                            _patternReader.setPattern(getPatternBuffer(_currentPatternIndex));
                          }
                     }
                }
@@ -263,8 +262,9 @@ namespace mods
         
         auto ModReader::getProgressInfo() const -> std::string
           {
-             std::cout << "TODO: ModReader::getProgressInfo() const" << std::endl;
-             return "";
+             std::stringstream ss;
+             ss << "Pattern " << _currentPatternIndex << " / " << _numberOfPatterns << ", line " << _patternReader.getCurrentLine() << " / " << PatternReader::getNumberOfLines() << "     ";
+             return ss.str();
           }
         
         auto ModReader::getSongTitle() const -> std::string

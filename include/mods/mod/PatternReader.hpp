@@ -29,7 +29,9 @@ namespace mods
              auto isTickFinished() const -> bool;
              auto readTickBuffer(size_t nbElems) -> mods::utils::RBuffer<s16>;
              void readNextTick();
-             void setPattern();
+             void setPattern(const mods::utils::RBuffer<Note>& patternBuffer);
+             
+             auto getCurrentLine() const -> size_t;
              
              auto constexpr static getNumberOfLines() -> size_t
                {
@@ -39,8 +41,6 @@ namespace mods
            private:
              auto computeTickBufferLength() const -> size_t;
              auto allocateTickBuffer(size_t len) -> mods::utils::RWBuffer<s16>;
-             
-             auto isLineFinished() const -> bool;
              
              auto readAndMixSample(const std::vector<ChannelState*>& channels) const -> s16;
              

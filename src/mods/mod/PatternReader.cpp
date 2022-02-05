@@ -78,17 +78,17 @@ namespace mods
         
         auto PatternReader::isFinished() const -> bool
           {
-             return _currentLine >= _numberOfLines && isLineFinished();
-          }
-        
-        auto PatternReader::isLineFinished() const -> bool
-          {
-             return _currentTick >= _speed && isTickFinished();
+             return _currentLine >= _numberOfLines;
           }
         
         auto PatternReader::isTickFinished() const -> bool
           {
              return _unreadTickBuffer.empty();
+          }
+        
+        auto PatternReader::getCurrentLine() const -> size_t
+          {
+             return _currentLine;
           }
         
         auto PatternReader::readTickBuffer(size_t nbElems) -> mods::utils::RBuffer<s16>
@@ -103,9 +103,11 @@ namespace mods
              return buf;
           }
         
-        void PatternReader::setPattern()
+        void PatternReader::setPattern(const mods::utils::RBuffer<Note>& patternBuffer)
           {
-             std::cout << "TODO: PatternReader::setPattern()" << std::endl;
+             _patternBuffer = patternBuffer;
+             _currentTick = 0;
+             _currentLine = 0;
           }
         
         void PatternReader::readNextTick()
@@ -133,7 +135,8 @@ namespace mods
              ++_currentTick;
              if(_currentTick == _speed)
                {
-                  std::cout << "TODO: last tick of line" << std::endl;
+                  _currentTick = 0;
+                  ++_currentLine;
                }
           }
         
