@@ -31,8 +31,11 @@ namespace mods
         
         void ChannelState::updateChannelToNewLine(const mods::utils::RBuffer<Note>& note)
           {
-             _instrument = note->getInstrument();
-             _currentSample = 0;
+             if(note->getInstrument() != 0)
+               {
+                  _instrument = note->getInstrument();
+                  _currentSample = 0;
+               }
           }
      } // namespace mod
 } // namespace mod
