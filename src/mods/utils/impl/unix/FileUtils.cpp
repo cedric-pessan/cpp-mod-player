@@ -44,26 +44,26 @@ namespace mods
                     };
                } // namespace
              
-             auto mapFileToBuffer(const std::string& filename) -> RBufferBackend::sptr
+             auto mapFileToBuffer(const std::string& filename) -> RBufferBackend::ptr
                {
                   int fd = modsOpen(filename.c_str(), O_RDONLY);
                   if(fd == -1)
                     {
-                       return RBufferBackend::sptr();
+                       return RBufferBackend::ptr();
                     }
                   size_t length = ::lseek(fd, 0, SEEK_END);
                   if(length == static_cast<size_t>(static_cast<off_t>(-1)))
                     {
-                       return RBufferBackend::sptr();
+                       return RBufferBackend::ptr();
                     }
                   void* ptr = ::mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
                   if(modsHasMapFailed(ptr) == FILEUTILS_TRUE)
                     {
-                       return RBufferBackend::sptr();
+                       return RBufferBackend::ptr();
                     }
                   
                   auto deleter = std::make_unique<UnixMapperDeleter>(fd, ptr, length);
-                  return std::make_shared<RBufferBackend>(static_cast<u8*>(ptr), length, std::move(deleter));
+                  return std::make_unique<RBufferBackend>(static_cast<u8*>(ptr), length, std::move(deleter));
                }
           } // namespace FileUtils
      } // namespace utils

@@ -37,8 +37,8 @@ auto main(int argc, char** argv) -> int
    
    auto deleter = std::make_unique<mods::utils::RBufferBackend::EmptyDeleter>();
    auto* argvp = static_cast<u8*>(static_cast<void*>(argv));
-   auto argBuffer = std::make_shared<mods::utils::RBufferBackend>(argvp, argc * sizeof(char*), std::move(deleter));
-   const mods::utils::RBuffer<char*> args(argBuffer);
+   auto argBuffer = std::make_unique<mods::utils::RBufferBackend>(argvp, argc * sizeof(char*), std::move(deleter));
+   const mods::utils::RBuffer<char*> args(std::move(argBuffer));
    
    std::string filename = args[1];
    auto dotIdx = filename.find_last_of('.');

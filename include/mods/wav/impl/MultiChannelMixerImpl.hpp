@@ -1,8 +1,8 @@
 #ifndef MODS_WAV_IMPL_MULTICHANNELMIXERIMPL_HPP
 #define MODS_WAV_IMPL_MULTICHANNELMIXERIMPL_HPP
 
+#include "mods/converters/Converter.hpp"
 #include "mods/utils/DynamicRingBuffer.hpp"
-#include "mods/wav/WavConverter.hpp"
 
 namespace mods
 {
@@ -61,7 +61,11 @@ namespace mods
                 public:
                   using sptr = std::shared_ptr<InternalMultiChannelMixerSourceConverter>;
                   
-                  InternalMultiChannelMixerSourceConverter(std::vector<WavConverter::ptr> channels, u32 channelMask);
+                private:
+                  using Converter = mods::converters::Converter;
+                  
+                public:
+                  InternalMultiChannelMixerSourceConverter(std::vector<Converter::ptr> channels, u32 channelMask);
                   
                   InternalMultiChannelMixerSourceConverter() = delete;
                   InternalMultiChannelMixerSourceConverter(const InternalMultiChannelMixerSourceConverter&) = delete;
@@ -83,7 +87,7 @@ namespace mods
                   using UnconsumedBuffer = mods::utils::DynamicRingBuffer<double>;
                   std::array<UnconsumedBuffer,2> _unconsumedBuffers;
                   
-                  std::vector<WavConverter::ptr> _channels;
+                  std::vector<Converter::ptr> _channels;
                   std::vector<std::vector<u8>> _channelsVec;
                   std::vector<mods::utils::RWBuffer<u8>> _channelsBuffers;
                   std::vector<mods::utils::RBuffer<double>> _channelsViews;
@@ -92,7 +96,7 @@ namespace mods
                   u32 _channelMask;
                };
              
-             class MultiChannelMixerBase : public WavConverter
+             class MultiChannelMixerBase : public mods::converters::Converter
                {
                 protected:
                   MultiChannelMixerBase(InternalMultiChannelMixerSourceConverter::sptr src, ChannelId channel);
@@ -109,7 +113,7 @@ namespace mods
                   void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
                   
                 protected:
-                  auto buildRightChannel() const -> WavConverter::ptr;
+                  auto buildRightChannel() const -> Converter::ptr;
                   
                 private:
                   InternalMultiChannelMixerSourceConverter::sptr _src;

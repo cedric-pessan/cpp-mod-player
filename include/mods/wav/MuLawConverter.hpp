@@ -1,7 +1,7 @@
 #ifndef MODS_WAV_MULAWCONVERTER_HPP
 #define MODS_WAV_MULAWCONVERTER_HPP
 
-#include "mods/wav/WavConverter.hpp"
+#include "mods/converters/Converter.hpp"
 
 #include <limits>
 
@@ -9,10 +9,10 @@ namespace mods
 {
    namespace wav
      {
-        class MuLawConverter : public WavConverter
+        class MuLawConverter : public mods::converters::Converter
           {
            public:
-             explicit MuLawConverter(WavConverter::ptr src);
+             explicit MuLawConverter(Converter::ptr src);
              
              MuLawConverter() = delete;
              MuLawConverter(const MuLawConverter&) = delete;
@@ -46,7 +46,7 @@ namespace mods
              void fillLookupTable();
              auto muLawTransform(s8 value) const -> s16;
              
-             WavConverter::ptr _src;
+             Converter::ptr _src;
              static constexpr u32 _lookupTableSize = static_cast<u32>(std::numeric_limits<u8>::max())+1;
              std::array<s16, _lookupTableSize> _lookupTable {};
           };

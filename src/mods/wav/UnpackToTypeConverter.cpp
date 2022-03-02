@@ -8,7 +8,7 @@ namespace mods
    namespace wav
      {
         template<typename T>
-          UnpackToTypeConverter<T>::UnpackToTypeConverter(WavConverter::ptr src, size_t packSize)
+          UnpackToTypeConverter<T>::UnpackToTypeConverter(Converter::ptr src, size_t packSize)
             : _src(std::move(src)),
           _packSize(packSize)
             {

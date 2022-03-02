@@ -10,7 +10,7 @@ namespace mods
         class DemuxConverter : public impl::DemuxConverterSlave
           {
            public:
-             DemuxConverter(WavConverter::ptr src, u32 nbChannels, u32 bitsPerContainer);
+             DemuxConverter(Converter::ptr src, u32 nbChannels, u32 bitsPerContainer);
              
              DemuxConverter() = delete;
              DemuxConverter(const DemuxConverter&) = delete;

@@ -5,7 +5,7 @@ namespace mods
 {
    namespace wav
      {
-        ReaderWavConverter::ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector::sptr statCollector)
+        ReaderWavConverter::ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector* statCollector)
           : _buffer(std::move(buffer)),
           _it(_buffer.begin()),
           _end(_buffer.end()),

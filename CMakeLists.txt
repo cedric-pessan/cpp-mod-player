@@ -51,6 +51,20 @@ set(SRCS_UNIX src/mods/utils/impl/unix/FileUtils.cpp
 add_executable(modreader src/main.cpp
                          src/mods/ModuleReader.cpp
                          src/mods/SoundPlayer.cpp
+                         src/mods/converters/ChannelCopyConverter.cpp
+                         src/mods/converters/DivideConverter.cpp
+                         src/mods/converters/DownscaleConverter.cpp
+                         src/mods/converters/FillLSBConverter.cpp
+                         src/mods/converters/FromDoubleConverter.cpp
+                         src/mods/converters/MultiplexerConverter.cpp
+                         src/mods/converters/OpenCLResampleConverter.cpp
+                         src/mods/converters/ResampleConverter.cpp
+                         src/mods/converters/ResampleParameters.cpp
+                         src/mods/converters/ResamplePositiveIntegerFactor.cpp
+                         src/mods/converters/SoftwareResampleConverter.cpp
+                         src/mods/converters/ToDoubleConverter.cpp
+                         src/mods/converters/UnsignedToSignedConverter.cpp
+                         src/mods/converters/UpscaleConverter.cpp
                          src/mods/mod/ChannelState.cpp
                          src/mods/mod/Instrument.cpp
                          src/mods/mod/ModReader.cpp
@@ -58,32 +72,18 @@ add_executable(modreader src/main.cpp
                          src/mods/mod/PatternReader.cpp
                          src/mods/wav/ADPCMDecoderConverter.cpp
                          src/mods/wav/ALawConverter.cpp
-                         src/mods/wav/ChannelCopyWavConverter.cpp
                          src/mods/wav/DemuxConverter.cpp
-                         src/mods/wav/DivideConverter.cpp
-                         src/mods/wav/DownscaleWavConverter.cpp
 			 src/mods/wav/DVIADPCMDecoderConverter.cpp
-                         src/mods/wav/FillLSBConverter.cpp
                          src/mods/wav/Format.cpp
-                         src/mods/wav/FromDoubleConverter.cpp
                          src/mods/wav/GSMDecoderConverter.cpp
                          src/mods/wav/MuLawConverter.cpp
                          src/mods/wav/MultiChannelMixer.cpp
-                         src/mods/wav/MultiplexerWavConverter.cpp
                          src/mods/wav/OKIADPCMDecoderConverter.cpp
-                         src/mods/wav/OpenCLResampleConverter.cpp
                          src/mods/wav/ReaderWavConverter.cpp
-                         src/mods/wav/ResampleConverter.cpp
-                         src/mods/wav/ResampleParameters.cpp
-                         src/mods/wav/ResamplePositiveIntegerFactor.cpp
-                         src/mods/wav/SoftwareResampleConverter.cpp
                          src/mods/wav/StatCollector.cpp
-                         src/mods/wav/ToDoubleConverter.cpp
                          src/mods/wav/TruspeechDecoderConverter.cpp
                          src/mods/wav/UnpackToTypeConverter.cpp
-                         src/mods/wav/UnsignedToSignedWavConverter.cpp
-                         src/mods/wav/UpscaleWavConverter.cpp
-                         src/mods/wav/WavConverter.cpp
+                         src/mods/wav/WavConverterFactory.cpp
                          src/mods/wav/WavReader.cpp
                          src/mods/wav/WavTypes.cpp
                          src/mods/utils/bessel.cpp

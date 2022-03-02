@@ -87,8 +87,8 @@ namespace mods
              if(!_metadataExtension.has_value())
                {
                   auto deleter = std::make_unique<mods::utils::RBufferBackend::EmptyDeleter>();
-                  auto backend = std::make_shared<mods::utils::RBufferBackend>(nullptr, 0, std::move(deleter));
-                  return mods::utils::RBuffer<u8>(backend);
+                  auto backend = std::make_unique<mods::utils::RBufferBackend>(nullptr, 0, std::move(deleter));
+                  return mods::utils::RBuffer<u8>(std::move(backend));
                }
              return *_metadataExtension;
           }

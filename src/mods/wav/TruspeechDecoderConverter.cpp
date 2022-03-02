@@ -10,7 +10,7 @@ namespace mods
 {
    namespace wav
      {
-        TruspeechDecoderConverter::TruspeechDecoderConverter(WavConverter::ptr src)
+        TruspeechDecoderConverter::TruspeechDecoderConverter(Converter::ptr src)
           : _src(std::move(src)),
           _decodedArray {},
           _decodedBuffer(initializeArrayRWBuffer(_decodedArray)),
@@ -52,8 +52,8 @@ namespace mods
                auto* ptr = static_cast<u8*>(static_cast<void*>(backArray.data()));
                auto len = backArray.size();
                auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-               auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len * sizeof(typename ARRAY::value_type), std::move(deleter));
-               return mods::utils::RWBuffer<u8>(buffer).slice<typename ARRAY::value_type>(0, len);
+               auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len * sizeof(typename ARRAY::value_type), std::move(deleter));
+               return mods::utils::RWBuffer<u8>(std::move(buffer)).slice<typename ARRAY::value_type>(0, len);
             }
         
         auto TruspeechDecoderConverter::isFinished() const -> bool

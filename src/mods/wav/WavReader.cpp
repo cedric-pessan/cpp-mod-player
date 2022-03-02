@@ -6,6 +6,7 @@
 #include "mods/wav/ALawConverter.hpp"
 #include "mods/wav/GSMDecoderConverter.hpp"
 #include "mods/wav/MuLawConverter.hpp"
+#include "mods/wav/WavConverterFactory.hpp"
 #include "mods/wav/WavReader.hpp"
 #include "mods/wav/WavTypes.hpp"
 
@@ -226,8 +227,7 @@ namespace mods
                
                const auto& fmt = *optFmt;
                const auto& data = *optData;
-               _statCollector = std::make_shared<StatCollector>();
-               _converter = WavConverter::buildConverter(data, fmt, _statCollector, peak);
+               _converter = WavConverterFactory::buildConverter(data, fmt, &_statCollector, peak);
                _length = data.size();
                
                buildInfo(fmt.getBitsPerSample(), fmt.getBitsPerContainer(), fmt.getNumChannels(), fmt.getSampleRate(), description.str(), fmt.getAudioFormat());
@@ -551,7 +551,7 @@ namespace mods
           {
              static constexpr int fullProgressValue = 100;
              
-             size_t read = _statCollector->getBytesRead();
+             size_t read = _statCollector.getBytesRead();
              size_t percentage = read * fullProgressValue / _length;
              std::stringstream ss;
              ss << "Reading..." << percentage << "%";

@@ -10,6 +10,7 @@ namespace mods
         class RWBufferBackend : public RBufferBackend
           {
            public:
+             using ptr = std::unique_ptr<RWBufferBackend>;
              using sptr = std::shared_ptr<RWBufferBackend>;
              using value_type = u8;
              

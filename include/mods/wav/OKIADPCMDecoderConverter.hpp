@@ -1,16 +1,20 @@
 #ifndef MODS_WAV_OKIADPCMDECODERCONVERTER_HPP
 #define MODS_WAV_OKIADPCMDECODERCONVERTER_HPP
 
-#include "mods/wav/WavConverter.hpp"
+#include "mods/converters/Converter.hpp"
+
+#include <vector>
 
 namespace mods
 {
    namespace wav
      {
-	class OKIADPCMDecoderConverter : public WavConverter
+        class Format;
+        
+	class OKIADPCMDecoderConverter : public mods::converters::Converter
 	  {
 	   public:
-	     OKIADPCMDecoderConverter(WavConverter::ptr src, const Format& format);
+	     OKIADPCMDecoderConverter(Converter::ptr src, const Format& format);
 	     
 	     OKIADPCMDecoderConverter() = delete;
 	     OKIADPCMDecoderConverter(const OKIADPCMDecoderConverter&) = delete;
@@ -32,7 +36,7 @@ namespace mods
 	     auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
              void ensureTempBufferSize(size_t len);
 	     
-	     WavConverter::ptr _src;
+	     Converter::ptr _src;
              u16 _nbChannels;
 	     
 	     std::vector<u8> _encodedVec;
@@ -57,9 +61,9 @@ namespace mods
                   
                   void resetBuffer(const mods::utils::RBuffer<u8>& encodedBuffer);
                   
+                private:
                   auto decodeSample(int sample) -> s16;
                   
-                private:
                   bool _sampleAvailable = false;
                   mods::utils::RBuffer<u8> _encodedBuffer;
                   mods::utils::RBuffer<u8>::const_iterator _itEncodedBuffer;

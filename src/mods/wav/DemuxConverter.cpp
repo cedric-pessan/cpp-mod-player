@@ -9,7 +9,7 @@ namespace mods
      {
         namespace impl
           {
-             InternalDemuxConverter::InternalDemuxConverter(WavConverter::ptr src, u32 nbChannels, u32 bitsPerContainer)
+             InternalDemuxConverter::InternalDemuxConverter(Converter::ptr src, u32 nbChannels, u32 bitsPerContainer)
                : _unconsumedBuffers(nbChannels),
                _src(std::move(src)),
                _bytesPerContainer(bitsPerContainer / BITS_IN_BYTE),
@@ -23,8 +23,8 @@ namespace mods
                   _tempVec.resize(len);
                   u8* ptr = _tempVec.data();
                   auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-                  auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
-                  return mods::utils::RWBuffer<u8>(buffer);
+                  auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
+                  return mods::utils::RWBuffer<u8>(std::move(buffer));
                }
              
              void InternalDemuxConverter::ensureTempBufferSize(size_t len)
@@ -139,8 +139,8 @@ namespace mods
                }
           } // namespace impl
         
-        DemuxConverter::DemuxConverter(WavConverter::ptr src, u32 nbChannels, u32 bitsPerContainer)
-          : DemuxConverterSlave(std::make_shared<impl::InternalDemuxConverter>(std::move(src), nbChannels, bitsPerContainer), nbChannels-1),
+        DemuxConverter::DemuxConverter(Converter::ptr src, u32 nbChannels, u32 bitsPerContainer)
+          : DemuxConverterSlave(std::make_unique<impl::InternalDemuxConverter>(std::move(src), nbChannels, bitsPerContainer), nbChannels-1),
           _firstChannels(buildSlaves(nbChannels))
             {
             }

@@ -154,7 +154,7 @@ using u16le = u16leImpl<NativeEndianness::value>;
 using u32le = u32leImpl<NativeEndianness::value>;
 using u16be = u16beImpl<NativeEndianness::value>;
 
-class s16le 
+class s16le
 {
  private:
    u16le _value;

@@ -1,5 +1,6 @@
 
 #include "mods/wav/DVIADPCMDecoderConverter.hpp"
+#include "mods/wav/Format.hpp"
 
 #include <iostream>
 #include <limits>
@@ -8,7 +9,7 @@ namespace mods
 {
    namespace wav
      {
-	DVIADPCMDecoderConverter::DVIADPCMDecoderConverter(WavConverter::ptr src, const Format& format)
+	DVIADPCMDecoderConverter::DVIADPCMDecoderConverter(Converter::ptr src, const Format& format)
 	  : _src(std::move(src)),
           _blockSize(format.getBitsPerContainer() / BITS_IN_BYTE * format.getNumChannels()),
           _nbChannels(format.getNumChannels()),
@@ -141,8 +142,8 @@ namespace mods
 	     _encodedVec.resize(len);
 	     u8* ptr = _encodedVec.data();
 	     auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-	     auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
-	     return mods::utils::RWBuffer<u8>(buffer);
+	     auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
+	     return mods::utils::RWBuffer<u8>(std::move(buffer));
 	  }
         
         DVIADPCMDecoderConverter::Decoder::Decoder(mods::utils::RBuffer<u8> dataBuffer,

@@ -1,17 +1,17 @@
 #ifndef MODS_WAV_READERWAVCONVERTER_HPP
 #define MODS_WAV_READERWAVCONVERTER_HPP
 
+#include "mods/converters/Converter.hpp"
 #include "mods/wav/StatCollector.hpp"
-#include "mods/wav/WavConverter.hpp"
 
 namespace mods
 {
    namespace wav
      {
-        class ReaderWavConverter : public WavConverter
+        class ReaderWavConverter : public mods::converters::Converter
           {
            public:
-             ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector::sptr statCollector);
+             ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector* statCollector);
              
              ReaderWavConverter() = delete;
              ReaderWavConverter(const ReaderWavConverter&) = delete;
@@ -29,7 +29,7 @@ namespace mods
              mods::utils::RBuffer<u8>::const_iterator _end;
              
              u8 _defaultValue;
-             StatCollector::sptr _statCollector;
+             StatCollector* _statCollector;
           };
      } // namespace wav
 } // namespace mods

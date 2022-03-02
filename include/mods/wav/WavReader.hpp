@@ -1,17 +1,17 @@
 #ifndef MODS_WAV_WAVREADER_HPP
 #define MODS_WAV_WAVREADER_HPP
 
-#include "StatCollector.hpp"
-#include "WavConverter.hpp"
+#include "mods/converters/Converter.hpp"
 #include "mods/ModuleReader.hpp"
 #include "mods/utils/RBuffer.hpp"
+#include "mods/wav/Format.hpp"
+#include "mods/wav/StatCollector.hpp"
+#include "mods/wav/WavTypes.hpp"
 
 namespace mods
 {
    namespace wav
      {
-        class Format;
-        
         class WavReader : public ModuleReader
           {
            public:
@@ -63,10 +63,10 @@ namespace mods
              
              void buildInfo(int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec);
              
-             WavConverter::ptr _converter;
+             mods::converters::Converter::ptr _converter;
              const mods::utils::RBuffer<u8> _fileBuffer;
              std::string _info;
-             StatCollector::sptr _statCollector;
+             StatCollector _statCollector;
              size_t _length;
           };
      } // namespace wav

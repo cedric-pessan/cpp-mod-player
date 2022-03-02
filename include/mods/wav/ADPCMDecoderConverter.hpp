@@ -1,18 +1,22 @@
 #ifndef MODS_WAV_ADPCMDECODERCONVERTER_HPP
 #define MODS_WAV_ADPCMDECODERCONVERTER_HPP
 
-#include "mods/wav/WavConverter.hpp"
+#include "mods/converters/Converter.hpp"
 #include "mods/wav/impl/ADPCMDecoderConverterImpl.hpp"
+
+#include <vector>
 
 namespace mods
 {
    namespace wav
      {
+        class Format;
+        
         template<int NB_CHANNELS>
-          class ADPCMDecoderConverter : public WavConverter
+          class ADPCMDecoderConverter : public mods::converters::Converter
 	  {
 	   public:
-	     ADPCMDecoderConverter(WavConverter::ptr src, const Format& format);
+	     ADPCMDecoderConverter(Converter::ptr src, const Format& format);
 	     
 	     ADPCMDecoderConverter() = delete;
 	     ADPCMDecoderConverter(const ADPCMDecoderConverter&) = delete;
@@ -41,7 +45,7 @@ namespace mods
              auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
              auto initBlockSize() -> u32;
 	     
-	     WavConverter::ptr _src;
+	     Converter::ptr _src;
 	     
              bool _sampleAvailable = false;
 	     s16 _nextSample = 0;

@@ -1,17 +1,17 @@
 #ifndef MODS_WAV_UNPACKTOTYPECONVERTER_HPP
 #define MODS_WAV_UNPACKTOTYPECONVERTER_HPP
 
-#include "mods/wav/WavConverter.hpp"
+#include "mods/converters/Converter.hpp"
 
 namespace mods
 {
    namespace wav
      {
         template<typename T>
-          class UnpackToTypeConverter : public WavConverter
+          class UnpackToTypeConverter : public mods::converters::Converter
           {
            public:
-             explicit UnpackToTypeConverter(WavConverter::ptr src, size_t packSize);
+             explicit UnpackToTypeConverter(Converter::ptr src, size_t packSize);
              
              UnpackToTypeConverter() = delete;
              UnpackToTypeConverter(const UnpackToTypeConverter&) = delete;
@@ -24,7 +24,7 @@ namespace mods
              void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
              
            private:
-             WavConverter::ptr _src;
+             Converter::ptr _src;
              size_t _packSize;
           };
      } // namespace wav

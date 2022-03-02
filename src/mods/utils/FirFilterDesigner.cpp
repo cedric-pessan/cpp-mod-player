@@ -12,7 +12,7 @@ namespace mods
 	  : _sampleFrequency(sampleFrequency),
 	  _cutOff(cutOff)
 	    {
-               optimizeFilter();
+               computeFilter();
 	    }
         
         namespace
@@ -21,7 +21,7 @@ namespace mods
              constexpr double expectedAttenuation = 40.0;
           } // namespace
 	
-	void FirFilterDesigner::optimizeFilter()
+	void FirFilterDesigner::computeFilter()
 	  {
              static constexpr double two = 2.0;
              static constexpr double minAttenuation = 21.0;

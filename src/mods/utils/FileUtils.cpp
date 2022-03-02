@@ -19,7 +19,7 @@ namespace mods
                     {
                        buffer = readFileToBuffer(filename);
                     }
-                  return RBuffer<u8>(buffer);
+                  return RBuffer<u8>(std::move(buffer));
                }
              
              namespace
@@ -44,7 +44,7 @@ namespace mods
                     };
                } // namespace
              
-             auto readFileToBuffer(const std::string& filename) -> RBufferBackend::sptr
+             auto readFileToBuffer(const std::string& filename) -> RBufferBackend::ptr
                {
                   std::ifstream file(filename, std::ios::binary | std::ios::ate);
                   std::streamsize size = file.tellg();
@@ -56,9 +56,9 @@ namespace mods
                        u8* ptr = v.data();
                        size_t length = v.size();
                        auto deleter = std::make_unique<FileReaderDeleter>(std::move(v));
-                       return std::make_shared<RBufferBackend>(ptr, length, std::move(deleter));
+                       return std::make_unique<RBufferBackend>(ptr, length, std::move(deleter));
                     }
-                  return RBufferBackend::sptr();
+                  return RBufferBackend::ptr();
                }
           } // namespace FileUtils
      } // namespace utils

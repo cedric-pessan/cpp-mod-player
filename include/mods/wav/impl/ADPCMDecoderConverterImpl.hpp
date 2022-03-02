@@ -1,8 +1,7 @@
 #ifndef MODS_WAV_IMPL_ADPCMDECODERCONVERTERIMPL_HPP
 #define MODS_WAV_IMPL_ADPCMDECODERCONVERTERIMPL_HPP
 
-#include "mods/wav/WavConverter.hpp"
-#include "mods/wav/impl/ADPCMDecoderConverterImpl.hpp"
+#include "mods/wav/ADPCMDecoderConverter.hpp"
 
 namespace mods
 {

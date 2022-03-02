@@ -1,8 +1,8 @@
 #ifndef MODS_WAV_IMPL_DEMUXCONVERTERIMPL_HPP
 #define MODS_WAV_IMPL_DEMUXCONVERTERIMPL_HPP
 
+#include "mods/converters/Converter.hpp"
 #include "mods/utils/DynamicRingBuffer.hpp"
-#include "mods/wav/WavConverter.hpp"
 
 namespace mods
 {
@@ -14,8 +14,9 @@ namespace mods
                {
                 public:
                   using sptr = std::shared_ptr<InternalDemuxConverter>;
+                  using Converter = mods::converters::Converter;
                   
-                  explicit InternalDemuxConverter(WavConverter::ptr src, u32 nbChannels, u32 bitsPerContainer);
+                  explicit InternalDemuxConverter(Converter::ptr src, u32 nbChannels, u32 bitsPerContainer);
                   
                   InternalDemuxConverter() = delete;
                   InternalDemuxConverter(const InternalDemuxConverter&) = delete;
@@ -34,7 +35,7 @@ namespace mods
                   using UnconsumedBuffer = mods::utils::DynamicRingBuffer<u8>;
                   std::vector<UnconsumedBuffer> _unconsumedBuffers;
                   
-                  WavConverter::ptr _src;
+                  Converter::ptr _src;
                   
                   u32 _bytesPerContainer;
                   u32 _nbChannels;
@@ -43,7 +44,7 @@ namespace mods
                   mods::utils::RWBuffer<u8> _temp;
                };
              
-             class DemuxConverterSlave : public WavConverter
+             class DemuxConverterSlave : public mods::converters::Converter
                {
                 public:
                   DemuxConverterSlave(InternalDemuxConverter::sptr src, u32 channel);

@@ -26,7 +26,7 @@ namespace mods
              auto getTaps() const -> const TapsType&;
              
            private:
-             void optimizeFilter();
+             void computeFilter();
              
 	     double _sampleFrequency;
 	     double _cutOff;

@@ -58,8 +58,8 @@ namespace mods
              _tickVec.resize(len * sizeof(s16));
              u8* ptr = _tickVec.data();
              auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-             auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
-             return mods::utils::RWBuffer<s16>(buffer);
+             auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
+             return mods::utils::RWBuffer<s16>(std::move(buffer));
           }
         
         auto PatternReader::computeTickBufferLength() const -> size_t

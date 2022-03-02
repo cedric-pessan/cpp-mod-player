@@ -8,7 +8,7 @@ namespace mods
 {
    namespace wav
      {
-        ALawConverter::ALawConverter(WavConverter::ptr src)
+        ALawConverter::ALawConverter(Converter::ptr src)
           : _src(std::move(src))
             {
                fillLookupTable();

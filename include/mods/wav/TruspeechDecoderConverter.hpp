@@ -1,17 +1,17 @@
 #ifndef MODS_WAV_TRUSPEECHDECODERCONVERTER_HPP
 #define MODS_WAV_TRUSPEECHDECODERCONVERTER_HPP
 
+#include "mods/converters/Converter.hpp"
 #include "mods/utils/BitReader.hpp"
-#include "mods/wav/WavConverter.hpp"
 
 namespace mods
 {
    namespace wav
      {
-        class TruspeechDecoderConverter : public WavConverter
+        class TruspeechDecoderConverter : public mods::converters::Converter
           {
            public:
-             explicit TruspeechDecoderConverter(WavConverter::ptr src);
+             explicit TruspeechDecoderConverter(Converter::ptr src);
              
              TruspeechDecoderConverter() = delete;
              TruspeechDecoderConverter(const TruspeechDecoderConverter&) = delete;
@@ -43,7 +43,7 @@ namespace mods
              void updateFilters(int subframe);
              void synth(int subframe);
              
-             WavConverter::ptr _src;
+             Converter::ptr _src;
              
              constexpr static int TRUSPEECH_DECODED_FRAME_SIZE = 240 * 2;
              

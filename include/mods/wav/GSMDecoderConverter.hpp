@@ -1,9 +1,9 @@
 #ifndef MODS_WAV_GSMDECODERCONVERTER_HPP
 #define MODS_WAV_GSMDECODERCONVERTER_HPP
 
+#include "mods/converters/Converter.hpp"
 #include "mods/utils/BitReader.hpp"
 #include "mods/wav/GSMInt16.hpp"
-#include "mods/wav/WavConverter.hpp"
 
 #include <functional>
 
@@ -11,10 +11,10 @@ namespace mods
 {
    namespace wav
      {
-        class GSMDecoderConverter : public WavConverter
+        class GSMDecoderConverter : public mods::converters::Converter
           {
            public:
-             explicit GSMDecoderConverter(WavConverter::ptr src);
+             explicit GSMDecoderConverter(Converter::ptr src);
              
              GSMDecoderConverter() = delete;
              GSMDecoderConverter(const GSMDecoderConverter&) = delete;
@@ -61,7 +61,7 @@ namespace mods
              void deEmphasisFiltering();
              void upscale();
              
-             WavConverter::ptr _src;
+             Converter::ptr _src;
              
              constexpr static int GSM_DECODED_FRAME_SAMPLES = 160;
              constexpr static int GSM_DECODED_FRAME_SIZE = GSM_DECODED_FRAME_SAMPLES * 2;

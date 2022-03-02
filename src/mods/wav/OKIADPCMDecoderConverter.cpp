@@ -1,4 +1,5 @@
 
+#include "mods/wav/Format.hpp"
 #include "mods/wav/OKIADPCMDecoderConverter.hpp"
 
 #include <iostream>
@@ -8,7 +9,7 @@ namespace mods
 {
    namespace wav
      {
-	OKIADPCMDecoderConverter::OKIADPCMDecoderConverter(WavConverter::ptr src, const Format& format)
+	OKIADPCMDecoderConverter::OKIADPCMDecoderConverter(Converter::ptr src, const Format& format)
 	  : _src(std::move(src)),
           _nbChannels(format.getNumChannels()),
 	  _encodedBuffer(allocateNewTempBuffer(0))
@@ -44,7 +45,7 @@ namespace mods
 		    157, 173, 190, 209, 230, 253, 279, 307, 337, 371, 408, 449,
 		    494, 544, 598, 658, 724, 796, 876, 963, 1060, 1166, 1282, 1411, 1552
 	       };
-	  } // namespace*/
+	  } // namespace
 	
 	auto OKIADPCMDecoderConverter::isFinished() const -> bool
 	  {
@@ -112,8 +113,8 @@ namespace mods
 	     _encodedVec.resize(len);
 	     u8* ptr = _encodedVec.data();
 	     auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-	     auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
-	     return mods::utils::RWBuffer<u8>(buffer);
+	     auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
+	     return mods::utils::RWBuffer<u8>(std::move(buffer));
 	  }
         
         void OKIADPCMDecoderConverter::ensureTempBufferSize(size_t len)

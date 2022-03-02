@@ -9,7 +9,7 @@ namespace mods
      {
         namespace impl
           {
-             InternalMultiChannelMixerSourceConverter::InternalMultiChannelMixerSourceConverter(std::vector<WavConverter::ptr> channels, u32 channelMask)
+             InternalMultiChannelMixerSourceConverter::InternalMultiChannelMixerSourceConverter(std::vector<Converter::ptr> channels, u32 channelMask)
                : _channels(std::move(channels)),
                _channelMask(channelMask)
                  {
@@ -28,8 +28,8 @@ namespace mods
                   backendVec->resize(len);
                   u8* ptr = backendVec->data();
                   auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-                  auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
-                  return mods::utils::RWBuffer<u8>(buffer);
+                  auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
+                  return mods::utils::RWBuffer<u8>(std::move(buffer));
                }
              
              void InternalMultiChannelMixerSourceConverter::ensureChannelBuffersSizes(size_t len)
@@ -229,7 +229,7 @@ namespace mods
                  {
                  }
              
-             auto MultiChannelMixerBase::buildRightChannel() const -> WavConverter::ptr
+             auto MultiChannelMixerBase::buildRightChannel() const -> Converter::ptr
                {
                   class make_unique_enabler : public MultiChannelMixerBase
                     {
@@ -260,13 +260,13 @@ namespace mods
                }
           } // namespace impl
         
-        MultiChannelMixer::MultiChannelMixer(std::vector<WavConverter::ptr> channels, u32 channelMask)
-          : MultiChannelMixerBase(std::make_shared<impl::InternalMultiChannelMixerSourceConverter>(std::move(channels), channelMask), impl::ChannelId::Left),
+        MultiChannelMixer::MultiChannelMixer(std::vector<Converter::ptr> channels, u32 channelMask)
+          : MultiChannelMixerBase(std::make_unique<impl::InternalMultiChannelMixerSourceConverter>(std::move(channels), channelMask), impl::ChannelId::Left),
           _right(buildRightChannel())
             {
             }
         
-        auto MultiChannelMixer::getRightChannel() -> WavConverter::ptr
+        auto MultiChannelMixer::getRightChannel() -> Converter::ptr
           {
              return std::move(_right);
           }

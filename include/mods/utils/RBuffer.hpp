@@ -18,7 +18,7 @@ namespace mods
              using const_reference = const T&;
              using backend_type = RBufferBackend;
              
-             explicit RBuffer(RBufferBackend::sptr backend)
+             explicit RBuffer(RBufferBackend::ptr backend)
                : _backend(std::move(backend)),
                _buf(static_cast<const T*>(static_cast<const void*>(RBufferBackend::Attorney::getBuffer(*_backend)))),
                _len(RBufferBackend::Attorney::getLength(*_backend) / sizeof(T))
@@ -176,6 +176,13 @@ namespace mods
                : _backend(std::move(backend)),
                _buf(static_cast<const T*>(static_cast<const void*>(RBufferBackend::Attorney::getBuffer(*_backend) + offset))), // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                _len(len)
+                 {
+                 }
+             
+             explicit RBuffer(RBufferBackend::sptr backend)
+               : _backend(backend),
+               _buf(static_cast<const T*>(static_cast<const void*>(RBufferBackend::Attorney::getBuffer(*_backend)))),
+               _len(RBufferBackend::Attorney::getLength(*_backend) / sizeof(T))
                  {
                  }
              

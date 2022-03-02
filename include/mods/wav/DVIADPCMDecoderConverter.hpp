@@ -1,17 +1,21 @@
 #ifndef MODS_WAV_DVIADPCMDECODERCONVERTER_HPP
 #define MODS_WAV_DVIADPCMDECODERCONVERTER_HPP
 
-#include "mods/wav/WavConverter.hpp"
+#include "mods/converters/Converter.hpp"
 #include "mods/wav/impl/DVIADPCMDecoderConverterImpl.hpp"
+
+#include <vector>
 
 namespace mods
 {
    namespace wav
      {
-	class DVIADPCMDecoderConverter : public WavConverter
+        class Format;
+        
+	class DVIADPCMDecoderConverter : public mods::converters::Converter
 	  {
 	   public:
-	     DVIADPCMDecoderConverter(WavConverter::ptr src, const Format& format);
+	     DVIADPCMDecoderConverter(Converter::ptr src, const Format& format);
 	     
 	     DVIADPCMDecoderConverter() = delete;
 	     DVIADPCMDecoderConverter(const DVIADPCMDecoderConverter&) = delete;
@@ -32,7 +36,7 @@ namespace mods
 	   private:
 	     auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
 	     
-	     WavConverter::ptr _src;
+	     Converter::ptr _src;
              u32 _blockSize;
              u16 _nbChannels;
 	     

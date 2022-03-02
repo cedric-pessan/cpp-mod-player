@@ -12,6 +12,7 @@ namespace mods
         class RBufferBackend
           {
            public:
+             using ptr = std::unique_ptr<RBufferBackend>;
              using sptr = std::shared_ptr<RBufferBackend>;
              using value_type = const u8;
              

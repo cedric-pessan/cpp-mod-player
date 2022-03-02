@@ -1,6 +1,7 @@
 
 #include "mods/utils/arithmeticShifter.hpp"
 #include "mods/wav/ADPCMDecoderConverter.hpp"
+#include "mods/wav/Format.hpp"
 
 #include <iostream>
 #include <limits>
@@ -10,7 +11,7 @@ namespace mods
    namespace wav
      {
         template<int NB_CHANNELS>
-          ADPCMDecoderConverter<NB_CHANNELS>::ADPCMDecoderConverter(WavConverter::ptr src, const Format& format)
+          ADPCMDecoderConverter<NB_CHANNELS>::ADPCMDecoderConverter(Converter::ptr src, const Format& format)
             : _src(std::move(src)),
           _extension(format.getMetaData().slice<impl::ADPCMExtension>(0,1)),
           _coefs(format.getMetaData().slice<s16>(sizeof(impl::ADPCMExtension), (format.getMetaData().size() - sizeof(impl::ADPCMExtension)) / sizeof(s16))),
@@ -61,8 +62,8 @@ namespace mods
              _encodedVec.resize(len);
              u8* ptr = _encodedVec.data();
              auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-             auto buffer = std::make_shared<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
-             return mods::utils::RWBuffer<u8>(buffer);
+             auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
+             return mods::utils::RWBuffer<u8>(std::move(buffer));
           }
 	
         template<int NB_CHANNELS>

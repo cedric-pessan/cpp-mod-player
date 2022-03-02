@@ -1,7 +1,7 @@
 #ifndef MODS_WAV_ALAWCONVERTER_HPP
 #define MODS_WAV_ALAWCONVERTER_HPP
 
-#include "mods/wav/WavConverter.hpp"
+#include "mods/converters/Converter.hpp"
 
 #include <limits>
 
@@ -9,10 +9,10 @@ namespace mods
 {
    namespace wav
      {
-        class ALawConverter : public WavConverter
+        class ALawConverter : public mods::converters::Converter
           {
            public:
-             explicit ALawConverter(WavConverter::ptr src);
+             explicit ALawConverter(Converter::ptr src);
              
              ALawConverter() = delete;
              ALawConverter(const ALawConverter&) = delete;
@@ -53,7 +53,7 @@ namespace mods
              void fillLookupTable();
              auto aLawTransform(s8 value) const -> s16;
              
-             WavConverter::ptr _src;
+             Converter::ptr _src;
              static constexpr u32 _lookupTableSize = static_cast<u32>(std::numeric_limits<u8>::max())+1;
              std::array<s16, _lookupTableSize> _lookupTable {};
           };

@@ -10,8 +10,6 @@ namespace mods
         class StatCollector
           {
            public:
-             using sptr = std::shared_ptr<StatCollector>;
-             
              StatCollector() = default;
              
              StatCollector(const StatCollector&) = delete;

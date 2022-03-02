@@ -10,7 +10,7 @@ namespace mods
         class MultiChannelMixer : public impl::MultiChannelMixerBase
           {
            public:
-             MultiChannelMixer(std::vector<WavConverter::ptr> channels, u32 channelMask);
+             MultiChannelMixer(std::vector<Converter::ptr> channels, u32 channelMask);
              
              MultiChannelMixer() = delete;
              MultiChannelMixer(const MultiChannelMixer&) = delete;
@@ -19,10 +19,10 @@ namespace mods
              auto operator=(MultiChannelMixer&&) -> MultiChannelMixer& = delete;
              ~MultiChannelMixer() override = default;
              
-             auto getRightChannel() -> WavConverter::ptr;
+             auto getRightChannel() -> mods::converters::Converter::ptr;
              
            private:
-             WavConverter::ptr _right;
+             Converter::ptr _right;
           };
      } // namespace wav
 } // namespace mods
