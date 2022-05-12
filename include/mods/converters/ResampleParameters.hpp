@@ -48,18 +48,14 @@ namespace mods
            public:
              constexpr static auto getNumTaps() -> int
                {
-                  return FilterType::taps.size();
+                  return FilterType::numberOfTaps;
                }
              
-             constexpr static auto getTap(size_t i) -> double
-               {
-                  using mods::utils::at;
-                  return at(FilterType::taps, i);
-               }
+             static auto getTap(size_t i) -> double;
              
              constexpr static auto getTaps() -> const typename FilterType::TapsType&
                {
-                  return FilterType::taps;
+                  return FilterType::getTaps();
                }
           };
         
@@ -89,6 +85,8 @@ namespace mods
              auto getResampleFraction() const -> const mods::utils::ConstFraction&;
              
              static constexpr double _nyquistFactor = 2.0;
+             static constexpr double _expectedAttenuation = 40.0;
+             static constexpr double _transitionWidth = 50.0;
              
              mods::utils::ConstFraction _resampleFraction;
              mods::utils::FirFilterDesigner _designer;

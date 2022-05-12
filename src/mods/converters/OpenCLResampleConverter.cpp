@@ -111,6 +111,7 @@ namespace mods
              
              _taps = std::vector<double>(resampleParameters.getTaps().begin(),
                                          resampleParameters.getTaps().end());
+             
              return cl::Buffer(_context, _taps.begin(), _taps.end(), true, true);
           }
         
@@ -142,8 +143,8 @@ namespace mods
                   return sampleWithZeros.numberOfZeros();
                });
                
-               cl::Buffer sampleBuffer(_context, sampleHistory.begin(), sampleHistory.end(), true);
-               cl::Buffer zerosBuffer(_context, zeroHistory.begin(), zeroHistory.end(), true);
+               cl::Buffer sampleBuffer(_context, sampleHistory.begin(), sampleHistory.end(), true /* read only */);
+               cl::Buffer zerosBuffer(_context, zeroHistory.begin(), zeroHistory.end(), true /* read only */);
                cl::Buffer outputBuffer(_context, CL_MEM_WRITE_ONLY, nbElems * sizeof(double)); // NOLINT(hicpp-signed-bitwise)
                
                cl::NDRange global(nbElems);

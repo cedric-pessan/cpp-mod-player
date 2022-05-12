@@ -7,14 +7,14 @@ namespace mods
 {
    namespace utils
      {
-        constexpr auto gcd(u32 a, u32 b) -> u32
+        constexpr auto gcd(u64 a, u64 b) -> u64
           {
-             u32 r = 0;
+             u64 r = 0;
              do
                {
                   if(a < b)
                     {
-                       u32 t = a;
+                       u64 t = a;
                        a = b;
                        b = t;
                     }

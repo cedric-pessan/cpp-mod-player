@@ -3,36 +3,45 @@
 #include "mods/utils/FirFilterDesigner.hpp"
 
 #include <cmath>
+#include <iostream>
 
 namespace mods
 {
    namespace utils
      {
-	FirFilterDesigner::FirFilterDesigner(u32 sampleFrequency, double cutOff)
+        namespace
+          {
+             constexpr double minAttenuation = 21.0;
+          } // namespace
+        
+	FirFilterDesigner::FirFilterDesigner(u64 sampleFrequency, double cutOff, double expectedAttenuation, double transitionWidth)
 	  : _sampleFrequency(sampleFrequency),
-	  _cutOff(cutOff)
+	  _cutOff(cutOff),
+          _expectedAttenuation(expectedAttenuation),
+          _transitionWidth(transitionWidth)
 	    {
+               checkInit(transitionWidth > 0, "transition width should be positive");
+               checkInit(expectedAttenuation > minAttenuation, "attenuation should be greater than 8dB");
                computeFilter();
 	    }
         
-        namespace
+        void FirFilterDesigner::checkInit(bool condition, const std::string& description)
           {
-             constexpr double transitionWidth = 50.0;
-             constexpr double expectedAttenuation = 40.0;
-          } // namespace
+             if(!condition)
+               {
+                  throw std::invalid_argument(description);
+               }
+          }
 	
 	void FirFilterDesigner::computeFilter()
 	  {
              static constexpr double two = 2.0;
-             static constexpr double minAttenuation = 21.0;
              static constexpr double highAttenuationLimit = 50.0;
              
-             double A = expectedAttenuation;
+             double A = _expectedAttenuation;
 	     double nyquistFrequency = _sampleFrequency / two;
-	     double deltaOmega = transitionWidth / nyquistFrequency * M_PI;
+	     double deltaOmega = _transitionWidth / nyquistFrequency * M_PI;
              // apply empirical kaiser window formula to determine number of taps
-             static_assert(transitionWidth > 0, "transition width should be positive");
-             static_assert(expectedAttenuation > minAttenuation, "attenuation should be greater than 8dB");
 	     s64 M = std::lround((A - 8.0) / (2.285 * deltaOmega)); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 	     if((static_cast<u64>(M)&1U) == 0)
                {
@@ -72,7 +81,6 @@ namespace mods
 	     double alpha = M / two;
 	     for(s64 i=0; i<M; ++i)
 	       {
-		  namespace bessel = mods::utils::bessel;
                   s64 shiftedFrequency = i-M/2;
                   auto w = static_cast<double>(shiftedFrequency);
 		  double kaiserValue = bessel::i0(beta * std::sqrt(1.0 - std::pow(w / alpha, 2))) / bessel::i0(beta);

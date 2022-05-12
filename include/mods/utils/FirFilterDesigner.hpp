@@ -3,6 +3,7 @@
 
 #include "mods/utils/types.hpp"
 
+#include <string>
 #include <vector>
 
 namespace mods
@@ -12,7 +13,7 @@ namespace mods
         class FirFilterDesigner
           {
            public:
-	     FirFilterDesigner(u32 sampleFrequency, double cutOff);
+	     FirFilterDesigner(u64 sampleFrequency, double cutOff, double expectedAttenuation, double transitionWidth);
              
              FirFilterDesigner() = delete;
              FirFilterDesigner(const FirFilterDesigner&) = default;
@@ -26,10 +27,14 @@ namespace mods
              auto getTaps() const -> const TapsType&;
              
            private:
+             static void checkInit(bool condition, const std::string& description);
+             
              void computeFilter();
              
 	     double _sampleFrequency;
 	     double _cutOff;
+             double _expectedAttenuation;
+             double _transitionWidth;
 	     
 	     TapsType _taps;
           };

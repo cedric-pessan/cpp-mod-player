@@ -5,10 +5,16 @@ namespace mods
 {
    namespace converters
      {
+        template<StandardFrequency InFrequency, StandardFrequency OutFrequency>
+          auto StaticResampleParameters<InFrequency, OutFrequency>::getTap(size_t i) -> double
+          {
+             return FilterType::getTap(i);
+          }
+        
         DynamicResampleParameters::DynamicResampleParameters(int inFrequency, int outFrequency)
           : _resampleFraction(mods::utils::ConstFraction(inFrequency, outFrequency).reduce()),
           _designer(inFrequency * getInterpolationFactor(), // sampleFrequency
-                    std::min(inFrequency, outFrequency) / _nyquistFactor) // cutoffFrequency
+                    std::min(inFrequency, outFrequency) / _nyquistFactor, _expectedAttenuation, _transitionWidth) // cutoffFrequency
             {
             }
         
@@ -41,5 +47,10 @@ namespace mods
           {
              return _designer.getTaps();
           }
+        
+        template class StaticResampleParameters<StandardFrequency::_22000, StandardFrequency::_44100>;
+        template class StaticResampleParameters<StandardFrequency::_8000,  StandardFrequency::_44100>;
+        template class StaticResampleParameters<StandardFrequency::_48000, StandardFrequency::_44100>;
+        template class StaticResampleParameters<StandardFrequency::_10000, StandardFrequency::_44100>;
      } // namespace converters
 } // namespace mods
