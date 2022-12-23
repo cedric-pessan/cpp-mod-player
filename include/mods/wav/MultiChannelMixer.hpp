@@ -19,7 +19,7 @@ namespace mods
              auto operator=(MultiChannelMixer&&) -> MultiChannelMixer& = delete;
              ~MultiChannelMixer() override = default;
              
-             auto getRightChannel() -> mods::converters::Converter::ptr;
+             auto getRightChannel() -> mods::converters::Converter<double>::ptr;
              
            private:
              Converter::ptr _right;

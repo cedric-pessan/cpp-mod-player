@@ -9,10 +9,10 @@ namespace mods
 {
    namespace wav
      {
-        class ALawConverter : public mods::converters::Converter
+        class ALawConverter : public mods::converters::Converter<s16>
           {
            public:
-             explicit ALawConverter(Converter::ptr src);
+             explicit ALawConverter(Converter<u8>::ptr src);
              
              ALawConverter() = delete;
              ALawConverter(const ALawConverter&) = delete;
@@ -22,7 +22,7 @@ namespace mods
              ~ALawConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<s16>* buf) override;
              
              static constexpr auto getZero() -> u8
                {
@@ -53,7 +53,7 @@ namespace mods
              void fillLookupTable();
              auto aLawTransform(s8 value) const -> s16;
              
-             Converter::ptr _src;
+             Converter<u8>::ptr _src;
              static constexpr u32 _lookupTableSize = static_cast<u32>(std::numeric_limits<u8>::max())+1;
              std::array<s16, _lookupTableSize> _lookupTable {};
           };

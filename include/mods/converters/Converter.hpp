@@ -8,7 +8,8 @@ namespace mods
 {
    namespace converters
      {
-        class Converter
+        template<typename T>
+          class Converter
           {
            public:
              using ptr = std::unique_ptr<Converter>;
@@ -17,7 +18,7 @@ namespace mods
              virtual ~Converter() = default;
              
              virtual auto isFinished() const -> bool = 0;
-             virtual void read(mods::utils::RWBuffer<u8>* buf, size_t len) = 0;
+             virtual void read(mods::utils::RWBuffer<T>* buf) = 0;
              
              Converter(const Converter&) = delete;
              Converter(Converter&&) = delete;

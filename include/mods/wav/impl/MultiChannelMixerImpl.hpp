@@ -62,7 +62,7 @@ namespace mods
                   using sptr = std::shared_ptr<InternalMultiChannelMixerSourceConverter>;
                   
                 private:
-                  using Converter = mods::converters::Converter;
+                  using Converter = mods::converters::Converter<double>;
                   
                 public:
                   InternalMultiChannelMixerSourceConverter(std::vector<Converter::ptr> channels, u32 channelMask);
@@ -75,13 +75,13 @@ namespace mods
                   ~InternalMultiChannelMixerSourceConverter() = default;
                   
                   auto isFinished(ChannelId outChannel) const -> bool;
-                  void read(mods::utils::RWBuffer<u8>* buf, int len, ChannelId outChannel);
+                  void read(mods::utils::RWBuffer<double>* buf, ChannelId outChannel);
                   
                 private:
-                  static auto allocateNewTempBuffer(std::vector<u8>* backendVec, size_t len) -> mods::utils::RWBuffer<u8>;
+                  static auto allocateNewTempBuffer(std::vector<u8>* backendVec, size_t len) -> mods::utils::RWBuffer<double>;
                   void ensureChannelBuffersSizes(size_t len);
                   
-                  void computeMixingCoefficients();
+                  void computeMixingCoefficients(u32 channelMask);
                   auto mix(int idxOutBuffer, size_t idxSample) const -> double;
                   
                   using UnconsumedBuffer = mods::utils::DynamicRingBuffer<double>;
@@ -89,14 +89,11 @@ namespace mods
                   
                   std::vector<Converter::ptr> _channels;
                   std::vector<std::vector<u8>> _channelsVec;
-                  std::vector<mods::utils::RWBuffer<u8>> _channelsBuffers;
-                  std::vector<mods::utils::RBuffer<double>> _channelsViews;
+                  std::vector<mods::utils::RWBuffer<double>> _channelsBuffers;
                   std::array<std::vector<double>, 2> _coefficients;
-                  
-                  u32 _channelMask;
                };
              
-             class MultiChannelMixerBase : public mods::converters::Converter
+             class MultiChannelMixerBase : public mods::converters::Converter<double>
                {
                 protected:
                   MultiChannelMixerBase(InternalMultiChannelMixerSourceConverter::sptr src, ChannelId channel);
@@ -110,10 +107,10 @@ namespace mods
                   ~MultiChannelMixerBase() override = default;
                   
                   auto isFinished() const -> bool override;
-                  void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+                  void read(mods::utils::RWBuffer<double>* buf) override;
                   
                 protected:
-                  auto buildRightChannel() const -> Converter::ptr;
+                  auto buildRightChannel() const -> Converter<double>::ptr;
                   
                 private:
                   InternalMultiChannelMixerSourceConverter::sptr _src;

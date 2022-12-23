@@ -29,7 +29,7 @@ namespace mods
         virtual ~ModuleReader() = default;
         
         virtual auto isFinished() const -> bool = 0;
-        virtual void read(mods::utils::RWBuffer<u8>* buf, int len) = 0;
+        virtual void read(mods::utils::RWBuffer<s16>* buf) = 0;
         virtual auto getInfo() const -> std::string = 0;
         virtual auto getProgressInfo() const -> std::string = 0;
         

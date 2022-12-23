@@ -7,10 +7,10 @@ namespace mods
 {
    namespace converters
      {
-        class DivideConverter : public Converter
+        class DivideConverter : public Converter<double>
           {
            public:
-             DivideConverter(Converter::ptr src, double coef);
+             DivideConverter(Converter<double>::ptr src, double coef);
              
              DivideConverter() = delete;
              DivideConverter(const DivideConverter&) = delete;
@@ -20,10 +20,10 @@ namespace mods
              ~DivideConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<double>* buf) override;
              
            private:
-             Converter::ptr _src;
+             Converter<double>::ptr _src;
              double _coef;
           };
      } // namespace converters

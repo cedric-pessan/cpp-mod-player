@@ -10,17 +10,17 @@ namespace mods
 {
    namespace wav
      {
-        TruspeechDecoderConverter::TruspeechDecoderConverter(Converter::ptr src)
+        TruspeechDecoderConverter::TruspeechDecoderConverter(Converter<u8>::ptr src)
           : _src(std::move(src)),
           _decodedArray {},
           _decodedBuffer(initializeArrayRWBuffer(_decodedArray)),
-          _itDecodedBuffer(_decodedBuffer.RBuffer<u8>::end()),
+          _itDecodedBuffer(_decodedBuffer.RBuffer<s16>::end()),
           _subframes
           {
-             _decodedBuffer.slice<s16>(0,                       _subframeLength),
-             _decodedBuffer.slice<s16>(_subframeLength * 2,     _subframeLength),
-             _decodedBuffer.slice<s16>(_subframeLength * 2 * 2, _subframeLength),
-             _decodedBuffer.slice<s16>(_subframeLength * 2 * 3, _subframeLength)
+             _decodedBuffer.slice<s16>(0,                   _subframeLength),
+             _decodedBuffer.slice<s16>(_subframeLength,     _subframeLength),
+             _decodedBuffer.slice<s16>(_subframeLength * 2, _subframeLength),
+             _decodedBuffer.slice<s16>(_subframeLength * 3, _subframeLength)
           },
           _encodedArray {},
           _encodedBuffer(initializeArrayRWBuffer(_encodedArray)),
@@ -58,15 +58,15 @@ namespace mods
         
         auto TruspeechDecoderConverter::isFinished() const -> bool
           {
-             return _itDecodedBuffer == _decodedBuffer.RBuffer<u8>::end() && _src->isFinished();
+             return _itDecodedBuffer == _decodedBuffer.RBuffer<s16>::end() && _src->isFinished();
           }
         
-        void TruspeechDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+        void TruspeechDecoderConverter::read(mods::utils::RWBuffer<s16>* buf)
           {
              size_t count = 0;
-             while(count < len)
+             while(count < buf->size())
                {
-                  if(_itDecodedBuffer != _decodedBuffer.RBuffer<u8>::end())
+                  if(_itDecodedBuffer != _decodedBuffer.RBuffer<s16>::end())
                     {
                        (*buf)[count++] = *_itDecodedBuffer;
                        ++_itDecodedBuffer;
@@ -80,7 +80,7 @@ namespace mods
                        else
                          {
                             decodeTruspeechFrame();
-                            _itDecodedBuffer = _decodedBuffer.RBuffer<u8>::begin();
+                            _itDecodedBuffer = _decodedBuffer.RBuffer<s16>::begin();
                          }
                     }
                }
@@ -88,7 +88,7 @@ namespace mods
         
         void TruspeechDecoderConverter::decodeTruspeechFrame()
           {
-             _src->read(&_encodedBuffer, TRUSPEECH_ENCODED_FRAME_SIZE);
+             _src->read(&_encodedBuffer);
              _bitReader.reset();
              
              readParameters();

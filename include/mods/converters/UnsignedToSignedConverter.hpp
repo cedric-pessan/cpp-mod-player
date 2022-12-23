@@ -7,11 +7,11 @@ namespace mods
 {
    namespace converters
      {
-        template<typename T>
-          class UnsignedToSignedConverter : public Converter
+        template<typename TOut, typename TIn>
+          class UnsignedToSignedConverter : public Converter<TOut>
           {
            public:
-             explicit UnsignedToSignedConverter(Converter::ptr src);
+             explicit UnsignedToSignedConverter(typename Converter<TIn>::ptr src);
              
              UnsignedToSignedConverter() = delete;
              UnsignedToSignedConverter(const UnsignedToSignedConverter&) = delete;
@@ -21,15 +21,15 @@ namespace mods
              ~UnsignedToSignedConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<TOut>* buf) override;
              
            private:
              constexpr auto getOffset() -> int
                {
-                  return (1U << (sizeof(T) * BITS_IN_BYTE)) / 2;
+                  return (1U << (sizeof(TIn) * BITS_IN_BYTE)) / 2;
                }
              
-             Converter::ptr _src;
+             typename Converter<TIn>::ptr _src;
           };
      } // namespace converters
 } // namespace mods

@@ -9,7 +9,7 @@ namespace mods
    namespace converters
      {
         template<typename T>
-          FromDoubleConverter<T>::FromDoubleConverter(Converter::ptr src)
+          FromDoubleConverter<T>::FromDoubleConverter(Converter<double>::ptr src)
             : _src(std::move(src)),
           _temp(allocateNewTempBuffer(0))
             {
@@ -26,22 +26,16 @@ namespace mods
           }
         
         template<typename T>
-          void FromDoubleConverter<T>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+          void FromDoubleConverter<T>::read(mods::utils::RWBuffer<T>* buf)
             {
-               if((len % sizeof(T)) != 0)
-                 {
-                    std::cout << "TODO: wrong buffer length in FromDoubleConverter" << std::endl;
-                 }
+               int nbElems = buf->size();
                
-               int nbElems = len / sizeof(T);
-               size_t toReadLen = nbElems * sizeof(double);
-               
-               ensureTempBufferSize(toReadLen);
-               
-               _src->read(&_temp, toReadLen);
+               ensureTempBufferSize(nbElems);
                
                auto inView = _temp.slice<double>(0, nbElems);
-               auto outView = buf->slice<T>(0, nbElems);
+               auto& outView = *buf;
+               
+               _src->read(&inView);
                
                for(int i = 0; i<nbElems; ++i)
                  {
@@ -63,13 +57,14 @@ namespace mods
             }
         
         template<typename T>
-          auto FromDoubleConverter<T>::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>
+          auto FromDoubleConverter<T>::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<double>
             {
-               _tempVec.resize(len);
+               _tempVec.resize(len * sizeof(double));
                u8* ptr = _tempVec.data();
                auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-               auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
-               return mods::utils::RWBuffer<u8>(std::move(buffer));
+               auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len * sizeof(double), std::move(deleter));
+               mods::utils::RWBuffer<u8> byteBuf(std::move(buffer));
+               return byteBuf.slice<double>(0, len);
             }
         
         template<typename T>

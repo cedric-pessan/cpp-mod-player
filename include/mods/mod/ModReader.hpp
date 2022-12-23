@@ -22,7 +22,7 @@ namespace mods
              auto operator=(ModReader&&) -> ModReader& = delete;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             void read(mods::utils::RWBuffer<s16>* buf) override;
              auto getInfo() const -> std::string override;
              auto getProgressInfo() const -> std::string override;
              

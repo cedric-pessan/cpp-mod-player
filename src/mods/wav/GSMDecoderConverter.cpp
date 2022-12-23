@@ -12,11 +12,11 @@ namespace mods
         constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_b;
         constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_inva;
         
-        GSMDecoderConverter::GSMDecoderConverter(Converter::ptr src)
+        GSMDecoderConverter::GSMDecoderConverter(Converter<u8>::ptr src)
           : _src(std::move(src)),
           _decodedArray {},
           _decodedBuffer(initializeArrayRWBuffer(_decodedArray)),
-          _itDecodedBuffer(_decodedBuffer.RBuffer<u8>::end()),
+          _itDecodedBuffer(_decodedBuffer.RBuffer<s16>::end()),
           _encodedArray {},
           _encodedBuffer(initializeArrayRWBuffer(_encodedArray)),
           _bitReader(_encodedBuffer)
@@ -25,15 +25,15 @@ namespace mods
         
         auto GSMDecoderConverter::isFinished() const -> bool
           {
-             return _itDecodedBuffer == _decodedBuffer.RBuffer<u8>::end() && _src->isFinished();
+             return _itDecodedBuffer == _decodedBuffer.RBuffer<s16>::end() && _src->isFinished();
           }
         
-        void GSMDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+        void GSMDecoderConverter::read(mods::utils::RWBuffer<s16>* buf)
           {
              size_t count = 0;
-             while(count < len)
+             while(count < buf->size())
                {
-                  if(_itDecodedBuffer != _decodedBuffer.RBuffer<u8>::end())
+                  if(_itDecodedBuffer != _decodedBuffer.RBuffer<s16>::end())
                     {
                        (*buf)[count++] = *_itDecodedBuffer;
                        ++_itDecodedBuffer;
@@ -47,7 +47,7 @@ namespace mods
                        else
                          {
                             decodeGSMFrame();
-                            _itDecodedBuffer = _decodedBuffer.RBuffer<u8>::begin();
+                            _itDecodedBuffer = _decodedBuffer.RBuffer<s16>::begin();
                          }
                     }
                }
@@ -67,7 +67,7 @@ namespace mods
           {
              if(_evenFrame)
                {
-                  _src->read(&_encodedBuffer, GSM_ENCODED_PACK_SIZE);
+                  _src->read(&_encodedBuffer);
                   _bitReader.reset();
                }
              
@@ -414,14 +414,12 @@ namespace mods
           {
              using mods::utils::at;
              
-             auto out = _decodedBuffer.slice<s16>(0, GSM_DECODED_FRAME_SAMPLES);
-             
-             for(int k=0; k<GSM_DECODED_FRAME_SAMPLES; ++k)
+             for(int k=0; k<GSM_DECODED_FRAME_SIZE; ++k)
                {
                   GSMInt16 value = at(_sro,k) + at(_sro,k);
                   value >>= 3;
                   value <<= 3;
-                  out[k] = value.getValue();
+                  _decodedBuffer[k] = value.getValue();
                }
           }
         

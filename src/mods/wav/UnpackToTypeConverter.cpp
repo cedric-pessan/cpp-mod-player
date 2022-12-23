@@ -8,7 +8,7 @@ namespace mods
    namespace wav
      {
         template<typename T>
-          UnpackToTypeConverter<T>::UnpackToTypeConverter(Converter::ptr src, size_t packSize)
+          UnpackToTypeConverter<T>::UnpackToTypeConverter(mods::converters::Converter<u8>::ptr src, size_t packSize)
             : _src(std::move(src)),
           _packSize(packSize)
             {
@@ -25,20 +25,16 @@ namespace mods
           }
         
         template<typename T>
-          void UnpackToTypeConverter<T>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+          void UnpackToTypeConverter<T>::read(mods::utils::RWBuffer<T>* buf)
             {
-               if((len % sizeof(T)) != 0)
-                 {
-                    std::cout << "TODO: wrong buffer length in UnpackToTypeConverter" << std::endl;
-                 }
-               
-               int nbElems = len / sizeof(T);
+               int nbElems = buf->size();
                int toReadLen = nbElems * _packSize;
                
-               auto inView = buf->slice<u8>(len - toReadLen, toReadLen);
-               auto outView = buf->slice<T>(0, nbElems);
+               auto castedBuf = buf->template slice<u8>(0, buf->size() * sizeof(T));
+               auto inView = castedBuf.template slice<u8>(castedBuf.size() - toReadLen, toReadLen);
+               auto& outView = *buf;
                
-               _src->read(&inView, toReadLen);
+               _src->read(&inView);
                
                static constexpr u8 signMask = 0x80U;
                static constexpr u32 negativeSignExtensionByte = 0xFFU;

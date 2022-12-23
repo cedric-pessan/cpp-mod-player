@@ -8,10 +8,10 @@ namespace mods
    namespace converters
      {
         template<typename TOut, typename TIn>
-          class UpscaleConverter : public mods::converters::Converter
+          class UpscaleConverter : public mods::converters::Converter<TOut>
           {
            public:
-             explicit UpscaleConverter(Converter::ptr src);
+             explicit UpscaleConverter(typename Converter<TIn>::ptr src);
              
              UpscaleConverter() = delete;
              UpscaleConverter(const UpscaleConverter&) = delete;
@@ -21,7 +21,7 @@ namespace mods
              ~UpscaleConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<TOut>* buf) override;
              
            private:
              constexpr auto shiftLeftValue() -> u32
@@ -39,7 +39,7 @@ namespace mods
                   return (1U << shiftLeftValue()) - 1;
                }
              
-             Converter::ptr _src;
+             typename Converter<TIn>::ptr _src;
           };
      } // namespace converters
 } // namespace mods

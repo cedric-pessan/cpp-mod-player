@@ -9,10 +9,11 @@ namespace mods
 {
    namespace converters
      {
-        class MultiplexerConverter : public Converter
+        template<typename T>
+          class MultiplexerConverter : public Converter<T>
           {
            public:
-             MultiplexerConverter(Converter::ptr left, Converter::ptr right);
+             MultiplexerConverter(typename Converter<T>::ptr left, typename Converter<T>::ptr right);
              
              MultiplexerConverter() = delete;
              MultiplexerConverter(const MultiplexerConverter&) = delete;
@@ -22,17 +23,17 @@ namespace mods
              ~MultiplexerConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<T>* buf) override;
              
            private:
-             auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
+             auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<T>;
              void ensureTempBufferSize(size_t len);
              
-             Converter::ptr _left;
-             Converter::ptr _right;
+             typename Converter<T>::ptr _left;
+             typename Converter<T>::ptr _right;
              
              std::vector<u8> _tempVec;
-             mods::utils::RWBuffer<u8> _temp;
+             mods::utils::RWBuffer<T> _temp;
           };
      } // namespace converters
 } // namespace mods

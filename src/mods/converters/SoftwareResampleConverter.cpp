@@ -7,26 +7,17 @@ namespace mods
    namespace converters
      {
         template<typename PARAMETERS>
-          SoftwareResampleConverter<PARAMETERS>::SoftwareResampleConverter(Converter::ptr src, PARAMETERS resampleParameters)
+          SoftwareResampleConverter<PARAMETERS>::SoftwareResampleConverter(Converter<double>::ptr src, PARAMETERS resampleParameters)
             : ResampleConverter<PARAMETERS>(std::move(src), std::move(resampleParameters))
             {
             }
         
         template<typename PARAMETERS>
-          void SoftwareResampleConverter<PARAMETERS>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+          void SoftwareResampleConverter<PARAMETERS>::read(mods::utils::RWBuffer<double>* buf)
             {
-               if((len % sizeof(double)) != 0)
+               for(size_t i=0; i<buf->size(); ++i)
                  {
-                    std::cout << "TODO: wrong buffer length in ResampleConverter" << std::endl;
-                 }
-               
-               auto nbElems = len / sizeof(double);
-               
-               auto outView = buf->slice<double>(0, nbElems);
-               
-               for(size_t i=0; i<nbElems; ++i)
-                 {
-                    outView[i] = getNextDecimatedSample();
+                    (*buf)[i] = getNextDecimatedSample();
                  }
             }
         

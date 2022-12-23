@@ -16,12 +16,13 @@ namespace mods
                     SLAVE
                };
              
-             class InternalCopySourceConverter
+             template<typename T>
+               class InternalCopySourceConverter
                {
                 public:
                   using sptr = std::shared_ptr<InternalCopySourceConverter>;
                   
-                  explicit InternalCopySourceConverter(Converter::ptr src);
+                  explicit InternalCopySourceConverter(typename Converter<T>::ptr src);
                   
                   InternalCopySourceConverter() = delete;
                   InternalCopySourceConverter(const InternalCopySourceConverter&) = delete;
@@ -31,19 +32,20 @@ namespace mods
                   ~InternalCopySourceConverter() = default;
                   
                   auto isFinished(CopyDestId id) const -> bool;
-                  void read(mods::utils::RWBuffer<u8>* buf, size_t len, CopyDestId id);
+                  void read(mods::utils::RWBuffer<T>* buf, CopyDestId id);
                   
                 private:
-                  using UnconsumedBuffer = mods::utils::DynamicRingBuffer<u8>;
+                  using UnconsumedBuffer = mods::utils::DynamicRingBuffer<T>;
                   std::array<UnconsumedBuffer,2> _unconsumedBuffers;
                   
-                  Converter::ptr _src;
+                  typename Converter<T>::ptr _src;
                };
              
-             class ChannelCopyConverterSlave : public Converter
+             template<typename T>
+               class ChannelCopyConverterSlave : public Converter<T>
                {
                 protected:
-                  ChannelCopyConverterSlave(InternalCopySourceConverter::sptr src, CopyDestId id);
+                  ChannelCopyConverterSlave(typename InternalCopySourceConverter<T>::sptr src, CopyDestId id);
                   
                 public:
                   ChannelCopyConverterSlave() = delete;
@@ -54,13 +56,13 @@ namespace mods
                   ~ChannelCopyConverterSlave() override = default;
                   
                   auto isFinished() const -> bool override;
-                  void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+                  void read(mods::utils::RWBuffer<T>* buf) override;
                   
                 protected:
-                  auto buildSlave() const -> Converter::ptr;
+                  auto buildSlave() const -> typename Converter<T>::ptr;
                   
                 private:
-                  InternalCopySourceConverter::sptr _src;
+                  typename InternalCopySourceConverter<T>::sptr _src;
                   CopyDestId _id;
                };
           } // namespace impl

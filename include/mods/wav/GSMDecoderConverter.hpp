@@ -11,20 +11,20 @@ namespace mods
 {
    namespace wav
      {
-        class GSMDecoderConverter : public mods::converters::Converter
+        class GSMDecoderConverter : public mods::converters::Converter<s16>
           {
            public:
-             explicit GSMDecoderConverter(Converter::ptr src);
+             explicit GSMDecoderConverter(Converter<u8>::ptr src);
              
              GSMDecoderConverter() = delete;
              GSMDecoderConverter(const GSMDecoderConverter&) = delete;
              GSMDecoderConverter(GSMDecoderConverter&&) = delete;
              auto operator=(const GSMDecoderConverter&) -> GSMDecoderConverter& = delete;
-             auto operator=(GSMDecoderConverter&&) -> GSMDecoderConverter = delete;
+             auto operator=(GSMDecoderConverter&&) -> GSMDecoderConverter& = delete;
              ~GSMDecoderConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<s16>* buf) override;
              
              static constexpr auto isValidAsBitsPerSample(int bitsPerSample) -> bool
                {
@@ -61,17 +61,16 @@ namespace mods
              void deEmphasisFiltering();
              void upscale();
              
-             Converter::ptr _src;
+             Converter<u8>::ptr _src;
              
-             constexpr static int GSM_DECODED_FRAME_SAMPLES = 160;
-             constexpr static int GSM_DECODED_FRAME_SIZE = GSM_DECODED_FRAME_SAMPLES * 2;
+             constexpr static int GSM_DECODED_FRAME_SIZE = 160;
              
              constexpr static int GSM_ENCODED_FRAME_SIZE = 260;
              constexpr static int GSM_ENCODED_PACK_SIZE = (GSM_ENCODED_FRAME_SIZE * 2) / 8;
              
-             std::array<u8, GSM_DECODED_FRAME_SIZE> _decodedArray;
-             mods::utils::RWBuffer<u8> _decodedBuffer;
-             mods::utils::RWBuffer<u8>::const_iterator _itDecodedBuffer;
+             std::array<s16, GSM_DECODED_FRAME_SIZE> _decodedArray;
+             mods::utils::RWBuffer<s16> _decodedBuffer;
+             mods::utils::RWBuffer<s16>::const_iterator _itDecodedBuffer;
              
              std::array<u8, GSM_ENCODED_PACK_SIZE> _encodedArray;
              mods::utils::RWBuffer<u8> _encodedBuffer;
@@ -93,10 +92,10 @@ namespace mods
              
              std::array<GSMInt16, _numberOfLarCoefficients+1> _v;
              
-             std::array<GSMInt16, GSM_DECODED_FRAME_SAMPLES> _sr;
+             std::array<GSMInt16, GSM_DECODED_FRAME_SIZE> _sr;
              
              GSMInt16 _msr;
-             std::array<GSMInt16, GSM_DECODED_FRAME_SAMPLES> _sro;
+             std::array<GSMInt16, GSM_DECODED_FRAME_SIZE> _sro;
              
              constexpr static std::array<int, 8> _larSizes
                {

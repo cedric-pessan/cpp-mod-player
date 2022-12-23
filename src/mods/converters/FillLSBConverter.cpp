@@ -8,7 +8,7 @@ namespace mods
    namespace converters
      {
         template<typename T>
-          FillLSBConverter<T>::FillLSBConverter(Converter::ptr src, u32 bitsToFill)
+          FillLSBConverter<T>::FillLSBConverter(typename Converter<T>::ptr src, u32 bitsToFill)
             : _src(std::move(src)),
           _shift(((sizeof(T) * BITS_IN_BYTE) - bitsToFill)-1),
           _mask((1U << bitsToFill) -1)
@@ -26,19 +26,11 @@ namespace mods
           }
         
         template<typename T>
-          void FillLSBConverter<T>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+          void FillLSBConverter<T>::read(mods::utils::RWBuffer<T>* buf)
             {
-               if((len % sizeof(T)) != 0)
-                 {
-                    std::cout << "TODO: wrong buffer length in ShiftLeftConverter" << std::endl;
-                 }
+               _src->read(buf);
                
-               _src->read(buf, len);
-               
-               int nbElems = len / sizeof(T);
-               auto bufView = buf->slice<T>(0, nbElems);
-               
-               for(T& v : bufView)
+               for(T& v : *buf)
                  {
                     u32 tmp = v;
                     tmp &= ~_mask;
@@ -47,6 +39,7 @@ namespace mods
                  }
             }
         
+        template class FillLSBConverter<s8>;
         template class FillLSBConverter<s16>;
         template class FillLSBConverter<s32>;
      } // namespace converters

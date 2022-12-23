@@ -9,10 +9,10 @@ namespace mods
 {
    namespace wav
      {
-        class MuLawConverter : public mods::converters::Converter
+        class MuLawConverter : public mods::converters::Converter<s16>
           {
            public:
-             explicit MuLawConverter(Converter::ptr src);
+             explicit MuLawConverter(Converter<u8>::ptr src);
              
              MuLawConverter() = delete;
              MuLawConverter(const MuLawConverter&) = delete;
@@ -22,7 +22,7 @@ namespace mods
              ~MuLawConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<s16>* buf) override;
              
              static constexpr auto getZero() -> u8
                {
@@ -32,6 +32,12 @@ namespace mods
              static constexpr auto isValidAsBitsPerSample(int bitsPerSample) -> bool
                {
                   return bitsPerSample == BITS_IN_BYTE;
+               }
+             
+             static constexpr auto getOutputBitsPerSample() -> int
+               {
+                  constexpr int outputBitsPerSample = 16;
+                  return outputBitsPerSample;
                }
              
              static auto getBitsPerSampleRequirementsString() -> std::string&;
@@ -46,7 +52,7 @@ namespace mods
              void fillLookupTable();
              auto muLawTransform(s8 value) const -> s16;
              
-             Converter::ptr _src;
+             Converter<u8>::ptr _src;
              static constexpr u32 _lookupTableSize = static_cast<u32>(std::numeric_limits<u8>::max())+1;
              std::array<s16, _lookupTableSize> _lookupTable {};
           };

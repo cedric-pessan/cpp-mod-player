@@ -7,13 +7,12 @@ namespace mods
    namespace converters
      {
         template<typename PARAMETERS>
-          ResampleConverter<PARAMETERS>::ResampleConverter(Converter::ptr src, PARAMETERS resampleParameters)
+          ResampleConverter<PARAMETERS>::ResampleConverter(typename Converter<double>::ptr src, PARAMETERS resampleParameters)
             : _resampleParameters(std::move(resampleParameters)),
           _history(_resampleParameters.getNumTaps()),
           _src(std::move(src)),
           _inputVec(((_resampleParameters.getNumTaps() / _resampleParameters.getInterpolationFactor())+1) * sizeof(double)),
           _inputBuffer(initBuffer()),
-          _inputBufferAsDouble(_inputBuffer.slice<double>(0, _inputVec.size() / sizeof(double))),
           _currentSample(_resampleParameters.getNumTaps())
             {
                using impl::SampleWithZeros;
@@ -21,12 +20,12 @@ namespace mods
             }
         
         template<typename PARAMETERS>
-          auto ResampleConverter<PARAMETERS>::initBuffer() -> mods::utils::RWBuffer<u8>
+          auto ResampleConverter<PARAMETERS>::initBuffer() -> mods::utils::RWBuffer<double>
           {
              u8* ptr = _inputVec.data();
              auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
              auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, _inputVec.size(), std::move(deleter));
-             return mods::utils::RWBuffer<u8>(std::move(buffer));
+             return mods::utils::RWBuffer<u8>(std::move(buffer)).slice<double>(0, _inputVec.size() / sizeof(double));
           }
         
         template<typename PARAMETERS>
@@ -123,18 +122,18 @@ namespace mods
         template<typename PARAMETERS>
           auto ResampleConverter<PARAMETERS>::getNextSample() -> double
           {
-             if(_currentSample >= _inputBufferAsDouble.size())
+             if(_currentSample >= _inputBuffer.size())
                {
-                  _src->read(&_inputBuffer, _inputVec.size());
+                  _src->read(&_inputBuffer);
                   _currentSample = 0;
                }
-             return _inputBufferAsDouble[_currentSample++];
+             return _inputBuffer[_currentSample++];
           }
         
         template<typename PARAMETERS>
           auto ResampleConverter<PARAMETERS>::nextSampleExists() const -> bool
             {
-               return _currentSample < _inputBufferAsDouble.size() || !_src->isFinished();
+               return _currentSample < _inputBuffer.size() || !_src->isFinished();
             }
         
         template<typename PARAMETERS>

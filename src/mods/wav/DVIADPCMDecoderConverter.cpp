@@ -9,7 +9,7 @@ namespace mods
 {
    namespace wav
      {
-	DVIADPCMDecoderConverter::DVIADPCMDecoderConverter(Converter::ptr src, const Format& format)
+	DVIADPCMDecoderConverter::DVIADPCMDecoderConverter(Converter<u8>::ptr src, const Format& format)
 	  : _src(std::move(src)),
           _blockSize(format.getBitsPerContainer() / BITS_IN_BYTE * format.getNumChannels()),
           _nbChannels(format.getNumChannels()),
@@ -95,20 +95,16 @@ namespace mods
              return _src->isFinished();
 	  }
 	
-	void DVIADPCMDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+	void DVIADPCMDecoderConverter::read(mods::utils::RWBuffer<s16>* buf)
 	  {
-	     if((len & 1U) != 0)
-	       {
-		  std::cout << "Odd length in DVI/ADPCM not supported" << std::endl;
-	       }
-             if((len % (_nbChannels * 2)) != 0)
+             if((buf->size() % _nbChannels) != 0)
                {
                   std::cout << "DVI/ADPCM should read a multiple of channel number" << std::endl;
                }
 	     
              size_t count = 0;
-             size_t nbElems = len / 2;
-             auto out = buf->slice<s16>(0, nbElems);
+             size_t nbElems = buf->size();
+             auto& out = *buf;
              
              while(count < nbElems)
                {
@@ -120,7 +116,7 @@ namespace mods
                             continue;
                          }
                        
-                       _src->read(&_encodedBuffer, _blockSize);
+                       _src->read(&_encodedBuffer);
                        for(auto& decoder : _decoders)
                          {
                             decoder.resetBuffer();

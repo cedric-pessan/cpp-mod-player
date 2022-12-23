@@ -8,7 +8,7 @@ namespace mods
 {
    namespace wav
      {
-        ALawConverter::ALawConverter(Converter::ptr src)
+        ALawConverter::ALawConverter(Converter<u8>::ptr src)
           : _src(std::move(src))
             {
                fillLookupTable();
@@ -19,20 +19,15 @@ namespace mods
              return _src->isFinished();
           }
         
-        void ALawConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+        void ALawConverter::read(mods::utils::RWBuffer<s16>* buf)
           {
-             if((len % sizeof(s16)) != 0)
-               {
-                  std::cout << "TODO: wrong buffer length in ALawConverter" << std::endl;
-               }
+             size_t nbElems = buf->size();
              
-             size_t nbElems = len / sizeof(s16);
-             size_t toReadLen = nbElems * sizeof(s8);
-             
-             _src->read(buf, toReadLen);
-             
+             auto inBuf = buf->slice<u8>(0, nbElems);
              auto inView = buf->slice<s8>(0, nbElems);
-             auto outView = buf->slice<s16>(0, nbElems);
+             auto& outView = *buf;
+             
+             _src->read(&inBuf);
              
              for(size_t i=0; i<nbElems; ++i)
                {

@@ -215,9 +215,10 @@ namespace mods
              return _currentPatternIndex >= _numberOfPatterns;
           }
         
-        void ModReader::read(mods::utils::RWBuffer<u8>* buf, int len)
+        void ModReader::read(mods::utils::RWBuffer<s16>* buf)
           {
-             size_t nbElems = len / sizeof(s16);
+             std::cout << "TODO: fix s16 buffer" << std::endl;
+             /*size_t nbElems = len / sizeof(s16);
              auto output = buf->slice<s16>(0, nbElems);
              
              size_t written = 0;
@@ -243,7 +244,7 @@ namespace mods
                             _patternReader.setPattern(getPatternBuffer(_currentPatternIndex));
                          }
                     }
-               }
+               }*/
           }
         
         auto ModReader::getInfo() const -> std::string

@@ -84,16 +84,17 @@ namespace mods
    
    void SoundPlayer::callback(u8* buf, int len)
      {
+        assert((len % 2) == 0);
         std::lock_guard<std::mutex> lock(_playListMutex);
         auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
         auto bufferBackend = std::make_unique<mods::utils::RWBufferBackend>(buf, len, std::move(deleter));
-        mods::utils::RWBuffer<u8> rwbuf(std::move(bufferBackend));
+        mods::utils::RWBuffer<s16> rwbuf(std::move(bufferBackend));
         for(auto& entry : _playList) 
           {
              auto& reader = entry.first;
              if(!reader->isFinished())
                {
-                  reader->read(&rwbuf, len);
+                  reader->read(&rwbuf);
                   sendProgress(*reader);
                   
                   if(reader->isFinished())
@@ -104,7 +105,10 @@ namespace mods
                   return;
                }
           }
-        std::cout << "TODO: SoundPlayer::callback() nothing to play, we should 0 volume" << std::endl;
+        for(auto& elem : rwbuf)
+          {
+             elem = 0;
+          }
      }
    
    void SoundPlayer::sendModuleInfo(const ModuleReader& module)

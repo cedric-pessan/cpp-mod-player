@@ -11,7 +11,7 @@ namespace mods
    namespace wav
      {
         template<int NB_CHANNELS>
-          ADPCMDecoderConverter<NB_CHANNELS>::ADPCMDecoderConverter(Converter::ptr src, const Format& format)
+          ADPCMDecoderConverter<NB_CHANNELS>::ADPCMDecoderConverter(Converter<u8>::ptr src, const Format& format)
             : _src(std::move(src)),
           _extension(format.getMetaData().slice<impl::ADPCMExtension>(0,1)),
           _coefs(format.getMetaData().slice<s16>(sizeof(impl::ADPCMExtension), (format.getMetaData().size() - sizeof(impl::ADPCMExtension)) / sizeof(s16))),
@@ -93,18 +93,13 @@ namespace mods
           } // namespace
 	
 	template<int NB_CHANNELS>
-	  void ADPCMDecoderConverter<NB_CHANNELS>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+	  void ADPCMDecoderConverter<NB_CHANNELS>::read(mods::utils::RWBuffer<s16>* buf)
 	    {
                using mods::utils::at;
-               
-	       if((len & 1U) != 0)
-		 {
-		    std::cout << "Odd length in ADPCM not supported" << std::endl;
-		 }
 	       
 	       size_t count = 0;
-	       size_t nbElems = len / 2;
-	       auto out = buf->slice<s16>(0, nbElems);
+	       size_t nbElems = buf->size();
+	       auto& out = *buf;
 	       
 	       static constexpr u8 nibbleMask = 0xFU;
 	       
@@ -119,7 +114,7 @@ namespace mods
 		      {
 			 if(!isFinished())
 			   {
-			      _src->read(&_encodedBuffer, _blockSize);
+			      _src->read(&_encodedBuffer);
 			      for(int i=0; i<NB_CHANNELS; ++i)
 				{
 				   at(_decoders, i).initDecoder(_preamble->getSampleTMinus1(i), _preamble->getSampleTMinus2(i), _preamble->getBlockPredictor(i), _coefs, _preamble->getInitialDelta(i));

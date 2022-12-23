@@ -8,10 +8,10 @@ namespace mods
    namespace wav
      {
         template<typename T>
-          class UnpackToTypeConverter : public mods::converters::Converter
+          class UnpackToTypeConverter : public mods::converters::Converter<T>
           {
            public:
-             explicit UnpackToTypeConverter(Converter::ptr src, size_t packSize);
+             UnpackToTypeConverter(mods::converters::Converter<u8>::ptr src, size_t packSize);
              
              UnpackToTypeConverter() = delete;
              UnpackToTypeConverter(const UnpackToTypeConverter&) = delete;
@@ -21,10 +21,10 @@ namespace mods
              ~UnpackToTypeConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<T>* buf) override;
              
            private:
-             Converter::ptr _src;
+             mods::converters::Converter<u8>::ptr _src;
              size_t _packSize;
           };
      } // namespace wav

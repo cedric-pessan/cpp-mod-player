@@ -8,10 +8,10 @@ namespace mods
    namespace converters
      {
         template<typename T>
-          class FillLSBConverter : public mods::converters::Converter
+          class FillLSBConverter : public mods::converters::Converter<T>
           {
            public:
-             FillLSBConverter(Converter::ptr src, u32 bitsToFill);
+             FillLSBConverter(typename Converter<T>::ptr src, u32 bitsToFill);
              
              FillLSBConverter() = delete;
              FillLSBConverter(const FillLSBConverter&) = delete;
@@ -21,10 +21,10 @@ namespace mods
              ~FillLSBConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<T>* buf) override;
              
            private:
-             Converter::ptr _src;
+             typename Converter<T>::ptr _src;
              u32 _shift;
              u32 _mask;
           };

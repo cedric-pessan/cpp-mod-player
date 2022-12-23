@@ -10,10 +10,10 @@ namespace mods
    namespace converters
      {
         template<typename TOut, typename TIn>
-          class DownscaleConverter : public mods::converters::Converter
+          class DownscaleConverter : public mods::converters::Converter<TOut>
           {
            public:
-             explicit DownscaleConverter(Converter::ptr src);
+             explicit DownscaleConverter(typename Converter<TIn>::ptr src);
              
              DownscaleConverter() = delete;
              DownscaleConverter(const DownscaleConverter&) = delete;
@@ -23,7 +23,7 @@ namespace mods
              ~DownscaleConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<TOut>* buf) override;
              
            private:
              auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
@@ -34,7 +34,7 @@ namespace mods
                   return (sizeof(TIn) - sizeof(TOut))*BITS_IN_BYTE;
                }
              
-             Converter::ptr _src;
+             typename Converter<TIn>::ptr _src;
              
              std::vector<u8> _tempVec;
              mods::utils::RWBuffer<u8> _temp;

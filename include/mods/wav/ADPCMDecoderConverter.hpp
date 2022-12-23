@@ -13,10 +13,10 @@ namespace mods
         class Format;
         
         template<int NB_CHANNELS>
-          class ADPCMDecoderConverter : public mods::converters::Converter
+          class ADPCMDecoderConverter : public mods::converters::Converter<s16>
 	  {
 	   public:
-	     ADPCMDecoderConverter(Converter::ptr src, const Format& format);
+	     ADPCMDecoderConverter(Converter<u8>::ptr src, const Format& format);
 	     
 	     ADPCMDecoderConverter() = delete;
 	     ADPCMDecoderConverter(const ADPCMDecoderConverter&) = delete;
@@ -26,7 +26,7 @@ namespace mods
 	     ~ADPCMDecoderConverter() override = default;
 	     
 	     auto isFinished() const -> bool override;
-	     void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+	     void read(mods::utils::RWBuffer<s16>* buf) override;
              
              static constexpr auto getOutputBitsPerSample() -> int
                {
@@ -45,7 +45,7 @@ namespace mods
              auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
              auto initBlockSize() -> u32;
 	     
-	     Converter::ptr _src;
+	     Converter<u8>::ptr _src;
 	     
              bool _sampleAvailable = false;
 	     s16 _nextSample = 0;

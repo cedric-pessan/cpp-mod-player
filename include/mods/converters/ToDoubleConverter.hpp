@@ -8,10 +8,10 @@ namespace mods
    namespace converters
      {
         template<typename T>
-          class ToDoubleConverter : public mods::converters::Converter
+          class ToDoubleConverter : public mods::converters::Converter<double>
           {
            public:
-             explicit ToDoubleConverter(Converter::ptr src);
+             explicit ToDoubleConverter(typename Converter<T>::ptr src);
              
              ToDoubleConverter() = delete;
              ToDoubleConverter(const ToDoubleConverter&) = delete;
@@ -21,12 +21,12 @@ namespace mods
              ~ToDoubleConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<double>* buf) override;
              
            private:
              auto convert(T in) -> double;
              
-             Converter::ptr _src;
+             typename Converter<T>::ptr _src;
           };
      } // namespace converters
 } // namespace mods

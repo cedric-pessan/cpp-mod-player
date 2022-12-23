@@ -8,10 +8,10 @@ namespace mods
    namespace converters
      {
         template<typename T, int FACTOR>
-          class ResamplePositiveIntegerFactor : public Converter
+          class ResamplePositiveIntegerFactor : public Converter<T>
           {
            public:
-             explicit ResamplePositiveIntegerFactor(Converter::ptr src);
+             explicit ResamplePositiveIntegerFactor(typename Converter<T>::ptr src);
              
              ResamplePositiveIntegerFactor() = delete;
              ResamplePositiveIntegerFactor(const ResamplePositiveIntegerFactor&) = delete;
@@ -21,10 +21,10 @@ namespace mods
              ~ResamplePositiveIntegerFactor() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<T>* buf) override;
              
            private:
-             Converter::ptr _src;
+             typename Converter<T>::ptr _src;
           };
      } // namespace converters
 } // namespace mods

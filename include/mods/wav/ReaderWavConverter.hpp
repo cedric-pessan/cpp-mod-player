@@ -8,7 +8,7 @@ namespace mods
 {
    namespace wav
      {
-        class ReaderWavConverter : public mods::converters::Converter
+        class ReaderWavConverter : public mods::converters::Converter<u8>
           {
            public:
              ReaderWavConverter(mods::utils::RBuffer<u8> buffer, u8 defaultValue, StatCollector* statCollector);
@@ -21,7 +21,7 @@ namespace mods
              ~ReaderWavConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<u8>* buf) override;
              
            private:
              const mods::utils::RBuffer<u8> _buffer;

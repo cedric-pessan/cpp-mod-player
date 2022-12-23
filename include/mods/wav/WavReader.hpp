@@ -25,7 +25,7 @@ namespace mods
              auto operator=(WavReader&&) -> WavReader& = delete;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, int len) override;
+             void read(mods::utils::RWBuffer<s16>* buf) override;
              auto getInfo() const -> std::string override;
              auto getProgressInfo() const -> std::string override;
              
@@ -63,7 +63,7 @@ namespace mods
              
              void buildInfo(int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec);
              
-             mods::converters::Converter::ptr _converter;
+             mods::converters::Converter<s16>::ptr _converter;
              const mods::utils::RBuffer<u8> _fileBuffer;
              std::string _info;
              StatCollector _statCollector;

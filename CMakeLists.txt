@@ -51,6 +51,7 @@ set(SRCS_UNIX src/mods/utils/impl/unix/FileUtils.cpp
 add_executable(modreader src/main.cpp
                          src/mods/ModuleReader.cpp
                          src/mods/SoundPlayer.cpp
+                         src/mods/converters/CastConverter.cpp
                          src/mods/converters/ChannelCopyConverter.cpp
                          src/mods/converters/DivideConverter.cpp
                          src/mods/converters/DownscaleConverter.cpp

@@ -537,9 +537,9 @@ namespace mods
              return _converter->isFinished();
           }
         
-        void WavReader::read(mods::utils::RWBuffer<u8>* buf, int len)
+        void WavReader::read(mods::utils::RWBuffer<s16>* buf)
           {
-             _converter->read(buf, len);
+             _converter->read(buf);
           }
         
         auto WavReader::getInfo() const -> std::string

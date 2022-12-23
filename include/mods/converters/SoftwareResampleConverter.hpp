@@ -11,7 +11,7 @@ namespace mods
           class SoftwareResampleConverter : public ResampleConverter<PARAMETERS>
           {
            public:
-             SoftwareResampleConverter(Converter::ptr src, PARAMETERS parameters);
+             SoftwareResampleConverter(Converter<double>::ptr src, PARAMETERS parameters);
              
              SoftwareResampleConverter() = delete;
              SoftwareResampleConverter(const SoftwareResampleConverter&) = delete;
@@ -20,7 +20,7 @@ namespace mods
              auto operator=(SoftwareResampleConverter&&) -> SoftwareResampleConverter& = delete;
              ~SoftwareResampleConverter() override = default;
              
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<double>* buf) override;
              
            private:
              auto getNextDecimatedSample() -> double;

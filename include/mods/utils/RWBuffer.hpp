@@ -14,6 +14,7 @@ namespace mods
            public:
              using size_type = size_t;
              using reference = T&;
+             using const_reference = const T&;
              using backend_type = RWBufferBackend;
              
              explicit RWBuffer(const RWBufferBackend::sptr& backend)
@@ -43,6 +44,12 @@ namespace mods
                  }
              
              auto operator[](size_type pos) -> reference
+               {
+                  assert(this->check(pos < this->size(), "out of bound RWBuffer"));
+                  return *(_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+               }
+             
+             auto operator[](size_type pos) const -> const_reference
                {
                   assert(this->check(pos < this->size(), "out of bound RWBuffer"));
                   return *(_buf + pos); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)

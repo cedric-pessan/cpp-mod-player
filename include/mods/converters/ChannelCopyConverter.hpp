@@ -7,10 +7,11 @@ namespace mods
 {
    namespace converters
      {
-        class ChannelCopyConverter : public impl::ChannelCopyConverterSlave
+        template<typename T>
+          class ChannelCopyConverter : public impl::ChannelCopyConverterSlave<T>
           {
            public:
-             explicit ChannelCopyConverter(Converter::ptr src);
+             explicit ChannelCopyConverter(typename Converter<T>::ptr src);
              
              ChannelCopyConverter() = delete;
              ChannelCopyConverter(const ChannelCopyConverter&) = delete;
@@ -19,10 +20,10 @@ namespace mods
              auto operator=(ChannelCopyConverter&&) -> ChannelCopyConverter& = delete;
              ~ChannelCopyConverter() override = default;
              
-             auto getCopy() -> Converter::ptr;
+             auto getCopy() -> typename Converter<T>::ptr;
              
            private:
-             Converter::ptr _copy;
+             typename Converter<T>::ptr _copy;
           };
      } // namespace converters
 } // namespace mods

@@ -8,10 +8,10 @@ namespace mods
 {
    namespace wav
      {
-        class TruspeechDecoderConverter : public mods::converters::Converter
+        class TruspeechDecoderConverter : public mods::converters::Converter<s16>
           {
            public:
-             explicit TruspeechDecoderConverter(Converter::ptr src);
+             explicit TruspeechDecoderConverter(Converter<u8>::ptr src);
              
              TruspeechDecoderConverter() = delete;
              TruspeechDecoderConverter(const TruspeechDecoderConverter&) = delete;
@@ -21,7 +21,7 @@ namespace mods
              ~TruspeechDecoderConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<s16>* buf) override;
              
              static constexpr auto getOutputBitsPerSample() -> int
                {
@@ -43,13 +43,13 @@ namespace mods
              void updateFilters(int subframe);
              void synth(int subframe);
              
-             Converter::ptr _src;
+             Converter<u8>::ptr _src;
              
-             constexpr static int TRUSPEECH_DECODED_FRAME_SIZE = 240 * 2;
+             constexpr static int TRUSPEECH_DECODED_FRAME_SIZE = 240;
              
-             std::array<u8, TRUSPEECH_DECODED_FRAME_SIZE> _decodedArray;
-             mods::utils::RWBuffer<u8> _decodedBuffer;
-             mods::utils::RWBuffer<u8>::const_iterator _itDecodedBuffer;
+             std::array<s16, TRUSPEECH_DECODED_FRAME_SIZE> _decodedArray;
+             mods::utils::RWBuffer<s16> _decodedBuffer;
+             mods::utils::RWBuffer<s16>::const_iterator _itDecodedBuffer;
              std::array<mods::utils::RWBuffer<s16>, 4> _subframes;
              
              constexpr static int TRUSPEECH_ENCODED_FRAME_SIZE = 32;

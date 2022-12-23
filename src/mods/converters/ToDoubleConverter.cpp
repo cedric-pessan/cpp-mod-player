@@ -9,7 +9,7 @@ namespace mods
    namespace converters
      {
         template<typename T>
-          ToDoubleConverter<T>::ToDoubleConverter(Converter::ptr src)
+          ToDoubleConverter<T>::ToDoubleConverter(typename Converter<T>::ptr src)
             : _src(std::move(src))
               {
                  if(sizeof(T) > sizeof(double))
@@ -25,20 +25,14 @@ namespace mods
           }
         
         template<typename T>
-          void ToDoubleConverter<T>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+          void ToDoubleConverter<T>::read(mods::utils::RWBuffer<double>* buf)
             {
-               if((len % sizeof(double)) != 0)
-                 {
-                    std::cout << "TODO: wrong buffer length in ToDoubleConverter" << std::endl;
-                 }
-               
-               size_t nbElems = len / sizeof(double);
-               size_t toReadLen = nbElems * sizeof(T);
-               
-               _src->read(buf, toReadLen);
+               size_t nbElems = buf->size();
                
                auto inView = buf->slice<T>(0, nbElems);
-               auto outView = buf->slice<double>(0, nbElems);
+               auto& outView = *buf;
+               
+               _src->read(&inView);
                
                for(size_t i=0; i<nbElems; ++i)
                  {

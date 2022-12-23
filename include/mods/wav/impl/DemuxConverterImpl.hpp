@@ -10,13 +10,14 @@ namespace mods
      {
         namespace impl
           {
-             class InternalDemuxConverter
+             template<typename T>
+               class InternalDemuxConverter
                {
                 public:
                   using sptr = std::shared_ptr<InternalDemuxConverter>;
-                  using Converter = mods::converters::Converter;
+                  using Converter = mods::converters::Converter<T>;
                   
-                  explicit InternalDemuxConverter(Converter::ptr src, u32 nbChannels, u32 bitsPerContainer);
+                  InternalDemuxConverter(typename Converter::ptr src, u32 nbChannels, u32 bitsPerContainer);
                   
                   InternalDemuxConverter() = delete;
                   InternalDemuxConverter(const InternalDemuxConverter&) = delete;
@@ -26,28 +27,31 @@ namespace mods
                   ~InternalDemuxConverter() = default;
                   
                   auto isFinished(u32 channel) const -> bool;
-                  void read(mods::utils::RWBuffer<u8>* buf, size_t len, u32 channel);
+                  void read(mods::utils::RWBuffer<T>* buf, u32 channel);
                   
                 private:
                   auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
                   void ensureTempBufferSize(size_t len);
                   
-                  using UnconsumedBuffer = mods::utils::DynamicRingBuffer<u8>;
+                  using UnconsumedBuffer = mods::utils::DynamicRingBuffer<T>;
                   std::vector<UnconsumedBuffer> _unconsumedBuffers;
                   
-                  Converter::ptr _src;
+                  typename Converter::ptr _src;
                   
-                  u32 _bytesPerContainer;
+                  u32 _elemsPerContainer;
                   u32 _nbChannels;
                   
                   std::vector<u8> _tempVec;
                   mods::utils::RWBuffer<u8> _temp;
                };
              
-             class DemuxConverterSlave : public mods::converters::Converter
+             template<typename T>
+               class DemuxConverterSlave : public mods::converters::Converter<T>
                {
                 public:
-                  DemuxConverterSlave(InternalDemuxConverter::sptr src, u32 channel);
+                  using ptr = typename mods::converters::Converter<T>::ptr;
+                  
+                  DemuxConverterSlave(typename InternalDemuxConverter<T>::sptr src, u32 channel);
                   
                   DemuxConverterSlave() = delete;
                   DemuxConverterSlave(const DemuxConverterSlave&) = delete;
@@ -57,13 +61,13 @@ namespace mods
                   ~DemuxConverterSlave() override = default;
                   
                   auto isFinished() const -> bool override;
-                  void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+                  void read(mods::utils::RWBuffer<T>* buf) override;
                   
                 protected:
                   auto buildSlaves(u32 nbChannels) const -> std::vector<ptr>;
                   
                 private:
-                  InternalDemuxConverter::sptr _src;
+                  typename InternalDemuxConverter<T>::sptr _src;
                   u32 _channel;
                };
           } // namespace impl

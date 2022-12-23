@@ -12,7 +12,7 @@ namespace mods
    namespace converters
      {
         template<typename PARAMETERS>
-          OpenCLResampleConverter<PARAMETERS>::OpenCLResampleConverter(Converter::ptr src, PARAMETERS resampleParameters)
+          OpenCLResampleConverter<PARAMETERS>::OpenCLResampleConverter(Converter<double>::ptr src, PARAMETERS resampleParameters)
             : ResampleConverter<PARAMETERS>(std::move(src), std::move(resampleParameters)),
           _context(mods::utils::OpenCLManager::getContext()),
           _queue(_context),
@@ -116,16 +116,9 @@ namespace mods
           }
         
         template<typename PARAMETERS>
-          void OpenCLResampleConverter<PARAMETERS>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+          void OpenCLResampleConverter<PARAMETERS>::read(mods::utils::RWBuffer<double>* buf)
             {
-               if((len % sizeof(double)) != 0)
-                 {
-                    std::cout << "TODO: wrong buffer length in OpenCLResemapleConverter" << std::endl;
-                 }
-               
-               auto nbElems = len / sizeof(double);
-               
-               auto outView = buf->slice<double>(0, nbElems);
+               auto nbElems = buf->size();
                
                for(size_t i=0; i<nbElems; ++i)
                  {
@@ -151,7 +144,7 @@ namespace mods
                _firFilterKernel(cl::EnqueueArgs(_queue, global),
                                 outputBuffer, zerosBuffer, sampleBuffer, _tapsBuffer);
                
-               cl::copy(_queue, outputBuffer, outView.begin(), outView.end());
+               cl::copy(_queue, outputBuffer, buf->begin(), buf->end());
                
                for(size_t i=0; i<nbElems; ++i)
                  {

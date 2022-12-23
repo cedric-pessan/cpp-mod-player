@@ -12,10 +12,10 @@ namespace mods
      {
         class Format;
         
-	class DVIADPCMDecoderConverter : public mods::converters::Converter
+	class DVIADPCMDecoderConverter : public mods::converters::Converter<s16>
 	  {
 	   public:
-	     DVIADPCMDecoderConverter(Converter::ptr src, const Format& format);
+	     DVIADPCMDecoderConverter(Converter<u8>::ptr src, const Format& format);
 	     
 	     DVIADPCMDecoderConverter() = delete;
 	     DVIADPCMDecoderConverter(const DVIADPCMDecoderConverter&) = delete;
@@ -25,7 +25,7 @@ namespace mods
 	     ~DVIADPCMDecoderConverter() override = default;
 	     
 	     auto isFinished() const -> bool override;
-	     void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+	     void read(mods::utils::RWBuffer<s16>* buf) override;
              
              static constexpr auto getOutputBitsPerSample() -> int
                {
@@ -36,7 +36,7 @@ namespace mods
 	   private:
 	     auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
 	     
-	     Converter::ptr _src;
+	     Converter<u8>::ptr _src;
              u32 _blockSize;
              u16 _nbChannels;
 	     

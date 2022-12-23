@@ -8,7 +8,7 @@ namespace mods
    namespace converters
      {
         template<typename TOut, typename TIn>
-          DownscaleConverter<TOut, TIn>::DownscaleConverter(Converter::ptr src)
+          DownscaleConverter<TOut, TIn>::DownscaleConverter(typename Converter<TIn>::ptr src)
             : _src(std::move(src)),
           _temp(allocateNewTempBuffer(0))
               {
@@ -25,22 +25,16 @@ namespace mods
           }
         
         template<typename TOut, typename TIn>
-          void DownscaleConverter<TOut, TIn>::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+          void DownscaleConverter<TOut, TIn>::read(mods::utils::RWBuffer<TOut>* buf)
             {
-               if((len % sizeof(TOut)) != 0)
-                 {
-                    std::cout << "TODO: wrong buffer length in DownscaleWavConverter" << std::endl;
-                 }
+               int nbElems = buf->size();
                
-               int nbElems = len / sizeof(TOut);
-               int toReadLen = nbElems * sizeof(TIn);
-               
-               ensureTempBufferSize(toReadLen);
-               
-               _src->read(&_temp, toReadLen);
+               ensureTempBufferSize(nbElems * sizeof(TIn));
                
                auto inView = _temp.slice<TIn>(0, nbElems);
-               auto outView = buf->slice<TOut>(0, nbElems);
+               auto& outView = *buf;
+               
+               _src->read(&inView);
                
                for(int i = 0; i<nbElems; ++i)
                {

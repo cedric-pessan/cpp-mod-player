@@ -11,10 +11,10 @@ namespace mods
      {
         class Format;
         
-	class OKIADPCMDecoderConverter : public mods::converters::Converter
+	class OKIADPCMDecoderConverter : public mods::converters::Converter<s16>
 	  {
 	   public:
-	     OKIADPCMDecoderConverter(Converter::ptr src, const Format& format);
+	     OKIADPCMDecoderConverter(Converter<u8>::ptr src, const Format& format);
 	     
 	     OKIADPCMDecoderConverter() = delete;
 	     OKIADPCMDecoderConverter(const OKIADPCMDecoderConverter&) = delete;
@@ -24,7 +24,7 @@ namespace mods
 	     ~OKIADPCMDecoderConverter() override = default;
 	     
 	     auto isFinished() const -> bool override;
-	     void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+	     void read(mods::utils::RWBuffer<s16>* buf) override;
              
              static constexpr auto getOutputBitsPerSample() -> int
                {
@@ -36,7 +36,7 @@ namespace mods
 	     auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
              void ensureTempBufferSize(size_t len);
 	     
-	     Converter::ptr _src;
+	     Converter<u8>::ptr _src;
              u16 _nbChannels;
 	     
 	     std::vector<u8> _encodedVec;

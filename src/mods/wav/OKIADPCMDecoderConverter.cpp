@@ -9,7 +9,7 @@ namespace mods
 {
    namespace wav
      {
-	OKIADPCMDecoderConverter::OKIADPCMDecoderConverter(Converter::ptr src, const Format& format)
+	OKIADPCMDecoderConverter::OKIADPCMDecoderConverter(Converter<u8>::ptr src, const Format& format)
 	  : _src(std::move(src)),
           _nbChannels(format.getNumChannels()),
 	  _encodedBuffer(allocateNewTempBuffer(0))
@@ -60,20 +60,20 @@ namespace mods
              return _src->isFinished();
 	  }
 	
-	void OKIADPCMDecoderConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+	void OKIADPCMDecoderConverter::read(mods::utils::RWBuffer<s16>* buf)
 	  {
-	     if((len & 1U) != 0)
+	     if((buf->size() & 1U) != 0)
 	       {
 		  std::cout << "Odd length in OKI/ADPCM not supported" << std::endl;
 	       }
-             if((len % (_nbChannels * 2)) != 0)
+             if((buf->size() % _nbChannels) != 0)
                {
                   std::cout << "OKI/ADPCM should read a multiple of channel number" << std::endl;
                }
 	     
              size_t count = 0;
-             size_t nbElems = len / 2;
-             auto out = buf->slice<s16>(0, nbElems);
+             size_t nbElems = buf->size();
+             auto& out = *buf;
              
              while(count < nbElems)
                {
@@ -89,9 +89,8 @@ namespace mods
                        size_t roundNumber = 4 * _nbChannels;
                        minRequiredSize = ((minRequiredSize + roundNumber - 1) / roundNumber) * roundNumber;
                        ensureTempBufferSize(minRequiredSize);
-                       size_t blockSize = _encodedBuffer.size();
                        
-                       _src->read(&_encodedBuffer, blockSize);
+                       _src->read(&_encodedBuffer);
                        for(auto& decoder : _decoders)
                          {
                             decoder.resetBuffer(_encodedBuffer);

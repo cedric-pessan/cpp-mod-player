@@ -10,10 +10,10 @@ namespace mods
    namespace converters
      {
         template<typename T>
-          class FromDoubleConverter : public Converter
+          class FromDoubleConverter : public Converter<T>
           {
            public:
-             explicit FromDoubleConverter(Converter::ptr src);
+             explicit FromDoubleConverter(Converter<double>::ptr src);
              
              FromDoubleConverter() = delete;
              FromDoubleConverter(const FromDoubleConverter&) = delete;
@@ -23,16 +23,16 @@ namespace mods
              ~FromDoubleConverter() override = default;
              
              auto isFinished() const -> bool override;
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<T>* buf) override;
              
            private:
-             auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>;
+             auto allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<double>;
              void ensureTempBufferSize(size_t len);
              
-             Converter::ptr _src;
+             Converter<double>::ptr _src;
              
              std::vector<u8> _tempVec;
-             mods::utils::RWBuffer<u8> _temp;
+             mods::utils::RWBuffer<double> _temp;
           };
      } // namespace converters
 } // namespace mods

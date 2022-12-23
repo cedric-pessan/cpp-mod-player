@@ -9,16 +9,22 @@ namespace mods
      {
         namespace impl
           {
-             InternalDemuxConverter::InternalDemuxConverter(Converter::ptr src, u32 nbChannels, u32 bitsPerContainer)
-               : _unconsumedBuffers(nbChannels),
+             template<typename T>
+               InternalDemuxConverter<T>::InternalDemuxConverter(typename Converter::ptr src, u32 nbChannels, u32 bitsPerContainer)
+                 : _unconsumedBuffers(nbChannels),
                _src(std::move(src)),
-               _bytesPerContainer(bitsPerContainer / BITS_IN_BYTE),
+               _elemsPerContainer(bitsPerContainer / BITS_IN_BYTE / sizeof(T)),
                _nbChannels(nbChannels),
                _temp(allocateNewTempBuffer(0))
                  {
+                    if(_elemsPerContainer * sizeof(T) * BITS_IN_BYTE != bitsPerContainer)
+                      {
+                         std::cout << "Error: " << bitsPerContainer << " bits per container doesn't container an integer number of elements of type " << sizeof(T) << std::endl;
+                      }
                  }
              
-             auto InternalDemuxConverter::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>
+             template<typename T>
+               auto InternalDemuxConverter<T>::allocateNewTempBuffer(size_t len) -> mods::utils::RWBuffer<u8>
                {
                   _tempVec.resize(len);
                   u8* ptr = _tempVec.data();
@@ -27,15 +33,17 @@ namespace mods
                   return mods::utils::RWBuffer<u8>(std::move(buffer));
                }
              
-             void InternalDemuxConverter::ensureTempBufferSize(size_t len)
-               {
-                  if(_temp.size() < len)
-                    {
-                       _temp = allocateNewTempBuffer(len);
-                    }
-               }
+             template<typename T>
+               void InternalDemuxConverter<T>::ensureTempBufferSize(size_t len)
+                 {
+                    if(_temp.size() < len)
+                      {
+                         _temp = allocateNewTempBuffer(len);
+                      }
+                 }
              
-             auto InternalDemuxConverter::isFinished(u32 channel) const -> bool
+             template<typename T>
+               auto InternalDemuxConverter<T>::isFinished(u32 channel) const -> bool
                {
                   if(!_unconsumedBuffers[channel].empty())
                     {
@@ -44,70 +52,74 @@ namespace mods
                   return _src->isFinished();
                }
              
-             void InternalDemuxConverter::read(mods::utils::RWBuffer<u8>* buf, size_t len, u32 channel)
-               {
-                  if((len % _bytesPerContainer) != 0)
-                    {
-                       std::cout << "Error: length should be a multiple of container size" << std::endl;
-                    }
-                  
-                  size_t read = 0;
-                  auto& out = *buf;
-                  
-                  while(!_unconsumedBuffers[channel].empty() && read < len)
-                    {
-                       auto& unconsumed = _unconsumedBuffers[channel];
-                       u8 value = unconsumed.front();
-                       out[read++] = value;
-                       unconsumed.pop_front();
-                    }
-                  if(read < len)
-                    {
-                       auto bytesToRead = len - read;
-                       auto toReadMuxed = bytesToRead * _nbChannels;
-                       ensureTempBufferSize(toReadMuxed);
-                       _src->read(&_temp, toReadMuxed);
-                       
-                       u32 currentChannel = 0;
-                       u32 currentByteInContainer = 0;
-                       
-                       for(size_t i=0; i<toReadMuxed; ++i)
-                         {
-                            u8 value = _temp[i];
-                            if(currentChannel == channel)
-                              {
-                                 out[read++] = value;
-                              }
-                            else
-                              {
-                                 _unconsumedBuffers[currentChannel].push_back(value);
-                              }
-                            currentByteInContainer++;
-                            if(currentByteInContainer == _bytesPerContainer)
-                              {
-                                 currentByteInContainer = 0;
-                                 ++currentChannel;
-                                 if(currentChannel == _nbChannels)
-                                   {
-                                      currentChannel = 0;
-                                   }
-                              }
-                         }
-                    }
-               }
+             template<typename T>
+               void InternalDemuxConverter<T>::read(mods::utils::RWBuffer<T>* buf, u32 channel)
+                 {
+                    if((buf->size() % _elemsPerContainer) != 0)
+                      {
+                         std::cout << "Error: length should be a multiple of container size" << std::endl;
+                      }
+                    
+                    size_t read = 0;
+                    auto& out = *buf;
+                    
+                    while(!_unconsumedBuffers[channel].empty() && read < out.size())
+                      {
+                         auto& unconsumed = _unconsumedBuffers[channel];
+                         auto value = unconsumed.front();
+                         out[read++] = value;
+                         unconsumed.pop_front();
+                      }
+                    if(read < out.size())
+                      {
+                         auto elemsToRead = out.size() - read;
+                         auto toReadMuxed = elemsToRead * _nbChannels;
+                         ensureTempBufferSize(toReadMuxed * sizeof(T));
+                         auto tempView = _temp.slice<T>(0, toReadMuxed);
+                         _src->read(&tempView);
+                         
+                         u32 currentChannel = 0;
+                         u32 currentElemInContainer = 0;
+                         
+                         for(size_t i=0; i<toReadMuxed; ++i)
+                           {
+                              auto value = tempView[i];
+                              if(currentChannel == channel)
+                                {
+                                   out[read++] = value;
+                                }
+                              else
+                                {
+                                   _unconsumedBuffers[currentChannel].push_back(value);
+                                }
+                              currentElemInContainer++;
+                              if(currentElemInContainer == _elemsPerContainer)
+                                {
+                                   currentElemInContainer = 0;
+                                   ++currentChannel;
+                                   if(currentChannel == _nbChannels)
+                                     {
+                                        currentChannel = 0;
+                                     }
+                                }
+                           }
+                      }
+                 }
              
-             DemuxConverterSlave::DemuxConverterSlave(InternalDemuxConverter::sptr src, u32 channel)
-               : _src(std::move(src)),
+             template<typename T>
+               DemuxConverterSlave<T>::DemuxConverterSlave(typename InternalDemuxConverter<T>::sptr src, u32 channel)
+                 : _src(std::move(src)),
                _channel(channel)
                  {
                  }
              
-             auto DemuxConverterSlave::buildSlaves(u32 nbChannels) const -> std::vector<ptr>
+             template<typename T>
+               auto DemuxConverterSlave<T>::buildSlaves(u32 nbChannels) const -> std::vector<ptr>
                {
-                  class make_unique_enabler : public DemuxConverterSlave
+                  class make_unique_enabler : public DemuxConverterSlave<T>
                     {
                      public:
-                       make_unique_enabler(const InternalDemuxConverter::sptr& src, u32 channel)
+                       make_unique_enabler(const typename InternalDemuxConverter<T>::sptr& src, u32 channel)
                          : DemuxConverterSlave(src, channel)
                            {
                            }
@@ -128,26 +140,34 @@ namespace mods
                   return slaves;
                }
              
-             auto DemuxConverterSlave::isFinished() const -> bool
+             template<typename T>
+               auto DemuxConverterSlave<T>::isFinished() const -> bool
                {
                   return _src->isFinished(_channel);
                }
              
-             void DemuxConverterSlave::read(mods::utils::RWBuffer<u8>* buf, size_t len)
+             template<typename T>
+               void DemuxConverterSlave<T>::read(mods::utils::RWBuffer<T>* buf)
                {
-                  _src->read(buf, len, _channel);
+                  _src->read(buf, _channel);
                }
           } // namespace impl
         
-        DemuxConverter::DemuxConverter(Converter::ptr src, u32 nbChannels, u32 bitsPerContainer)
-          : DemuxConverterSlave(std::make_unique<impl::InternalDemuxConverter>(std::move(src), nbChannels, bitsPerContainer), nbChannels-1),
-          _firstChannels(buildSlaves(nbChannels))
+        template<typename T>
+          DemuxConverter<T>::DemuxConverter(ptr src, u32 nbChannels, u32 bitsPerContainer)
+            : impl::DemuxConverterSlave<T>(std::make_unique<impl::InternalDemuxConverter<T>>(std::move(src), nbChannels, bitsPerContainer), nbChannels-1),
+          _firstChannels(impl::DemuxConverterSlave<T>::buildSlaves(nbChannels))
             {
             }
         
-        auto DemuxConverter::getFirstChannels() -> std::vector<ptr>*
+        template<typename T>
+          auto DemuxConverter<T>::getFirstChannels() -> std::vector<ptr>*
           {
              return &_firstChannels;
           }
+        
+        template class DemuxConverter<s8>;
+        template class DemuxConverter<u8>;
+        template class DemuxConverter<s16>;
      } // namespace wav
 } // namespace mods

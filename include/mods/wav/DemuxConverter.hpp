@@ -7,10 +7,13 @@ namespace mods
 {
    namespace wav
      {
-        class DemuxConverter : public impl::DemuxConverterSlave
+        template<typename T>
+          class DemuxConverter : public impl::DemuxConverterSlave<T>
           {
            public:
-             DemuxConverter(Converter::ptr src, u32 nbChannels, u32 bitsPerContainer);
+             using ptr = typename mods::converters::Converter<T>::ptr;
+             
+             DemuxConverter(ptr src, u32 nbChannels, u32 bitsPerContainer);
              
              DemuxConverter() = delete;
              DemuxConverter(const DemuxConverter&) = delete;

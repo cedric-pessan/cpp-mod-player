@@ -14,7 +14,7 @@ namespace mods
           class OpenCLResampleConverter : public ResampleConverter<PARAMETERS>
           {
            public:
-             OpenCLResampleConverter(Converter::ptr src, PARAMETERS resampleParameters);
+             OpenCLResampleConverter(Converter<double>::ptr src, PARAMETERS resampleParameters);
              
              OpenCLResampleConverter() = delete;
              OpenCLResampleConverter(const OpenCLResampleConverter&) = delete;
@@ -23,7 +23,7 @@ namespace mods
              auto operator=(OpenCLResampleConverter&&) -> OpenCLResampleConverter& = delete;
              ~OpenCLResampleConverter() override = default;
              
-             void read(mods::utils::RWBuffer<u8>* buf, size_t len) override;
+             void read(mods::utils::RWBuffer<double>* buf) override;
              
            private:
              auto compileFirFilterProgram() -> cl::Program;
