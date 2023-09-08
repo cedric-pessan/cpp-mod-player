@@ -545,12 +545,12 @@ namespace mods
                        ParamType params;
                        if(mods::utils::OpenCLManager::isEnabled())
                          {
-                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType>::ResampleConverterImpl;
+                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType, double>::ResampleConverterImpl;
                             resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(channel), params));
                          }
                        else
                          {
-                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType>>(std::move(channel), params));
+                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType, double>>(std::move(channel), params));
                          }
                     }
                   return buildMixingStage<double>(std::move(resampledChannels), channelMask);
@@ -562,12 +562,12 @@ namespace mods
                        ParamType params;
                        if(mods::utils::OpenCLManager::isEnabled())
                          {
-                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType>::ResampleConverterImpl;
+                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType, double>::ResampleConverterImpl;
                             resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(channel), params));
                          }
                        else
                          {
-                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType>>(std::move(channel), params));
+                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType, double>>(std::move(channel), params));
                          }
 		    }
                   return buildMixingStage<double>(std::move(resampledChannels), channelMask);
@@ -582,12 +582,12 @@ namespace mods
                        ParamType params;
                        if(mods::utils::OpenCLManager::isEnabled())
                          {
-                            using ResampleConverterImpl = typename OpenCLConverterTypes<ParamType>::ResampleConverterImpl;
+                            using ResampleConverterImpl = typename OpenCLConverterTypes<ParamType, double>::ResampleConverterImpl;
                             resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(channel), params));
                          }
                        else
                          {
-                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType>>(std::move(channel), params));
+                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType, double>>(std::move(channel), params));
                          }
                     }
                   return buildMixingStage<double>(std::move(resampledChannels), channelMask);
@@ -602,12 +602,12 @@ namespace mods
                        ParamType params;
                        if(mods::utils::OpenCLManager::isEnabled())
                          {
-                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType>::ResampleConverterImpl;
+                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType, double>::ResampleConverterImpl;
                             resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(channel), params));
                          }
                        else
                          {
-                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType>>(std::move(channel), params));
+                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType, double>>(std::move(channel), params));
                          }
                     }
                   return buildMixingStage<double>(std::move(resampledChannels), channelMask);
@@ -623,12 +623,12 @@ namespace mods
                        ParamType params(frequency, toUnderlying(StandardFrequency::_44100));
                        if(mods::utils::OpenCLManager::isEnabled())
                          {
-                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType>::ResampleConverterImpl;
+                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType, double>::ResampleConverterImpl;
                             resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(channel), params));
                          }
                        else
                          {
-                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType>>(std::move(channel), params));
+                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType, double>>(std::move(channel), params));
                          }
 		    }
                   return buildMixingStage<double>(std::move(resampledChannels), channelMask);

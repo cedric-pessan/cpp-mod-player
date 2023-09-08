@@ -12,9 +12,8 @@ namespace mods
         /*
          * the goal is to have a minimum api similar to deque but without chunk size dependent on compiler
          * implementation. This assumes that size remains nearly constant over time but can't be known at compile time.
-         * It only supports arithmetic types (int, float, etc..).
          */
-        template<typename T, typename std::enable_if<std::is_arithmetic<T>::value, int>::type = 0>
+        template<typename T, typename std::enable_if<std::is_trivially_copy_constructible<T>::value, int>::type = 0, typename std::enable_if<std::is_trivially_copy_assignable<T>::value, int>::type = 0>
           class DynamicRingBuffer
           {
            public:

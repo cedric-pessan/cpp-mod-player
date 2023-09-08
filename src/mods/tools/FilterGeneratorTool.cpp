@@ -64,7 +64,7 @@ namespace mods
              auto getFilterName() const -> std::string
                {
                   std::stringstream ss;
-                  ss << "f" << _inFrequency << "_to_" << _outFrequency;
+                  ss << "f" << _inFrequency << "_to_" << _outFrequency << "_cutto_" << _cutoffFrequency << "_" << _cutoffFrequencyDivider;
                   return ss.str();
                }
              
@@ -90,7 +90,8 @@ namespace mods
                   { 44100, 2, 48000 * ConstFraction(48000,44100).reduce().getDenominator(), 48000, 44100, 40.0, 50.0 }, // 48kHz -> 44100Hz
                   { 10000, 2, 10000 * ConstFraction(10000,44100).reduce().getDenominator(), 10000, 44100, 40.0, 50.0 }, // 10kHz -> 44100Hz
                   
-                  { 44100, 2, 3546895 * ConstFraction(3546895,44100).reduce().getDenominator(), 3546895, 44100, 36.0, 308700.0 }// amiga without led filter
+                  { 44100, 2, 3546895 * ConstFraction(3546895,44100).reduce().getDenominator(), 3546895, 44100, 36.0, 308700.0 }, // amiga without led filter
+                  { 3275, 1, 3546895 * ConstFraction(3546895,44100).reduce().getDenominator(), 3546895, 44100, 36.0, 308700.0 }   // amiga with led filter
                };
              static std::vector<LowPassParam> lowPassParams(lowPassParamsList);
              return lowPassParams;

@@ -8,11 +8,11 @@ namespace mods
 {
    namespace converters
      {
-        template<typename PARAMETERS>
+        template<typename PARAMETERS, typename T>
           class ResampleConverter : public mods::converters::Converter<double>
           {
            public:
-             ResampleConverter(Converter<double>::ptr src, PARAMETERS parameters);
+             ResampleConverter(typename Converter<T>::ptr src, PARAMETERS parameters);
              
              ResampleConverter() = delete;
              ResampleConverter(const ResampleConverter&) = delete;
@@ -33,16 +33,18 @@ namespace mods
            private:
              auto getNextSample() -> double;
              auto nextSampleExists() const -> bool;
-             auto initBuffer() -> mods::utils::RWBuffer<double>;
+             auto currentSampleRemainingDuration() const -> size_t;
+             auto initBuffer() -> mods::utils::RWBuffer<T>;
+             auto shouldDedup() const -> bool;
              
              PARAMETERS _resampleParameters;
              impl::History _history;
              
-             Converter<double>::ptr _src;
+             typename Converter<T>::ptr _src;
              int _zerosToNextInterpolatedSample = 0;
              
              std::vector<u8> _inputVec;
-             mods::utils::RWBuffer<double> _inputBuffer;
+             mods::utils::RWBuffer<T> _inputBuffer;
              size_t _currentSample;
           };
      } // namespace converters

@@ -7,11 +7,11 @@ namespace mods
 {
    namespace converters
      {
-        template<typename PARAMETERS>
-          class SoftwareResampleConverter : public ResampleConverter<PARAMETERS>
+        template<typename PARAMETERS, typename T>
+          class SoftwareResampleConverter : public ResampleConverter<PARAMETERS, T>
           {
            public:
-             SoftwareResampleConverter(Converter<double>::ptr src, PARAMETERS parameters);
+             SoftwareResampleConverter(typename Converter<T>::ptr src, PARAMETERS parameters);
              
              SoftwareResampleConverter() = delete;
              SoftwareResampleConverter(const SoftwareResampleConverter&) = delete;
@@ -26,6 +26,7 @@ namespace mods
              auto getNextDecimatedSample() -> double;
              void updateHistory();
              auto calculateInterpolatedSample() -> double;
+             auto getTap(size_t i, const impl::SampleWithZeros& sample) const -> double;
           };
      } // namespace converters
 } // namespace mods

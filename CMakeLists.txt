@@ -68,8 +68,10 @@ add_executable(modreader src/main.cpp
                          src/mods/converters/UpscaleConverter.cpp
                          src/mods/mod/ChannelState.cpp
                          src/mods/mod/Instrument.cpp
+                         src/mods/mod/ModChannelConverter.cpp
                          src/mods/mod/ModReader.cpp
                          src/mods/mod/Note.cpp
+                         src/mods/mod/PatternListReader.cpp
                          src/mods/mod/PatternReader.cpp
                          src/mods/wav/ADPCMDecoderConverter.cpp
                          src/mods/wav/ALawConverter.cpp
@@ -87,6 +89,7 @@ add_executable(modreader src/main.cpp
                          src/mods/wav/WavConverterFactory.cpp
                          src/mods/wav/WavReader.cpp
                          src/mods/wav/WavTypes.cpp
+                         src/mods/utils/AmigaRLESample.cpp
                          src/mods/utils/bessel.cpp
                          src/mods/utils/BitReader.cpp
                          src/mods/utils/OpenCLManager.cpp

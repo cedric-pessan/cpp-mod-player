@@ -10,7 +10,7 @@ namespace mods
 {
    namespace converters
      {
-        template<typename PARAMETERS>
+        template<typename PARAMETERS, typename T>
           class OpenCLConverterTypes
           {
            public:
@@ -22,9 +22,9 @@ namespace mods
              ~OpenCLConverterTypes() = delete;
              
 #ifdef WITH_OPENCL
-             using ResampleConverterImpl = OpenCLResampleConverter<PARAMETERS>;
+             using ResampleConverterImpl = OpenCLResampleConverter<PARAMETERS, T>;
 #else // WITH_OPENCL
-             using ResampleConverterImpl = SoftwareResampleConverter<PARAMETERS>;
+             using ResampleConverterImpl = SoftwareResampleConverter<PARAMETERS, T>;
 #endif // WITH_OPENCL
              
           };

@@ -2,6 +2,9 @@
 #define MODS_MOD_PATTERNREADER_HPP
 
 #include "mods/mod/ChannelState.hpp"
+#include "mods/mod/Note.hpp"
+#include "mods/utils/AmigaRLESample.hpp"
+#include "mods/utils/DynamicRingBuffer.hpp"
 #include "mods/utils/RWBuffer.hpp"
 #include "mods/utils/types.hpp"
 
@@ -13,10 +16,17 @@ namespace mods
      {
         class PatternReader
           {
+           private:
+             using RLESample = mods::utils::AmigaRLESample;
+             using OutputQueue = mods::utils::DynamicRingBuffer<RLESample>;
+             
+             
            public:
              PatternReader(size_t nbChannels,
                            const mods::utils::RBuffer<Note>& patternBuffer,
-                           const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers);
+                           const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers,
+                           OutputQueue* _leftOutput,
+                           OutputQueue* _rightOutput);
              
              PatternReader() = delete;
              PatternReader(const PatternReader&) = delete;
@@ -26,8 +36,6 @@ namespace mods
              ~PatternReader() = default;
              
              auto isFinished() const -> bool;
-             auto isTickFinished() const -> bool;
-             auto readTickBuffer(size_t nbElems) -> mods::utils::RBuffer<s16>;
              void readNextTick();
              void setPattern(const mods::utils::RBuffer<Note>& patternBuffer);
              
@@ -39,10 +47,10 @@ namespace mods
                }
              
            private:
-             auto computeTickBufferLength() const -> size_t;
-             auto allocateTickBuffer(size_t len) -> mods::utils::RWBuffer<s16>;
+             auto computeTickLength() const -> size_t;
              
-             auto readAndMixSample(const std::vector<ChannelState*>& channels) const -> s16;
+             void readAndMixTick(OutputQueue* output, const std::vector<ChannelState*>& channels);
+             auto readAndMixSample(const std::vector<ChannelState*>& channels, u32 maxLength) const -> RLESample;
              
              void decodeLine();
              
@@ -56,15 +64,14 @@ namespace mods
              u32 _currentLine = 0;
              u32 _currentTick = 0;
              
-             std::vector<u8> _tickVec;
-             mods::utils::RWBuffer<s16> _tickBuffer;
-             mods::utils::RBuffer<s16> _unreadTickBuffer;
-             
              std::vector<ChannelState> _channels;
              std::vector<ChannelState*> _leftChannels;
              std::vector<ChannelState*> _rightChannels;
              
              mods::utils::RBuffer<Note> _patternBuffer;
+             
+             OutputQueue* _leftOutput;
+             OutputQueue* _rightOutput;
           };
      } // namespace mod
 } // namespace mods

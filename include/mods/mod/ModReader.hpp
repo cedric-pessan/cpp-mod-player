@@ -2,13 +2,17 @@
 #define MODS_MOD_MODREADER_HPP
 
 #include "mods/ModuleReader.hpp"
-#include "mods/mod/Instrument.hpp"
-#include "mods/mod/PatternReader.hpp"
+#include "mods/converters/Converter.hpp"
+#include "mods/mod/PatternListReader.hpp"
+#include "mods/utils/AmigaRLESample.hpp"
 
 namespace mods
 {
    namespace mod
      {
+        class Instrument;
+        class PatternListReader;
+        
         class ModReader : public ModuleReader
           {
            public:
@@ -36,9 +40,25 @@ namespace mods
              auto getNumberOfChannelsFromFormatTag() -> size_t;
              auto parsePatternsBuffer() -> mods::utils::RBuffer<Note>;
              auto parseSampleBuffers() -> std::vector<mods::utils::RBuffer<u8>>;
-             auto getPatternBuffer(size_t patternIndex) -> mods::utils::RBuffer<Note>;
              
              auto getSongTitle() const -> std::string;
+             
+             template<typename T>
+               using Converter = mods::converters::Converter<T>;
+             using RLESample = mods::utils::AmigaRLESample;
+             
+             static auto buildModConverter(std::shared_ptr<PatternListReader> patternListReader) -> Converter<s16>::ptr;
+             
+             static auto buildResamplerStage(Converter<RLESample>::ptr left,
+                                             Converter<RLESample>::ptr right) -> Converter<s16>::ptr;
+             
+             static auto buildResampler(Converter<RLESample>::ptr channel) -> Converter<double>::ptr;
+             
+             static auto buildFromDoubleStage(Converter<double>::ptr left,
+                                              Converter<double>::ptr right) -> Converter<s16>::ptr;
+             
+             static auto buildMuxStage(Converter<s16>::ptr left,
+                                       Converter<s16>::ptr right) -> Converter<s16>::ptr;
              
              constexpr static int _songFieldLength = 20;
              
@@ -57,8 +77,8 @@ namespace mods
              mods::utils::RBuffer<Note> _patterns;
              std::vector<mods::utils::RBuffer<u8>> _sampleBuffers;
              
-             PatternReader _patternReader;
-             size_t _currentPatternIndex = 0;
+             std::shared_ptr<PatternListReader> _patternListReader;
+             mods::converters::Converter<s16>::ptr _modConverter;
           };
      } // namespace mod
 } // namespace mods

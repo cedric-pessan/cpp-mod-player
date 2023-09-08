@@ -1,6 +1,7 @@
 
 #include "mods/mod/Note.hpp"
 #include "mods/mod/PatternReader.hpp"
+#include "mods/StandardFrequency.hpp"
 
 #include <iostream>
 
@@ -27,12 +28,14 @@ namespace mods
                };
           } // namespace
         
-        PatternReader::PatternReader(size_t nbChannels, 
+        PatternReader::PatternReader(size_t nbChannels,
                                      const mods::utils::RBuffer<Note>& patternBuffer,
-                                     const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers)
-          : _tickBuffer(allocateTickBuffer(computeTickBufferLength())),
-          _unreadTickBuffer(_tickBuffer.slice<s16>(0, 0)),
-          _patternBuffer(patternBuffer)
+                                     const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers,
+                                     OutputQueue* leftOutput,
+                                     OutputQueue* rightOutput)
+          : _patternBuffer(patternBuffer),
+          _leftOutput(leftOutput),
+          _rightOutput(rightOutput)
             {
                using mods::utils::at;
                
@@ -53,18 +56,9 @@ namespace mods
                  }
             }
         
-        auto PatternReader::allocateTickBuffer(size_t len) -> mods::utils::RWBuffer<s16>
+        auto PatternReader::computeTickLength() const -> size_t
           {
-             _tickVec.resize(len * sizeof(s16));
-             u8* ptr = _tickVec.data();
-             auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-             auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len, std::move(deleter));
-             return mods::utils::RWBuffer<s16>(std::move(buffer));
-          }
-        
-        auto PatternReader::computeTickBufferLength() const -> size_t
-          {
-             static constexpr size_t outputFrequency = 44100;
+             static constexpr size_t outputFrequency = toUnderlying(StandardFrequency::AMIGA);
              static constexpr size_t secondPerMinute = 60;
              static constexpr size_t linesPerBeat = 4;
              
@@ -81,26 +75,9 @@ namespace mods
              return _currentLine >= _numberOfLines;
           }
         
-        auto PatternReader::isTickFinished() const -> bool
-          {
-             return _unreadTickBuffer.empty();
-          }
-        
         auto PatternReader::getCurrentLine() const -> size_t
           {
              return _currentLine;
-          }
-        
-        auto PatternReader::readTickBuffer(size_t nbElems) -> mods::utils::RBuffer<s16>
-          {
-             auto size = nbElems;
-             if(size > _unreadTickBuffer.size())
-               {
-                  size = _unreadTickBuffer.size();
-               }
-             auto buf = _unreadTickBuffer.slice<s16>(0, size);
-             _unreadTickBuffer = _unreadTickBuffer.slice<s16>(size, _unreadTickBuffer.size() - size);
-             return buf;
           }
         
         void PatternReader::setPattern(const mods::utils::RBuffer<Note>& patternBuffer)
@@ -117,21 +94,9 @@ namespace mods
                   decodeLine();
                }
              
-             bool left = true;
-             for(s16& outputSample : _tickBuffer)
-               {
-                  if(left)
-                    {
-                       outputSample = readAndMixSample(_leftChannels);
-                    }
-                  else
-                    {
-                       outputSample = readAndMixSample(_rightChannels);
-                    }
-                  left = !left;
-               }
+             readAndMixTick(_leftOutput, _leftChannels);
+             readAndMixTick(_rightOutput, _rightChannels);
              
-             _unreadTickBuffer = _tickBuffer.slice<s16>(0, _tickBuffer.size());
              ++_currentTick;
              if(_currentTick == _speed)
                {
@@ -140,15 +105,44 @@ namespace mods
                }
           }
         
-        auto PatternReader::readAndMixSample(const std::vector<ChannelState*>& channels) const -> s16
+        void PatternReader::readAndMixTick(OutputQueue* output, const std::vector<ChannelState*>& channels)
           {
-             s32 sample = 0;
+             size_t toRead = computeTickLength();
+             while(toRead > 0)
+               {
+                  auto rleSample = readAndMixSample(channels, toRead);
+                  if(rleSample.getLength() > 0)
+                    {
+                       toRead -= rleSample.getLength();
+                       output->push_back(rleSample);
+                    }
+                  else
+                    {
+                       output->push_back(RLESample(0, toRead, false));
+                       toRead = 0;
+                    }
+               }
+          }
+        
+        auto PatternReader::readAndMixSample(const std::vector<ChannelState*>& channels, u32 maxLength) const -> RLESample
+          {
+             u32 length = maxLength;
              for(auto* channel : channels)
                {
-                  sample += channel->readNextSample();
+                  channel->prepareNextSample();
+                  u32 l = channel->getCurrentSampleLength();
+                  if(l != 0 && l < length)
+                    {
+                       length = l;
+                    }
                }
-             sample /= channels.size();
-             return static_cast<s16>(sample);
+             double mixedSample = 0.0;
+             for(auto* channel : channels)
+               {
+                  mixedSample += channel->readAndConsumeNextSample(length);
+               }
+             mixedSample /= channels.size();
+             return RLESample(mixedSample, length, false);
           }
         
         void PatternReader::decodeLine()

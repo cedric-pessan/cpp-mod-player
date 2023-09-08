@@ -1,6 +1,7 @@
 #ifndef MODS_MOD_CHANNELSTATE_HPP
 #define MODS_MOD_CHANNELSTATE_HPP
 
+#include "mods/utils/AmigaRLESample.hpp"
 #include "mods/utils/RBuffer.hpp"
 #include "mods/utils/types.hpp"
 
@@ -14,8 +15,11 @@ namespace mods
         
         class ChannelState
           {
+           private:
+             using RLESample = mods::utils::AmigaRLESample;
+             
            public:
-             ChannelState(const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers);
+             explicit ChannelState(const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers);
              
              ChannelState() = delete;
              ChannelState(const ChannelState&) = delete;
@@ -24,13 +28,19 @@ namespace mods
              auto operator=(ChannelState&&) -> ChannelState& = delete;
              ~ChannelState() = default;
              
-             auto readNextSample() -> s16;
+             void prepareNextSample();
+             auto getCurrentSampleLength() -> u32;
+             auto readAndConsumeNextSample(u32 length) -> double;
              
              void updateChannelToNewLine(const mods::utils::RBuffer<Note>& note);
              
            private:
+             auto toDouble(s8 sample) -> double;
+             
              size_t _instrument = 0;
              size_t _currentSample = 0;
+             u16 _period;
+             RLESample _currentValue;
              
              const std::vector<mods::utils::RBuffer<u8>>& _sampleBuffers;
           };

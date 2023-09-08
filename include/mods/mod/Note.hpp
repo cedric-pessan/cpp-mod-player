@@ -20,6 +20,7 @@ namespace mods
              ~Note() = delete;
              
              auto getInstrument() const -> size_t;
+             auto getPeriod() const -> u16;
              
            private:
              constexpr static size_t noteSize = 4;

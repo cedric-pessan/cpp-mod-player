@@ -48,6 +48,62 @@ namespace mods
              return _designer.getTaps();
           }
         
+        auto AmigaResampleParameters::getCurrentSampleLength() const -> u32
+          {
+             return _currentSampleLength;
+          }
+        
+        auto AmigaResampleParameters::getAndConsumeCurrentSampleLength() -> u32
+          {
+             if(_currentSampleLength == 0) return 0;
+             return _currentSampleLength--;
+          }
+        
+        auto AmigaResampleParameters::getCurrentSampleValue() const -> double
+          {
+             return _currentSampleValue;
+          }
+        
+        auto AmigaResampleParameters::isFiltered() const -> bool
+          {
+             return _currentSampleFiltered;
+          }
+        
+        void AmigaResampleParameters::setFiltered(bool filtered)
+          {
+             _currentSampleFiltered = filtered;
+          }
+        
+        void AmigaResampleParameters::setCurrentSampleValue(double value)
+          {
+             _currentSampleValue = value;
+          }
+        
+        void AmigaResampleParameters::setCurrentSampleLength(u32 length)
+          {
+             _currentSampleLength = length;
+          }
+        
+        auto AmigaResampleParameters::getTaps() -> const typename DefaultFilterType::TapsType&
+          {
+             return DefaultFilterType::getTaps();
+          }
+        
+        auto AmigaResampleParameters::getFilteredTaps() -> const typename LedFilterType::TapsType&
+          {
+             return LedFilterType::getTaps();
+          }
+        
+        auto AmigaResampleParameters::getTap(size_t i) -> double
+          {
+             return DefaultFilterType::getTap(i);
+          }
+        
+        auto AmigaResampleParameters::getFilteredTap(size_t i) -> double
+          {
+             return LedFilterType::getTap(i);
+          }
+        
         template class StaticResampleParameters<StandardFrequency::_22000, StandardFrequency::_44100>;
         template class StaticResampleParameters<StandardFrequency::_8000,  StandardFrequency::_44100>;
         template class StaticResampleParameters<StandardFrequency::_48000, StandardFrequency::_44100>;

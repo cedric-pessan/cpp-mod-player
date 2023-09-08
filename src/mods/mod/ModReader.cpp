@@ -1,6 +1,12 @@
 
+#include "mods/converters/FromDoubleConverter.hpp"
+#include "mods/converters/MultiplexerConverter.hpp"
+#include "mods/converters/OpenCLConverterTypes.hpp"
+#include "mods/converters/ResampleParameters.hpp"
+#include "mods/converters/SoftwareResampleConverter.hpp"
+#include "mods/mod/Instrument.hpp"
+#include "mods/mod/ModChannelConverter.hpp"
 #include "mods/mod/ModReader.hpp"
-#include "mods/mod/Note.hpp"
 #include "mods/utils/FileUtils.hpp"
 
 #include <map>
@@ -37,7 +43,8 @@ namespace mods
           _nbChannels(getNumberOfChannelsFromFormatTag()),
           _patterns(parsePatternsBuffer()),
           _sampleBuffers(parseSampleBuffers()),
-          _patternReader(_nbChannels, getPatternBuffer(_currentPatternIndex), _sampleBuffers)
+          _patternListReader(std::make_unique<PatternListReader>(_numberOfPatterns, _patternsOrderList, _nbChannels, _patterns, _sampleBuffers)),
+          _modConverter(buildModConverter(_patternListReader))
             {
             }
         
@@ -203,48 +210,14 @@ namespace mods
              return bufs;
           }
         
-        auto ModReader::getPatternBuffer(size_t patternIndex) -> mods::utils::RBuffer<Note>
-          {
-             auto p = _patternsOrderList[patternIndex];
-             auto patternBufferLength = _nbChannels * PatternReader::getNumberOfLines();
-             return _patterns.slice<Note>(p * patternBufferLength, _nbChannels * PatternReader::getNumberOfLines());
-          }
-        
         auto ModReader::isFinished() const -> bool
           {
-             return _currentPatternIndex >= _numberOfPatterns;
+             return _modConverter->isFinished();
           }
         
         void ModReader::read(mods::utils::RWBuffer<s16>* buf)
           {
-             std::cout << "TODO: fix s16 buffer" << std::endl;
-             /*size_t nbElems = len / sizeof(s16);
-             auto output = buf->slice<s16>(0, nbElems);
-             
-             size_t written = 0;
-             while(written < nbElems && !isFinished())
-               {
-                  if(!_patternReader.isTickFinished())
-                    {
-                       auto tickBuffer = _patternReader.readTickBuffer(nbElems - written);
-                       for(auto& elem : tickBuffer)
-                         {
-                            output[written++] = elem;
-                         }
-                    }
-                  else if(!_patternReader.isFinished())
-                    {
-                       _patternReader.readNextTick();
-                    }
-                  else
-                    {
-                       ++_currentPatternIndex;
-                       if(_currentPatternIndex < _numberOfPatterns)
-                         {
-                            _patternReader.setPattern(getPatternBuffer(_currentPatternIndex));
-                         }
-                    }
-               }*/
+             _modConverter->read(buf);
           }
         
         auto ModReader::getInfo() const -> std::string
@@ -256,21 +229,73 @@ namespace mods
                   ss << instrument.getSampleName() << std::endl;
                }
              return ss.str();
-             
-             std::cout << "TODO: ModReader::getInfo() const" << std::endl;
-             return "";
           }
         
         auto ModReader::getProgressInfo() const -> std::string
           {
-             std::stringstream ss;
-             ss << "Pattern " << _currentPatternIndex << " / " << _numberOfPatterns << ", line " << _patternReader.getCurrentLine() << " / " << PatternReader::getNumberOfLines() << "     ";
-             return ss.str();
+             return _patternListReader->getProgressInfo();
           }
         
         auto ModReader::getSongTitle() const -> std::string
           {
              return _songTitle;
+          }
+        
+        auto ModReader::buildModConverter(std::shared_ptr<PatternListReader> patternListReader) -> mods::converters::Converter<s16>::ptr
+          {
+             auto left = std::make_unique<ModChannelConverter>(patternListReader, ChannelId::LEFT);
+             auto right = std::make_unique<ModChannelConverter>(patternListReader, ChannelId::RIGHT);
+             
+             return buildResamplerStage(std::move(left), std::move(right));
+          }
+        
+        auto ModReader::buildResamplerStage(mods::converters::Converter<mods::utils::AmigaRLESample>::ptr left,
+                                            mods::converters::Converter<mods::utils::AmigaRLESample>::ptr right) -> mods::converters::Converter<s16>::ptr
+          {
+             auto resampledLeft = buildResampler(std::move(left));
+             auto resampledRight = buildResampler(std::move(right));
+             
+             return buildFromDoubleStage(std::move(resampledLeft),
+                                         std::move(resampledRight));
+          }
+        
+        auto ModReader::buildResampler(mods::converters::Converter<mods::utils::AmigaRLESample>::ptr channel) -> mods::converters::Converter<double>::ptr
+          {
+             using mods::converters::AmigaResampleParameters;
+             using mods::converters::OpenCLConverterTypes;
+             using mods::converters::SoftwareResampleConverter;
+             using mods::utils::AmigaRLESample;
+             
+             using ParamType = AmigaResampleParameters;
+             ParamType params;
+             if(mods::utils::OpenCLManager::isEnabled())
+               {
+                  using ResampleConverterImpl = OpenCLConverterTypes<ParamType, AmigaRLESample>::ResampleConverterImpl;
+                  return std::make_unique<ResampleConverterImpl>(std::move(channel), params);
+               }
+             else
+               {
+                  return std::make_unique<SoftwareResampleConverter<ParamType, AmigaRLESample>>(std::move(channel), params);
+               }
+          }
+        
+        auto ModReader::buildFromDoubleStage(mods::converters::Converter<double>::ptr left,
+                                             mods::converters::Converter<double>::ptr right) -> mods::converters::Converter<s16>::ptr
+          {
+             using mods::converters::FromDoubleConverter;
+             
+             auto intLeft = std::make_unique<FromDoubleConverter<s16>>(std::move(left));
+             auto intRight = std::make_unique<FromDoubleConverter<s16>>(std::move(right));
+             
+             return buildMuxStage(std::move(intLeft), std::move(intRight));
+          }
+        
+        auto ModReader::buildMuxStage(mods::converters::Converter<s16>::ptr left,
+                                      mods::converters::Converter<s16>::ptr right) -> mods::converters::Converter<s16>::ptr
+          {
+             using mods::converters::MultiplexerConverter;
+             
+             return std::make_unique<MultiplexerConverter<s16>>(std::move(left), std::move(right));
           }
      } // namespace mod
 } // namespace mods

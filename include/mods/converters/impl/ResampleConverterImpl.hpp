@@ -12,7 +12,7 @@ namespace mods
              class SampleWithZeros
                {
                 public:
-                  SampleWithZeros(double sample, int zeros);
+                  SampleWithZeros(double sample, int zeros, bool filtered);
                   
                   SampleWithZeros() = default;
                   SampleWithZeros(const SampleWithZeros&) = delete;
@@ -21,14 +21,24 @@ namespace mods
                   auto operator=(SampleWithZeros&&) -> SampleWithZeros& = delete;
                   ~SampleWithZeros() = default;
                   
-                  auto numberOfZeros() -> int&;
-                  auto numberOfZeros() const -> int;
-                  auto sample() -> double&;
-                  auto sample() const -> double;
+                  auto isMergableWith(const SampleWithZeros&) -> bool;
+                  
+                  void setNumberOfZeros(int numberOfZeros);
+                  auto getNumberOfZeros() const -> int;
+                  auto getNumberOfZerosReference() -> int&;
+                  void setSample(double sample);
+                  auto getSample() const -> double;
+                  auto getSampleReference() -> double&;
+                  auto isFiltered() const -> bool;
+                  void setRepeatCount(int repeatCount);
+                  auto getRepeatCount() const -> int;
+                  auto getRepeatCountReference() -> int&;
                   
                 private:
                   int _numberOfZeros;
                   double _sample;
+                  bool _filtered;
+                  int _repeatCount = 1;
                };
              
              class History
@@ -62,9 +72,13 @@ namespace mods
                   auto front() -> SampleWithZeros&;
                   auto back() -> SampleWithZeros&;
                   void pop_front();
+                  void pop_back();
                   auto isEmpty() const -> bool;
                   auto getSample(size_t i) -> SampleWithZeros&;
                   auto size() const -> size_t;
+                  
+                  void tryToMergeLast2Elements();
+                  void popFrontAndUnmergeNextElement();
                   
                   auto begin() -> iterator;
                   auto end() -> iterator;

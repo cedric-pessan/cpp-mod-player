@@ -92,6 +92,11 @@ namespace mods
                        return *this;
                     }
                   
+                  auto operator!=(const Iterator& it)
+                    {
+                       return _internalIt != it._internalIt;
+                    }
+                  
                 private:
                   typename C::iterator _internalIt;
                   F _transform;
