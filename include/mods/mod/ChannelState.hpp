@@ -12,6 +12,7 @@ namespace mods
    namespace mod
      {
         class Note;
+        class Instrument;
         
         class ChannelState
           {
@@ -19,7 +20,8 @@ namespace mods
              using RLESample = mods::utils::AmigaRLESample;
              
            public:
-             explicit ChannelState(const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers);
+             explicit ChannelState(const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers,
+                                   const mods::utils::RBuffer<Instrument>& instruments);
              
              ChannelState() = delete;
              ChannelState(const ChannelState&) = delete;
@@ -39,10 +41,12 @@ namespace mods
              
              size_t _instrument = 0;
              size_t _currentSample = 0;
+             size_t _currentRepeatSample = 0;
              u16 _period;
              RLESample _currentValue;
              
              const std::vector<mods::utils::RBuffer<u8>>& _sampleBuffers;
+             mods::utils::RBuffer<Instrument> _instruments;
           };
      } // namespace mod
 } // namespace mods

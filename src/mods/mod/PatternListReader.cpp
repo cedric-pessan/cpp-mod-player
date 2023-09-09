@@ -12,12 +12,13 @@ namespace mods
                                              const mods::utils::RBuffer<u8>& patternsOrderList,
                                              size_t nbChannels,
                                              const mods::utils::RBuffer<Note>& patterns,
+                                             const mods::utils::RBuffer<Instrument>& instruments,
                                              const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers)
           : _numberOfPatterns(numberOfPatterns),
           _patternsOrderList(patternsOrderList),
           _nbChannels(nbChannels),
           _patterns(patterns),
-          _patternReader(_nbChannels, getPatternBuffer(_currentPatternIndex), sampleBuffers,
+          _patternReader(_nbChannels, getPatternBuffer(_currentPatternIndex), instruments, sampleBuffers,
                          &_unconsumedBuffers.at(toUnderlying(ChannelId::LEFT)),
                          &_unconsumedBuffers.at(toUnderlying(ChannelId::RIGHT)))
             {

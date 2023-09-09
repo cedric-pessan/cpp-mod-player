@@ -23,6 +23,7 @@ namespace mods
                                const mods::utils::RBuffer<u8>& patternsOrderList,
                                size_t nbChannels,
                                const mods::utils::RBuffer<Note>& patterns,
+                               const mods::utils::RBuffer<Instrument>& instruments,
                                const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers);
              
              PatternListReader() = delete;

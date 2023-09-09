@@ -23,7 +23,11 @@ namespace mods
              
              auto getSampleName() const -> std::string;
              
-             auto getSampleLength() const -> size_t;
+             auto getSampleLength() const -> u16;
+             
+             auto getRepeatOffset() const -> u16;
+             
+             auto getRepeatLength() const -> u16;
              
            private:
              static constexpr int _sampleNameLength = 22;

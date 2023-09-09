@@ -1,5 +1,6 @@
 
 #include "mods/mod/ChannelState.hpp"
+#include "mods/mod/Instrument.hpp"
 #include "mods/mod/Note.hpp"
 
 #include <iostream>
@@ -9,9 +10,11 @@ namespace mods
 {
    namespace mod
      {
-        ChannelState::ChannelState(const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers)
+        ChannelState::ChannelState(const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers,
+                                   const mods::utils::RBuffer<Instrument>& instruments)
           : _currentValue(0.0, 0, false),
-          _sampleBuffers(sampleBuffers)
+          _sampleBuffers(sampleBuffers),
+          _instruments(instruments)
             {
             }
         
@@ -27,7 +30,22 @@ namespace mods
                   auto& buffer = _sampleBuffers[_instrument-1];
                   if(_currentSample >= buffer.size())
                     {
-                       _currentValue = RLESample(0.0, 0, false);
+                       auto& instrument = _instruments[_instrument-1];
+                       if(instrument.getRepeatLength() > 0)
+                         {
+                            if(_currentRepeatSample == 0 ||
+                               _currentRepeatSample >= instrument.getRepeatOffset() + instrument.getRepeatLength())
+                              {
+                                 _currentRepeatSample = instrument.getRepeatOffset();
+                              }
+                            u16 sample = buffer[_currentRepeatSample++];
+                            auto convertedSample = toDouble(sample);
+                            _currentValue = RLESample(convertedSample, _period, false);
+                         }
+                       else
+                         {
+                            _currentValue = RLESample(0.0, 0, false);
+                         }
                        return;
                     }
                   u16 sample = buffer[_currentSample++];

@@ -43,7 +43,7 @@ namespace mods
           _nbChannels(getNumberOfChannelsFromFormatTag()),
           _patterns(parsePatternsBuffer()),
           _sampleBuffers(parseSampleBuffers()),
-          _patternListReader(std::make_unique<PatternListReader>(_numberOfPatterns, _patternsOrderList, _nbChannels, _patterns, _sampleBuffers)),
+          _patternListReader(std::make_unique<PatternListReader>(_numberOfPatterns, _patternsOrderList, _nbChannels, _patterns, _instruments, _sampleBuffers)),
           _modConverter(buildModConverter(_patternListReader))
             {
             }
