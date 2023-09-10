@@ -78,7 +78,7 @@ namespace mods
                   auto size() const -> size_t;
                   
                   void tryToMergeLast2Elements();
-                  void popFrontAndUnmergeNextElement();
+                  int popFrontAndUnmergeNextElement(int maxToRemvoe);
                   
                   auto begin() -> iterator;
                   auto end() -> iterator;

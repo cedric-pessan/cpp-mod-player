@@ -60,7 +60,7 @@ namespace mods
                       {
                          if(shouldDedup())
                            {
-                              _history.popFrontAndUnmergeNextElement();
+                              toRemove -= _history.popFrontAndUnmergeNextElement(toRemove-1);
                            }
                          else
                            {
@@ -375,7 +375,7 @@ namespace mods
                     {
                        idx -= _v.size();
                     }
-                  if(idx >= _end)
+                  if(idx >= _end && !(idx >= _begin && idx < _v.size()))
                     {
                        _zeros.setNumberOfZeros(_sizeOfZeroChunksReturnedWhenEmpty); // Large number for fast interpolation of zeros (zeros are skipped)
                        return _zeros;
@@ -414,7 +414,7 @@ namespace mods
                     {
                        auto& e1 = getSample(size() - 2);
                        auto& e2 = getSample(size() - 1);
-                       if(e1.isMergableWith(e2))
+                       if(e1.isMergableWith(e2) && e2.getRepeatCount() == 1)
                          {
                             e1.setRepeatCount(e1.getRepeatCount()+1);
                             pop_back();
@@ -422,12 +422,12 @@ namespace mods
                     }
                }
              
-             void History::popFrontAndUnmergeNextElement()
+             int History::popFrontAndUnmergeNextElement(int maxToRemove)
                {
                   if(size() == 1)
                     {
                        pop_front();
-                       return;
+                       return 0;
                     }
                   auto& e2 = getSample(1);
                   if(e2.getRepeatCount() > 1)
@@ -436,10 +436,22 @@ namespace mods
                        e1 = e2;
                        e1.setRepeatCount(1);
                        e2.setRepeatCount(e2.getRepeatCount()-1);
+                       
+                       if(e2.getRepeatCount() > 1)
+                         {
+                            int countPerElem = e1.getNumberOfZeros() + 1;
+                            int maxRepeatDecrease = e2.getRepeatCount() - 1;
+                            int requestedRepeatDecrease = std::max(0, (maxToRemove - countPerElem*2) / countPerElem);
+                            int repeatDecrease = std::min(maxRepeatDecrease, requestedRepeatDecrease);
+                            e2.setRepeatCount(e2.getRepeatCount() - repeatDecrease);
+                            return repeatDecrease * countPerElem;
+                         }
+                       return 0;
                     }
                   else
                     {
                        pop_front();
+                       return 0;
                     }
                }
              

@@ -209,7 +209,7 @@ namespace mods
                  }
                
                this->resample(buf, this->getTapsBuffer());
-                                   
+               
                for(size_t i=0; i<nbElems; ++i)
                  {
                     this->removeFromHistory();
