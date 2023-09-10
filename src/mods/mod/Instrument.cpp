@@ -24,6 +24,17 @@ namespace mods
              return static_cast<u16>(_sampleLength) * 2;
           }
         
+        auto Instrument::getFineTune() const -> s8
+          {
+             s8 v = _fineTune & 0xF;
+             if(v & 0x8)
+               {
+                  v |= 0xF0;
+               }
+             
+             return v;
+          }
+        
         auto Instrument::getRepeatOffset() const -> u16
           {
              return static_cast<u16>(_repeatOffset) * 2;

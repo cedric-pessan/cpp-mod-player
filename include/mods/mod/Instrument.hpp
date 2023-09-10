@@ -23,6 +23,8 @@ namespace mods
              
              auto getSampleName() const -> std::string;
              
+             auto getFineTune() const -> s8;
+             
              auto getSampleLength() const -> u16;
              
              auto getRepeatOffset() const -> u16;

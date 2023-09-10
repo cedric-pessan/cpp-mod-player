@@ -38,6 +38,7 @@ namespace mods
              
            private:
              auto toDouble(s8 sample) -> double;
+             auto getFineTuneFactor(int fineTune) -> double;
              
              size_t _instrument = 0;
              size_t _currentSample = 0;
@@ -47,6 +48,8 @@ namespace mods
              
              const std::vector<mods::utils::RBuffer<u8>>& _sampleBuffers;
              mods::utils::RBuffer<Instrument> _instruments;
+             
+             std::array<double, 16> _fineTuneFactors;
           };
      } // namespace mod
 } // namespace mods

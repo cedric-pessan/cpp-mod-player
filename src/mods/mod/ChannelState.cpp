@@ -3,6 +3,7 @@
 #include "mods/mod/Instrument.hpp"
 #include "mods/mod/Note.hpp"
 
+#include <cmath>
 #include <iostream>
 #include <limits>
 
@@ -16,6 +17,17 @@ namespace mods
           _sampleBuffers(sampleBuffers),
           _instruments(instruments)
             {
+               using mods::utils::at;
+               
+               double halfToneFactor = std::pow(2.0, -1.0 / (12.0 * 8.0));
+               
+               for(int i=0; i<16; ++i)
+                 {
+                    double fineTune = static_cast<double>(i-8);
+                    
+                    double factor = std::pow(halfToneFactor, fineTune);
+                    at(_fineTuneFactors, i) = factor;
+                 }
             }
         
         void ChannelState::prepareNextSample()
@@ -83,6 +95,12 @@ namespace mods
              return _currentValue.getValue();
           }
         
+        auto ChannelState::getFineTuneFactor(int fineTune) -> double
+          {
+             using mods::utils::at;
+             return at(_fineTuneFactors, fineTune + 8);
+          }
+        
         void ChannelState::updateChannelToNewLine(const mods::utils::RBuffer<Note>& note)
           {
              if(note->getInstrument() != 0)
@@ -93,6 +111,12 @@ namespace mods
              if(note->getPeriod() != 0)
                {
                   _period = note->getPeriod();
+               }
+             if(_instruments[_instrument-1].getFineTune() != 0)
+               {
+                  auto fineTune = _instruments[_instrument-1].getFineTune();
+                  auto factor = getFineTuneFactor(fineTune);;
+                  _period = std::round(static_cast<double>(_period) * factor);
                }
           }
      } // namespace mod
