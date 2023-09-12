@@ -51,8 +51,7 @@ namespace mods
                                  _currentRepeatSample = instrument.getRepeatOffset();
                               }
                             u16 sample = buffer[_currentRepeatSample++];
-                            auto convertedSample = toDouble(sample);
-                            _currentValue = RLESample(convertedSample, _period, false);
+                            processNextSample(sample);
                          }
                        else
                          {
@@ -61,9 +60,15 @@ namespace mods
                        return;
                     }
                   u16 sample = buffer[_currentSample++];
-                  auto convertedSample = toDouble(sample);
-                  _currentValue = RLESample(convertedSample, _period, false);
+                  processNextSample(sample);
                }
+          }
+        
+        void ChannelState::processNextSample(u16 sample)
+          {
+             sample = sample * _volume / 64;
+             auto convertedSample = toDouble(sample);
+             _currentValue = RLESample(convertedSample, _period, false);
           }
         
         auto ChannelState::toDouble(s8 sample) -> double
@@ -118,6 +123,7 @@ namespace mods
                   auto factor = getFineTuneFactor(fineTune);;
                   _period = std::round(static_cast<double>(_period) * factor);
                }
+             _volume = _instruments[_instrument-1].getVolume();
           }
      } // namespace mod
 } // namespace mod

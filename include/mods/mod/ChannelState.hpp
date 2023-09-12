@@ -39,11 +39,13 @@ namespace mods
            private:
              auto toDouble(s8 sample) -> double;
              auto getFineTuneFactor(int fineTune) -> double;
+             void processNextSample(u16 sample);
              
              size_t _instrument = 0;
              size_t _currentSample = 0;
              size_t _currentRepeatSample = 0;
-             u16 _period;
+             u16 _period = 0;
+             u16 _volume = 0;
              RLESample _currentValue;
              
              const std::vector<mods::utils::RBuffer<u8>>& _sampleBuffers;

@@ -35,6 +35,11 @@ namespace mods
              return v;
           }
         
+        auto Instrument::getVolume() const -> u8
+          {
+             return _volume;
+          }
+        
         auto Instrument::getRepeatOffset() const -> u16
           {
              return static_cast<u16>(_repeatOffset) * 2;

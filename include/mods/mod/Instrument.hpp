@@ -25,6 +25,8 @@ namespace mods
              
              auto getFineTune() const -> s8;
              
+             auto getVolume() const -> u8;
+             
              auto getSampleLength() const -> u16;
              
              auto getRepeatOffset() const -> u16;
