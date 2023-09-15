@@ -108,6 +108,8 @@ namespace mods
         
         void ChannelState::updateChannelToNewLine(const mods::utils::RBuffer<Note>& note)
           {
+             _speedSetOnLastLine = false;
+             
              if(note->getInstrument() != 0)
                {
                   _instrument = note->getInstrument();
@@ -124,6 +126,28 @@ namespace mods
                   _period = std::round(static_cast<double>(_period) * factor);
                }
              _volume = _instruments[_instrument-1].getVolume();
+             
+             u32 effect = note->getEffect();
+             switch(effect)
+               {
+                case 0xf:
+                  _speedSetOnLastLine = true;
+                  _speed = note->getEffectArgument();
+                  break;
+                  
+                default:
+                  std::cout << "unknown effect:" << std::hex << effect << std::dec << std::endl;
+               }
+          }
+        
+        auto ChannelState::hasSpeedDefined() const -> bool
+          {
+             return _speedSetOnLastLine;
+          }
+        
+        auto ChannelState::getSpeed() const -> int
+          {
+             return _speed;
           }
      } // namespace mod
 } // namespace mod

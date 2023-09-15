@@ -21,6 +21,8 @@ namespace mods
              
              auto getInstrument() const -> size_t;
              auto getPeriod() const -> u16;
+             auto getEffect() const -> u32;
+             auto getEffectArgument() const -> u32;
              
            private:
              constexpr static size_t noteSize = 4;

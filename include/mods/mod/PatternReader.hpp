@@ -54,6 +54,7 @@ namespace mods
              auto readAndMixSample(const std::vector<ChannelState*>& channels, u32 maxLength) const -> RLESample;
              
              void decodeLine();
+             void updateSpeed();
              
              static constexpr u32 _numberOfLines = 64;
              static constexpr u32 _defaultSpeed = 6;

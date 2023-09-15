@@ -36,6 +36,9 @@ namespace mods
              
              void updateChannelToNewLine(const mods::utils::RBuffer<Note>& note);
              
+             auto hasSpeedDefined() const -> bool;
+             auto getSpeed() const -> int;
+             
            private:
              auto toDouble(s8 sample) -> double;
              auto getFineTuneFactor(int fineTune) -> double;
@@ -47,6 +50,8 @@ namespace mods
              u16 _period = 0;
              u16 _volume = 0;
              RLESample _currentValue;
+             bool _speedSetOnLastLine = false;
+             int _speed = 0;
              
              const std::vector<mods::utils::RBuffer<u8>>& _sampleBuffers;
              mods::utils::RBuffer<Instrument> _instruments;

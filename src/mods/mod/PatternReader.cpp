@@ -103,6 +103,8 @@ namespace mods
                {
                   _currentTick = 0;
                   ++_currentLine;
+                  
+                  updateSpeed();
                }
           }
         
@@ -152,6 +154,29 @@ namespace mods
                {
                   auto note = _patternBuffer.slice<Note>(_currentLine * _channels.size() + i, 1);
                   _channels[i].updateChannelToNewLine(note);
+               }
+          }
+        
+        void PatternReader::updateSpeed()
+          {
+             bool speedDefined = false;
+             int speed;
+             
+             for(auto& channel : _channels)
+               {
+                  if(channel.hasSpeedDefined())
+                    {
+                       speedDefined = true,
+                       speed = channel.getSpeed();
+                    }
+               }
+             
+             if(speedDefined)
+               {
+                  if(speed > 32)
+                    _bpm = speed;
+                  else
+                    std::cout << "speed : " << speed << std::endl;
                }
           }
      } // namespace mod
