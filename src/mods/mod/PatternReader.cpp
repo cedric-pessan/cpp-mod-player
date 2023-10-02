@@ -188,7 +188,7 @@ namespace mods
                   if(speed > 32)
                     _bpm = speed;
                   else
-                    std::cout << "speed : " << speed << std::endl;
+                    _speed = speed;
                }
           }
      } // namespace mod
