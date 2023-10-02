@@ -55,6 +55,7 @@ namespace mods
              
              void decodeLine();
              void updateSpeed();
+             void signalNewTick();
              
              static constexpr u32 _numberOfLines = 64;
              static constexpr u32 _defaultSpeed = 6;

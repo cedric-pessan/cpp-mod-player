@@ -94,6 +94,10 @@ namespace mods
                {
                   decodeLine();
                }
+             else
+               {
+                  signalNewTick();
+               }
              
              readAndMixTick(_leftOutput, _leftChannels);
              readAndMixTick(_rightOutput, _rightChannels);
@@ -154,6 +158,14 @@ namespace mods
                {
                   auto note = _patternBuffer.slice<Note>(_currentLine * _channels.size() + i, 1);
                   _channels[i].updateChannelToNewLine(note);
+               }
+          }
+        
+        void PatternReader::signalNewTick()
+          {
+             for(auto& channel : _channels)
+               {
+                  channel.tick();
                }
           }
         

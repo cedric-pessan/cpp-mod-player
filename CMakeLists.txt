@@ -70,9 +70,11 @@ add_executable(modreader src/main.cpp
                          src/mods/mod/Instrument.cpp
                          src/mods/mod/ModChannelConverter.cpp
                          src/mods/mod/ModReader.cpp
+                         src/mods/mod/NoEffect.cpp
                          src/mods/mod/Note.cpp
                          src/mods/mod/PatternListReader.cpp
                          src/mods/mod/PatternReader.cpp
+                         src/mods/mod/Vibrato.cpp
                          src/mods/wav/ADPCMDecoderConverter.cpp
                          src/mods/wav/ALawConverter.cpp
                          src/mods/wav/DemuxConverter.cpp

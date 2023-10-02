@@ -1,6 +1,8 @@
 #ifndef MODS_MOD_CHANNELSTATE_HPP
 #define MODS_MOD_CHANNELSTATE_HPP
 
+#include "mods/mod/NoEffect.hpp"
+#include "mods/mod/Vibrato.hpp"
 #include "mods/utils/AmigaRLESample.hpp"
 #include "mods/utils/RBuffer.hpp"
 #include "mods/utils/types.hpp"
@@ -35,6 +37,7 @@ namespace mods
              auto readAndConsumeNextSample(u32 length) -> double;
              
              void updateChannelToNewLine(const mods::utils::RBuffer<Note>& note);
+             void tick();
              
              auto hasSpeedDefined() const -> bool;
              auto getSpeed() const -> int;
@@ -57,6 +60,10 @@ namespace mods
              mods::utils::RBuffer<Instrument> _instruments;
              
              std::array<double, 16> _fineTuneFactors;
+             
+             std::unique_ptr<NoEffect> _noEffect;
+             std::unique_ptr<Vibrato> _vibrato;
+             Effect* _currentEffect = nullptr;
           };
      } // namespace mod
 } // namespace mods

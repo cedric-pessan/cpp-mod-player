@@ -28,6 +28,11 @@ namespace mods
                     double factor = std::pow(halfToneFactor, fineTune);
                     at(_fineTuneFactors, i) = factor;
                  }
+               
+               _noEffect = std::make_unique<NoEffect>();
+               _vibrato = std::make_unique<Vibrato>();
+               
+               _currentEffect = _noEffect.get();
             }
         
         void ChannelState::prepareNextSample()
@@ -66,9 +71,12 @@ namespace mods
         
         void ChannelState::processNextSample(u16 sample)
           {
+             auto period = _currentEffect->getModifiedPeriod(_period);
+             
              sample = sample * _volume / 64;
              auto convertedSample = toDouble(sample);
-             _currentValue = RLESample(convertedSample, _period, false);
+             
+             _currentValue = RLESample(convertedSample, period, false);
           }
         
         auto ChannelState::toDouble(s8 sample) -> double
@@ -113,26 +121,64 @@ namespace mods
              if(note->getInstrument() != 0)
                {
                   _instrument = note->getInstrument();
-                  _currentSample = 0;
                }
              if(note->getPeriod() != 0)
                {
+                  _currentSample = 0;
                   _period = note->getPeriod();
+                  
+                  if(_instrument != 0)
+                    {
+                       if(_instruments[_instrument-1].getFineTune() != 0)
+                         {
+                            auto fineTune = _instruments[_instrument-1].getFineTune();
+                            auto factor = getFineTuneFactor(fineTune);;
+                            _period = std::round(static_cast<double>(_period) * factor);
+                         }
+                       _volume = _instruments[_instrument-1].getVolume();
+                    }
                }
-             if(_instruments[_instrument-1].getFineTune() != 0)
-               {
-                  auto fineTune = _instruments[_instrument-1].getFineTune();
-                  auto factor = getFineTuneFactor(fineTune);;
-                  _period = std::round(static_cast<double>(_period) * factor);
-               }
-             _volume = _instruments[_instrument-1].getVolume();
              
              u32 effect = note->getEffect();
              switch(effect)
                {
-                case 0xf:
+                case 0x0: // arpeggio
+                    {
+                       u32 arg = note->getEffectArgument();
+                       if(arg != 0)
+                         {
+                            std::cout << "arpeggio" << std::endl;
+                         }
+                       else
+                         {
+                            _currentEffect->tick();
+                         }
+                    }
+                  break;
+                  
+                case 0x4: // vibrato
+                    {
+                       u32 arg = note->getEffectArgument();
+                       u32 oscillationFrequency = arg >> 4;
+                       u32 amplitude = arg & 0xF;
+                       _vibrato->init(amplitude, oscillationFrequency);
+                       _currentEffect = _vibrato.get();
+                    }
+                  break;
+                  
+                case 0xc: // set volume
+                  _volume = note->getEffectArgument();
+                  if(_volume > 64)
+                    {
+                       _volume = 64;
+                    }
+                  _currentEffect = _noEffect.get();
+                  break;
+                  
+                case 0xf: // set speed
                   _speedSetOnLastLine = true;
                   _speed = note->getEffectArgument();
+                  _currentEffect = _noEffect.get();
                   break;
                   
                 default:
@@ -148,6 +194,11 @@ namespace mods
         auto ChannelState::getSpeed() const -> int
           {
              return _speed;
+          }
+        
+        void ChannelState::tick()
+          {
+             _currentEffect->tick();
           }
      } // namespace mod
 } // namespace mod
