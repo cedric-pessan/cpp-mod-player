@@ -166,6 +166,16 @@ namespace mods
                     }
                   break;
                   
+                case 0x9: // set sample offset
+                    {
+                       u32 arg = note->getEffectArgument();
+                       if(arg)
+                         {
+                            _currentSample = arg << 8;
+                         }
+                    }
+                  break;
+                  
                 case 0xc: // set volume
                   _volume = note->getEffectArgument();
                   if(_volume > 64)
