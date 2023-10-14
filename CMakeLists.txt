@@ -75,6 +75,8 @@ add_executable(modreader src/main.cpp
                          src/mods/mod/PatternListReader.cpp
                          src/mods/mod/PatternReader.cpp
                          src/mods/mod/Vibrato.cpp
+                         src/mods/mod/VibratoAndVolumeSlide.cpp
+                         src/mods/mod/VolumeSlide.cpp
                          src/mods/wav/ADPCMDecoderConverter.cpp
                          src/mods/wav/ALawConverter.cpp
                          src/mods/wav/DemuxConverter.cpp

@@ -2,6 +2,7 @@
 #include "mods/mod/ChannelState.hpp"
 #include "mods/mod/Instrument.hpp"
 #include "mods/mod/Note.hpp"
+#include "mods/mod/VolumeSlide.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -11,7 +12,7 @@ namespace mods
 {
    namespace mod
      {
-        ChannelState::ChannelState(const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers,
+        ChannelState::ChannelState(const std::vector<mods::utils::RBuffer<s8>>& sampleBuffers,
                                    const mods::utils::RBuffer<Instrument>& instruments)
           : _currentValue(0.0, 0, false),
           _sampleBuffers(sampleBuffers),
@@ -31,6 +32,8 @@ namespace mods
                
                _noEffect = std::make_unique<NoEffect>();
                _vibrato = std::make_unique<Vibrato>();
+               _volumeSlide = std::make_unique<VolumeSlide>();
+               _vibratoAndVolumeSlide = std::make_unique<VibratoAndVolumeSlide>(_vibrato.get(), _volumeSlide.get());
                
                _currentEffect = _noEffect.get();
             }
@@ -55,7 +58,7 @@ namespace mods
                               {
                                  _currentRepeatSample = instrument.getRepeatOffset();
                               }
-                            u16 sample = buffer[_currentRepeatSample++];
+                            s8 sample = buffer[_currentRepeatSample++];
                             processNextSample(sample);
                          }
                        else
@@ -64,17 +67,19 @@ namespace mods
                          }
                        return;
                     }
-                  u16 sample = buffer[_currentSample++];
+                  s8 sample = buffer[_currentSample++];
                   processNextSample(sample);
                }
           }
         
-        void ChannelState::processNextSample(u16 sample)
+        void ChannelState::processNextSample(s8 sample)
           {
              auto period = _currentEffect->getModifiedPeriod(_period);
+             _volume = _currentEffect->getModifiedVolume(_volume);
              
-             sample = sample * _volume / 64;
              auto convertedSample = toDouble(sample);
+             
+             convertedSample = convertedSample * static_cast<double>(_volume) / 64.0;
              
              _currentValue = RLESample(convertedSample, period, false);
           }
@@ -121,6 +126,8 @@ namespace mods
              if(note->getInstrument() != 0)
                {
                   _instrument = note->getInstrument();
+                  _volume = _instruments[_instrument-1].getVolume();
+                  _currentSample = 0;
                }
              if(note->getPeriod() != 0)
                {
@@ -135,7 +142,6 @@ namespace mods
                             auto factor = getFineTuneFactor(fineTune);;
                             _period = std::round(static_cast<double>(_period) * factor);
                          }
-                       _volume = _instruments[_instrument-1].getVolume();
                     }
                }
              
@@ -147,11 +153,12 @@ namespace mods
                        u32 arg = note->getEffectArgument();
                        if(arg != 0)
                          {
-                            std::cout << "arpeggio" << std::endl;
+                            std::cout << "TODO: arpeggio" << std::endl;
                          }
                        else
                          {
-                            _currentEffect->tick();
+                            _currentEffect = _noEffect.get();
+                            //_currentEffect->tick();
                          }
                     }
                   break;
@@ -161,8 +168,26 @@ namespace mods
                        u32 arg = note->getEffectArgument();
                        u32 oscillationFrequency = arg >> 4;
                        u32 amplitude = arg & 0xF;
-                       _vibrato->init(amplitude, oscillationFrequency);
+                       if(arg != 0)
+                         {
+                            _vibrato->init(amplitude, oscillationFrequency);
+                         }
                        _currentEffect = _vibrato.get();
+                    }
+                  break;
+                  
+                case 0x6: // vibrato + volume slide
+                    if(_currentEffect == _vibrato.get())
+                    {
+                       u32 arg = note->getEffectArgument();
+                       u8 slideUp = (arg >> 4) & 0xF;
+                       u8 slideDown = arg & 0xF;
+                       _vibratoAndVolumeSlide->init(_volume, slideUp, slideDown);
+                       _currentEffect = _vibratoAndVolumeSlide.get();
+                    }
+                  else
+                    {
+                       std::cout << "TODO: vibrato + volume slide without previous vibrato" << std::endl;
                     }
                   break;
                   

@@ -41,6 +41,11 @@ namespace mods
              return period + variation;
           }
         
+        auto Vibrato::getModifiedVolume(u16 volume) const -> u16
+          {
+             return volume;
+          }
+        
         void Vibrato::tick()
           {
              _sinePos += _oscillationFrequency;

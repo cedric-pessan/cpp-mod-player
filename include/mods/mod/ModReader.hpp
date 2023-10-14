@@ -39,7 +39,7 @@ namespace mods
              auto parsePatternsTable() -> mods::utils::RBuffer<u8>;
              auto getNumberOfChannelsFromFormatTag() -> size_t;
              auto parsePatternsBuffer() -> mods::utils::RBuffer<Note>;
-             auto parseSampleBuffers() -> std::vector<mods::utils::RBuffer<u8>>;
+             auto parseSampleBuffers() -> std::vector<mods::utils::RBuffer<s8>>;
              
              auto getSongTitle() const -> std::string;
              
@@ -75,7 +75,7 @@ namespace mods
              size_t _nbChannels;
              
              mods::utils::RBuffer<Note> _patterns;
-             std::vector<mods::utils::RBuffer<u8>> _sampleBuffers;
+             std::vector<mods::utils::RBuffer<s8>> _sampleBuffers;
              
              std::shared_ptr<PatternListReader> _patternListReader;
              mods::converters::Converter<s16>::ptr _modConverter;

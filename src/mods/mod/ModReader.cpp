@@ -193,9 +193,9 @@ namespace mods
              return patterns;
           }
         
-        auto ModReader::parseSampleBuffers() -> std::vector<mods::utils::RBuffer<u8>>
+        auto ModReader::parseSampleBuffers() -> std::vector<mods::utils::RBuffer<s8>>
           {
-             std::vector<mods::utils::RBuffer<u8>> bufs;
+             std::vector<mods::utils::RBuffer<s8>> bufs;
              
              for(auto& instrument : _instruments)
                {
@@ -203,7 +203,7 @@ namespace mods
                   
                   checkInit(_notParsedBuffer.size() >= length, "File is too small to contain all instruments");
                   
-                  bufs.push_back(_notParsedBuffer.slice<u8>(0, length));
+                  bufs.push_back(_notParsedBuffer.slice<s8>(0, length));
                   _notParsedBuffer = _notParsedBuffer.slice<u8>(length, _notParsedBuffer.size() - length);
                }
              

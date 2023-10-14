@@ -22,6 +22,7 @@ namespace mods
              void init(int depth, int oscillationFrequency);
              
              auto getModifiedPeriod(u16 period) const -> u16 override;
+             auto getModifiedVolume(u16 volume) const -> u16 override;
              void tick() override;
              
            private:

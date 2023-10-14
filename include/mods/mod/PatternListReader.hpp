@@ -24,7 +24,7 @@ namespace mods
                                size_t nbChannels,
                                const mods::utils::RBuffer<Note>& patterns,
                                const mods::utils::RBuffer<Instrument>& instruments,
-                               const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers);
+                               const std::vector<mods::utils::RBuffer<s8>>& sampleBuffers);
              
              PatternListReader() = delete;
              PatternListReader(const PatternListReader&) = delete;

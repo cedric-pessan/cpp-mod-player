@@ -12,6 +12,11 @@ namespace mods
              return period;
           }
         
+        auto NoEffect::getModifiedVolume(u16 volume) const -> u16
+          {
+             return volume;
+          }
+        
         void NoEffect::tick()
           {
           }

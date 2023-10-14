@@ -25,7 +25,7 @@ namespace mods
              PatternReader(size_t nbChannels,
                            const mods::utils::RBuffer<Note>& patternBuffer,
                            const mods::utils::RBuffer<Instrument>& instruments,
-                           const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers,
+                           const std::vector<mods::utils::RBuffer<s8>>& sampleBuffers,
                            OutputQueue* _leftOutput,
                            OutputQueue* _rightOutput);
              

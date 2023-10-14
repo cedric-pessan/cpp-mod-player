@@ -18,6 +18,7 @@ namespace mods
              virtual ~Effect() = default;
              
              virtual auto getModifiedPeriod(u16 period) const -> u16 = 0;
+             virtual auto getModifiedVolume(u16 volume) const -> u16 = 0;
              virtual void tick() = 0;
           };
      } // namespace mod

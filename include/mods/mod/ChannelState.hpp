@@ -3,6 +3,8 @@
 
 #include "mods/mod/NoEffect.hpp"
 #include "mods/mod/Vibrato.hpp"
+#include "mods/mod/VibratoAndVolumeSlide.hpp"
+#include "mods/mod/VolumeSlide.hpp"
 #include "mods/utils/AmigaRLESample.hpp"
 #include "mods/utils/RBuffer.hpp"
 #include "mods/utils/types.hpp"
@@ -22,7 +24,7 @@ namespace mods
              using RLESample = mods::utils::AmigaRLESample;
              
            public:
-             explicit ChannelState(const std::vector<mods::utils::RBuffer<u8>>& sampleBuffers,
+             explicit ChannelState(const std::vector<mods::utils::RBuffer<s8>>& sampleBuffers,
                                    const mods::utils::RBuffer<Instrument>& instruments);
              
              ChannelState() = delete;
@@ -45,7 +47,7 @@ namespace mods
            private:
              auto toDouble(s8 sample) -> double;
              auto getFineTuneFactor(int fineTune) -> double;
-             void processNextSample(u16 sample);
+             void processNextSample(s8 sample);
              
              size_t _instrument = 0;
              size_t _currentSample = 0;
@@ -56,13 +58,15 @@ namespace mods
              bool _speedSetOnLastLine = false;
              int _speed = 0;
              
-             const std::vector<mods::utils::RBuffer<u8>>& _sampleBuffers;
+             const std::vector<mods::utils::RBuffer<s8>>& _sampleBuffers;
              mods::utils::RBuffer<Instrument> _instruments;
              
              std::array<double, 16> _fineTuneFactors;
              
              std::unique_ptr<NoEffect> _noEffect;
              std::unique_ptr<Vibrato> _vibrato;
+             std::unique_ptr<VolumeSlide> _volumeSlide;
+             std::unique_ptr<VibratoAndVolumeSlide> _vibratoAndVolumeSlide;
              Effect* _currentEffect = nullptr;
           };
      } // namespace mod
