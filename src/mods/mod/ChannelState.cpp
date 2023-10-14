@@ -158,7 +158,6 @@ namespace mods
                        else
                          {
                             _currentEffect = _noEffect.get();
-                            //_currentEffect->tick();
                          }
                     }
                   break;
@@ -172,6 +171,10 @@ namespace mods
                          {
                             _vibrato->init(amplitude, oscillationFrequency);
                          }
+                       else
+                         {
+                            _vibrato->tick();
+                         }
                        _currentEffect = _vibrato.get();
                     }
                   break;
@@ -182,6 +185,7 @@ namespace mods
                        u32 arg = note->getEffectArgument();
                        u8 slideUp = (arg >> 4) & 0xF;
                        u8 slideDown = arg & 0xF;
+                       _vibrato->tick();
                        _vibratoAndVolumeSlide->init(_volume, slideUp, slideDown);
                        _currentEffect = _vibratoAndVolumeSlide.get();
                     }
