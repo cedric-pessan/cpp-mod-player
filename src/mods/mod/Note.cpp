@@ -14,7 +14,7 @@ namespace mods
         
         auto Note::getPeriod() const -> u16
           {
-             return (static_cast<u16>(_value[0]) << 8) | static_cast<u16>(_value[1]);
+             return ((static_cast<u16>(_value[0]) & 0xF) << 8) | static_cast<u16>(_value[1]);
           }
         
         auto Note::getEffect() const -> u32

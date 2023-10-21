@@ -148,7 +148,7 @@ namespace mods
                {
                   mixedSample += channel->readAndConsumeNextSample(length);
                }
-             mixedSample /= channels.size();
+             mixedSample /= static_cast<double>(channels.size());
              return RLESample(mixedSample, length, false);
           }
         

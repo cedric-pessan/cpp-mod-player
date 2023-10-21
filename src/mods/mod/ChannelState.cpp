@@ -139,7 +139,7 @@ namespace mods
                        if(_instruments[_instrument-1].getFineTune() != 0)
                          {
                             auto fineTune = _instruments[_instrument-1].getFineTune();
-                            auto factor = getFineTuneFactor(fineTune);;
+                            auto factor = getFineTuneFactor(fineTune);
                             _period = std::round(static_cast<double>(_period) * factor);
                          }
                     }
@@ -180,7 +180,6 @@ namespace mods
                   break;
                   
                 case 0x6: // vibrato + volume slide
-                    if(_currentEffect == _vibrato.get())
                     {
                        u32 arg = note->getEffectArgument();
                        u8 slideUp = (arg >> 4) & 0xF;
@@ -188,10 +187,6 @@ namespace mods
                        _vibrato->tick();
                        _vibratoAndVolumeSlide->init(_volume, slideUp, slideDown);
                        _currentEffect = _vibratoAndVolumeSlide.get();
-                    }
-                  else
-                    {
-                       std::cout << "TODO: vibrato + volume slide without previous vibrato" << std::endl;
                     }
                   break;
                   
@@ -202,6 +197,16 @@ namespace mods
                          {
                             _currentSample = arg << 8;
                          }
+                    }
+                  break;
+                  
+                case 0xa: // volume slide
+                    {
+                       u32 arg = note->getEffectArgument();
+                       u8 slideUp = (arg >> 4) & 0xF;
+                       u8 slideDown = arg & 0xF;
+                       _volumeSlide->init(_volume, slideUp, slideDown);
+                       _currentEffect = _volumeSlide.get();
                     }
                   break;
                   
