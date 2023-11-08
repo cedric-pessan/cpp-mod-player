@@ -75,11 +75,8 @@ namespace mods
         void ChannelState::processNextSample(s8 sample)
           {
              auto period = _currentEffect->getModifiedPeriod(_period);
-             _volume = _currentEffect->getModifiedVolume(_volume);
              
              auto convertedSample = toDouble(sample);
-             
-             convertedSample = convertedSample * static_cast<double>(_volume) / 64.0;
              
              _currentValue = RLESample(convertedSample, period, false);
           }
@@ -110,7 +107,8 @@ namespace mods
                   return 0.0;
                }
              _currentValue = RLESample(_currentValue.getValue(), _currentValue.getLength() - length, _currentValue.isFiltered());
-             return _currentValue.getValue();
+             _volume = _currentEffect->getModifiedVolume(_volume);
+             return _currentValue.getValue() * static_cast<double>(_volume) / 64.0;
           }
         
         auto ChannelState::getFineTuneFactor(int fineTune) -> double
@@ -128,11 +126,15 @@ namespace mods
                   _instrument = note->getInstrument();
                   _volume = _instruments[_instrument-1].getVolume();
                   _currentSample = 0;
+                  _currentRepeatSample = 0;
+                  _currentValue = RLESample(0.0, 0, false);
                }
              if(note->getPeriod() != 0)
                {
                   _currentSample = 0;
+                  _currentRepeatSample = 0;
                   _period = note->getPeriod();
+                  _currentValue = RLESample(0.0, 0, false);
                   
                   if(_instrument != 0)
                     {
@@ -196,7 +198,9 @@ namespace mods
                        if(arg)
                          {
                             _currentSample = arg << 8;
+                            _currentRepeatSample = 0;
                          }
+                       _currentEffect = _noEffect.get();
                     }
                   break;
                   

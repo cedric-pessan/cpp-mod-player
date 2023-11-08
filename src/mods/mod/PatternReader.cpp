@@ -68,7 +68,7 @@ namespace mods
              size_t beatLength = minuteLength / _bpm;
              
              size_t lineLength = beatLength / linesPerBeat;
-             return lineLength / _speed;
+             return lineLength / _defaultSpeed;
           }
         
         auto PatternReader::isFinished() const -> bool
