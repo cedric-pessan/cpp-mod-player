@@ -34,6 +34,7 @@ namespace mods
                _vibrato = std::make_unique<Vibrato>();
                _volumeSlide = std::make_unique<VolumeSlide>();
                _vibratoAndVolumeSlide = std::make_unique<VibratoAndVolumeSlide>(_vibrato.get(), _volumeSlide.get());
+               _arpeggio = std::make_unique<Arpeggio>();
                
                _currentEffect = _noEffect.get();
             }
@@ -155,7 +156,10 @@ namespace mods
                        u32 arg = note->getEffectArgument();
                        if(arg != 0)
                          {
-                            std::cout << "TODO: arpeggio" << std::endl;
+                            u32 x = arg >> 4;
+                            u32 y = arg & 0xF;
+                            _arpeggio->init(x, y);
+                            _currentEffect = _arpeggio.get();
                          }
                        else
                          {

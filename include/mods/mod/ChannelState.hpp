@@ -1,6 +1,7 @@
 #ifndef MODS_MOD_CHANNELSTATE_HPP
 #define MODS_MOD_CHANNELSTATE_HPP
 
+#include "mods/mod/Arpeggio.hpp"
 #include "mods/mod/NoEffect.hpp"
 #include "mods/mod/Vibrato.hpp"
 #include "mods/mod/VibratoAndVolumeSlide.hpp"
@@ -67,6 +68,7 @@ namespace mods
              std::unique_ptr<Vibrato> _vibrato;
              std::unique_ptr<VolumeSlide> _volumeSlide;
              std::unique_ptr<VibratoAndVolumeSlide> _vibratoAndVolumeSlide;
+             std::unique_ptr<Arpeggio> _arpeggio;
              Effect* _currentEffect = nullptr;
           };
      } // namespace mod
