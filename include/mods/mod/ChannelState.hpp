@@ -45,6 +45,10 @@ namespace mods
              auto hasSpeedDefined() const -> bool;
              auto getSpeed() const -> int;
              
+             auto hasPatternJump() const -> bool;
+             auto getPatternOfJumpTarget() const -> int;
+             auto getLineOfJumpTarget() const -> int;
+             
            private:
              auto toDouble(s8 sample) -> double;
              auto getFineTuneFactor(int fineTune) -> double;
@@ -58,6 +62,10 @@ namespace mods
              RLESample _currentValue;
              bool _speedSetOnLastLine = false;
              int _speed = 0;
+             
+             bool _hasPatternJump = false;
+             int _patternOfJumpTarget = 0;
+             int _lineOfJumpTarget = 0;
              
              const std::vector<mods::utils::RBuffer<s8>>& _sampleBuffers;
              mods::utils::RBuffer<Instrument> _instruments;

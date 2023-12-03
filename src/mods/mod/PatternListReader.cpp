@@ -61,10 +61,27 @@ namespace mods
                     }
                   else
                     {
-                       ++_currentPatternIndex;
+                       int initialLine = 0;
+                       if(_patternReader.hasPatternJump())
+                         {
+                            int patternOfJumpTarget = _patternReader.getPatternOfJumpTarget();
+                            if(patternOfJumpTarget >= 0)
+                              {
+                                 _currentPatternIndex = patternOfJumpTarget;
+                              }
+                            else
+                              {
+                                 ++_currentPatternIndex;
+                              }
+                            initialLine = _patternReader.getLineOfJumpTarget();
+                         }
+                       else
+                         {
+                            ++_currentPatternIndex;
+                         }
                        if(_currentPatternIndex < _numberOfPatterns)
                          {
-                            _patternReader.setPattern(getPatternBuffer(_currentPatternIndex));
+                            _patternReader.setPattern(getPatternBuffer(_currentPatternIndex), initialLine);
                          }
                     }
                }

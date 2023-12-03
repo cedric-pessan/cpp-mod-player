@@ -73,7 +73,7 @@ namespace mods
         
         auto PatternReader::isFinished() const -> bool
           {
-             return _currentLine >= _numberOfLines;
+             return _currentLine >= _numberOfLines || _patternJump;
           }
         
         auto PatternReader::getCurrentLine() const -> size_t
@@ -81,11 +81,12 @@ namespace mods
              return _currentLine;
           }
         
-        void PatternReader::setPattern(const mods::utils::RBuffer<Note>& patternBuffer)
+        void PatternReader::setPattern(const mods::utils::RBuffer<Note>& patternBuffer, int initialLine)
           {
              _patternBuffer = patternBuffer;
              _currentTick = 0;
-             _currentLine = 0;
+             _currentLine = initialLine;
+             _patternJump = false;
           }
         
         void PatternReader::readNextTick()
@@ -109,6 +110,7 @@ namespace mods
                   ++_currentLine;
                   
                   updateSpeed();
+                  updatePatternJump();
                }
           }
         
@@ -190,6 +192,36 @@ namespace mods
                   else
                     _speed = speed;
                }
+          }
+        
+        void PatternReader::updatePatternJump()
+          {
+             _patternJump = false;
+             
+             for(auto& channel : _channels)
+               {
+                  if(channel.hasPatternJump())
+                    {
+                       _patternJump = true;
+                       _patternOfJumpTarget = channel.getPatternOfJumpTarget();
+                       _lineOfJumpTarget = channel.getLineOfJumpTarget();
+                    }
+               }
+          }
+        
+        auto PatternReader::hasPatternJump() const -> bool
+          {
+             return _patternJump;
+          }
+        
+        auto PatternReader::getPatternOfJumpTarget() const -> int 
+          {
+             return _patternOfJumpTarget;
+          }
+        
+        auto PatternReader::getLineOfJumpTarget() const -> int
+          {
+             return _lineOfJumpTarget;
           }
      } // namespace mod
 } // namespace mods

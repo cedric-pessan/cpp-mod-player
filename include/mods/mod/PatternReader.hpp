@@ -38,7 +38,7 @@ namespace mods
              
              auto isFinished() const -> bool;
              void readNextTick();
-             void setPattern(const mods::utils::RBuffer<Note>& patternBuffer);
+             void setPattern(const mods::utils::RBuffer<Note>& patternBuffer, int initialLine);
              
              auto getCurrentLine() const -> size_t;
              
@@ -46,6 +46,10 @@ namespace mods
                {
                   return _numberOfLines;
                }
+             
+             auto hasPatternJump() const -> bool;
+             auto getPatternOfJumpTarget() const -> int;
+             auto getLineOfJumpTarget() const -> int;
              
            private:
              auto computeTickLength() const -> size_t;
@@ -55,6 +59,7 @@ namespace mods
              
              void decodeLine();
              void updateSpeed();
+             void updatePatternJump();
              void signalNewTick();
              
              static constexpr u32 _numberOfLines = 64;
@@ -66,6 +71,10 @@ namespace mods
              
              u32 _currentLine = 0;
              u32 _currentTick = 0;
+             
+             bool _patternJump = false;
+             int _patternOfJumpTarget = 0;
+             int _lineOfJumpTarget = 0;
              
              std::vector<ChannelState> _channels;
              std::vector<ChannelState*> _leftChannels;

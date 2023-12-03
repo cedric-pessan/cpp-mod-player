@@ -121,6 +121,7 @@ namespace mods
         void ChannelState::updateChannelToNewLine(const mods::utils::RBuffer<Note>& note)
           {
              _speedSetOnLastLine = false;
+             _hasPatternJump = false;
              
              if(note->getInstrument() != 0)
                {
@@ -227,6 +228,21 @@ namespace mods
                   _currentEffect = _noEffect.get();
                   break;
                   
+                case 0xd: // pattern break
+                    {
+                       u32 arg = note->getEffectArgument();
+                       u8 x = (arg >> 4) & 0xF;
+                       u8 y = arg & 0xF;
+                       _hasPatternJump = true;
+                       _patternOfJumpTarget = -1;
+                       _lineOfJumpTarget = x * 10 + y;
+                       if(_lineOfJumpTarget > 63) 
+                         {
+                            _lineOfJumpTarget = 0;
+                         }
+                    }
+                  break;
+                  
                 case 0xf: // set speed
                   _speedSetOnLastLine = true;
                   _speed = note->getEffectArgument();
@@ -246,6 +262,21 @@ namespace mods
         auto ChannelState::getSpeed() const -> int
           {
              return _speed;
+          }
+        
+        auto ChannelState::hasPatternJump() const -> bool
+          {
+             return _hasPatternJump;
+          }
+        
+        auto ChannelState::getPatternOfJumpTarget() const -> int
+          {
+             return _patternOfJumpTarget;
+          }
+        
+        auto ChannelState::getLineOfJumpTarget() const -> int
+          {
+             return _lineOfJumpTarget;
           }
         
         void ChannelState::tick()
