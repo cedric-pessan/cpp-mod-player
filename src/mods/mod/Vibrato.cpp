@@ -20,15 +20,16 @@ namespace mods
                }
           }
         
-        void Vibrato::init(int depth, int oscillationFrequency)
+        void Vibrato::init(int depth, int oscillationFrequency, u16 period)
           {
              _depth = depth;
              _oscillationFrequency = oscillationFrequency;
              _sinePos = 0;
              _negSine = false;
+             _period = period;
           }
         
-        auto Vibrato::getModifiedPeriod(u16 period) const -> u16
+        auto Vibrato::getModifiedPeriod(u16 period) -> u16
           {
              using mods::utils::at;
              
@@ -38,7 +39,7 @@ namespace mods
                   variation = -variation;
                }
              
-             return period + variation;
+             return _period + variation;
           }
         
         auto Vibrato::getModifiedVolume(u16 volume) const -> u16

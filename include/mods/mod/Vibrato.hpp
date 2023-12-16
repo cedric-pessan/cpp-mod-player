@@ -19,9 +19,9 @@ namespace mods
              auto operator=(Vibrato&&) -> Vibrato& = delete;
              ~Vibrato() override = default;
              
-             void init(int depth, int oscillationFrequency);
+             void init(int depth, int oscillationFrequency, u16 period);
              
-             auto getModifiedPeriod(u16 period) const -> u16 override;
+             auto getModifiedPeriod(u16 period) -> u16 override;
              auto getModifiedVolume(u16 volume) const -> u16 override;
              void tick() override;
              
@@ -30,6 +30,7 @@ namespace mods
              int _oscillationFrequency = 0;
              int _sinePos = 0;
              bool _negSine = false;
+             u16 _period;
              
              std::array<int, 32> _sine;
           };

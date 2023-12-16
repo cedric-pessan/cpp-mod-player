@@ -22,20 +22,21 @@ namespace mods
                }
           }
         
-        void Arpeggio::init(int x, int y)
+        void Arpeggio::init(int x, int y, u16 period)
           {
              _currentNote = 0;
              _x = x;
              _y = y;
+             _period = period;
           }
         
-        auto Arpeggio::getModifiedPeriod(u16 period) const -> u16
+        auto Arpeggio::getModifiedPeriod(u16 period) -> u16
           {
              using mods::utils::at;
              
              if(_currentNote == 0)
                {
-                  return period;
+                  return _period;
                }
              else
                {
@@ -45,7 +46,7 @@ namespace mods
                        semitones = _x;
                     }
                   auto factor = at(_fineTuneFactors, semitones);
-                  return std::round(static_cast<double>(period) * factor);
+                  return std::round(static_cast<double>(_period) * factor);
                }
           }
         

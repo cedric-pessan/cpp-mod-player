@@ -25,7 +25,7 @@ namespace mods
              
              void init(u16 currentVolume, u8 slideUp, u8 slideDown);
              
-             auto getModifiedPeriod(u16 period) const -> u16 override;
+             auto getModifiedPeriod(u16 period) -> u16 override;
              auto getModifiedVolume(u16 volume) const -> u16 override;
              void tick() override;
              

@@ -21,7 +21,7 @@ namespace mods
              _volumeSlide->init(currentVolume, slideUp, slideDown);
           }
         
-        auto VibratoAndVolumeSlide::getModifiedPeriod(u16 period) const -> u16
+        auto VibratoAndVolumeSlide::getModifiedPeriod(u16 period) -> u16
           {
              return _vibrato->getModifiedPeriod(period);
           }

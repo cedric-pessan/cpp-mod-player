@@ -7,7 +7,7 @@ namespace mods
 {
    namespace mod
      {
-        auto NoEffect::getModifiedPeriod(u16 period) const -> u16
+        auto NoEffect::getModifiedPeriod(u16 period) -> u16
           {
              return period;
           }

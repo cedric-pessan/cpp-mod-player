@@ -19,9 +19,9 @@ namespace mods
              auto operator=(Arpeggio&&) -> Arpeggio& = delete;
              ~Arpeggio() override = default;
              
-             void init(int x, int y);
+             void init(int x, int y, u16 period);
              
-             auto getModifiedPeriod(u16 period) const -> u16 override;
+             auto getModifiedPeriod(u16 period) -> u16 override;
              auto getModifiedVolume(u16 volume) const -> u16 override;
              void tick() override;
              
@@ -31,6 +31,7 @@ namespace mods
              
              int _x = 0;
              int _y = 0;
+             u16 _period;
           };
      } // namespace mod
 } // namespace mods

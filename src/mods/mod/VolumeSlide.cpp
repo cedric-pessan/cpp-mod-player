@@ -24,9 +24,8 @@ namespace mods
                }
           }
         
-        auto VolumeSlide::getModifiedPeriod(u16 period) const -> u16
+        auto VolumeSlide::getModifiedPeriod(u16 period) -> u16
           {
-             std::cout << "TODO: VolumeSlide::getModifiedPeriod(u16) const" << std::endl;
              return period;
           }
         

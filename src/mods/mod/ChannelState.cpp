@@ -2,7 +2,6 @@
 #include "mods/mod/ChannelState.hpp"
 #include "mods/mod/Instrument.hpp"
 #include "mods/mod/Note.hpp"
-#include "mods/mod/VolumeSlide.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -35,6 +34,7 @@ namespace mods
                _volumeSlide = std::make_unique<VolumeSlide>();
                _vibratoAndVolumeSlide = std::make_unique<VibratoAndVolumeSlide>(_vibrato.get(), _volumeSlide.get());
                _arpeggio = std::make_unique<Arpeggio>();
+               _slideDown = std::make_unique<SlideDown>();
                
                _currentEffect = _noEffect.get();
             }
@@ -75,11 +75,11 @@ namespace mods
         
         void ChannelState::processNextSample(s8 sample)
           {
-             auto period = _currentEffect->getModifiedPeriod(_period);
+             _period = _currentEffect->getModifiedPeriod(_period);
              
              auto convertedSample = toDouble(sample);
              
-             _currentValue = RLESample(convertedSample, period, false);
+             _currentValue = RLESample(convertedSample, _period, false);
           }
         
         auto ChannelState::toDouble(s8 sample) -> double
@@ -159,13 +159,21 @@ namespace mods
                          {
                             u32 x = arg >> 4;
                             u32 y = arg & 0xF;
-                            _arpeggio->init(x, y);
+                            _arpeggio->init(x, y, _period);
                             _currentEffect = _arpeggio.get();
                          }
                        else
                          {
                             _currentEffect = _noEffect.get();
                          }
+                    }
+                  break;
+                  
+                case 0x2: // slide down
+                    {
+                       u32 arg = note->getEffectArgument();
+                       _slideDown->init(arg);
+                       _currentEffect = _slideDown.get();
                     }
                   break;
                   
@@ -176,7 +184,7 @@ namespace mods
                        u32 amplitude = arg & 0xF;
                        if(arg != 0)
                          {
-                            _vibrato->init(amplitude, oscillationFrequency);
+                            _vibrato->init(amplitude, oscillationFrequency, _period);
                          }
                        else
                          {
