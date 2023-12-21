@@ -4,6 +4,7 @@
 #include "mods/mod/Arpeggio.hpp"
 #include "mods/mod/NoEffect.hpp"
 #include "mods/mod/SlideDown.hpp"
+#include "mods/mod/SlideUp.hpp"
 #include "mods/mod/Vibrato.hpp"
 #include "mods/mod/VibratoAndVolumeSlide.hpp"
 #include "mods/mod/VolumeSlide.hpp"
@@ -79,6 +80,7 @@ namespace mods
              std::unique_ptr<VibratoAndVolumeSlide> _vibratoAndVolumeSlide;
              std::unique_ptr<Arpeggio> _arpeggio;
              std::unique_ptr<SlideDown> _slideDown;
+             std::unique_ptr<SlideUp> _slideUp;
              Effect* _currentEffect = nullptr;
           };
      } // namespace mod

@@ -1,32 +1,32 @@
 
-#include "mods/mod/SlideDown.hpp"
+#include "mods/mod/SlideUp.hpp"
 
 namespace mods
 {
    namespace mod
      {
-        void SlideDown::init(int delta)
+        void SlideUp::init(int delta)
           {
              _newTick = false;
              _delta = delta;
           }
         
-        auto SlideDown::getModifiedPeriod(u16 period) -> u16
+        auto SlideUp::getModifiedPeriod(u16 period) -> u16
           {
              if(_newTick)
                {
                   _newTick = false;
-                  return period + _delta;
+                  return period - _delta;
                }
              return period;
           }
         
-        auto SlideDown::getModifiedVolume(u16 volume) const -> u16
+        auto SlideUp::getModifiedVolume(u16 volume) const -> u16
           {
              return volume;
           }
         
-        void SlideDown::tick()
+        void SlideUp::tick()
           {
              _newTick = true;
           }

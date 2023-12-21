@@ -1,5 +1,3 @@
-#ifndef MODS_MOD_SLIDEDOWN_HPP
-#define MODS_MOD_SLIDEDOWN_HPP
 
 #include "mods/mod/Effect.hpp"
 
@@ -7,15 +5,15 @@ namespace mods
 {
    namespace mod
      {
-        class SlideDown : public Effect
+        class SlideUp : public Effect
           {
            public:
-             SlideDown() = default;
-             SlideDown(const SlideDown&) = delete;
-             SlideDown(SlideDown&&) = delete;
-             auto operator=(const SlideDown&) -> SlideDown& = delete;
-             auto operator=(SlideDown&&) -> SlideDown& = delete;
-             ~SlideDown() override = default;
+             SlideUp() = default;
+             SlideUp(const SlideUp&) = delete;
+             SlideUp(SlideUp&&) = delete;
+             auto operator=(const SlideUp&) -> SlideUp& = delete;
+             auto operator=(SlideUp&&) -> SlideUp& = delete;
+             ~SlideUp() override = default;
              
              void init(int delta);
              
@@ -29,5 +27,3 @@ namespace mods
           };
      } // namespace mod
 } // namespace mods
-
-#endif // MODS_MOD_SLIDEDOWN_HPP

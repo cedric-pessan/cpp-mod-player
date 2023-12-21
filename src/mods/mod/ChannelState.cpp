@@ -35,6 +35,7 @@ namespace mods
                _vibratoAndVolumeSlide = std::make_unique<VibratoAndVolumeSlide>(_vibrato.get(), _volumeSlide.get());
                _arpeggio = std::make_unique<Arpeggio>();
                _slideDown = std::make_unique<SlideDown>();
+               _slideUp = std::make_unique<SlideUp>();
                
                _currentEffect = _noEffect.get();
             }
@@ -166,6 +167,14 @@ namespace mods
                          {
                             _currentEffect = _noEffect.get();
                          }
+                    }
+                  break;
+                  
+                case 0x1: // slide up
+                    {
+                       u32 arg = note->getEffectArgument();
+                       _slideUp->init(arg);
+                       _currentEffect = _slideUp.get();
                     }
                   break;
                   
