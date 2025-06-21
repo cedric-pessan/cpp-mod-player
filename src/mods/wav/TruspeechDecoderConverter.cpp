@@ -1,6 +1,18 @@
 
+#include "mods/converters/Converter.hpp"
+#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
 #include "mods/utils/arithmeticShifter.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/TruspeechDecoderConverter.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <cstddef>
+#include <memory>
+#include <utility>
 
 /*
  * based on ffmpeg source algorithm
@@ -17,10 +29,10 @@ namespace mods
           _itDecodedBuffer(_decodedBuffer.RBuffer<s16>::end()),
           _subframes
           {
-             _decodedBuffer.slice<s16>(0,                   _subframeLength),
-             _decodedBuffer.slice<s16>(_subframeLength,     _subframeLength),
-             _decodedBuffer.slice<s16>(_subframeLength * 2, _subframeLength),
-             _decodedBuffer.slice<s16>(_subframeLength * 3, _subframeLength)
+             _decodedBuffer.slice<s16>(0,                     _subframeLength),
+             _decodedBuffer.slice<s16>(_subframeLength,       _subframeLength),
+             _decodedBuffer.slice<s16>(_subframeLength * 2UL, _subframeLength),
+             _decodedBuffer.slice<s16>(_subframeLength * 3UL, _subframeLength)
           },
           _encodedArray {},
           _encodedBuffer(initializeArrayRWBuffer(_encodedArray)),
@@ -49,10 +61,9 @@ namespace mods
         template<typename ARRAY>
           auto TruspeechDecoderConverter::initializeArrayRWBuffer(ARRAY& backArray) -> mods::utils::RWBuffer<typename ARRAY::value_type>
             {
-               auto* ptr = static_cast<u8*>(static_cast<void*>(backArray.data()));
                auto len = backArray.size();
                auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-               auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len * sizeof(typename ARRAY::value_type), std::move(deleter));
+               auto buffer = std::make_unique<mods::utils::RWBufferBackend>(backArray.data(), len, std::move(deleter));
                return mods::utils::RWBuffer<u8>(std::move(buffer)).slice<typename ARRAY::value_type>(0, len);
             }
         
@@ -144,65 +155,65 @@ namespace mods
              constexpr CodeBook<0,32> codeBook0
                {
                     {
-                       s16(0x8240), s16(0x8364), s16(0x84CE), s16(0x865D), s16(0x8805), s16(0x89DE), s16(0x8BD7), s16(0x8DF4),
-                         s16(0x9051), s16(0x92E2), s16(0x95DE), s16(0x990F), s16(0x9C81), s16(0xA079), s16(0xA54C), s16(0xAAD2),
-                         s16(0xB18A), s16(0xB90A), s16(0xC124), s16(0xC9CC), s16(0xD339), s16(0xDDD3), s16(0xE9D6), s16(0xF893),
-                         s16(0x096F), s16(0x1ACA), s16(0x29EC), s16(0x381F), s16(0x45F9), s16(0x546A), s16(0x63C3), s16(0x73B5)
+                       static_cast<s16>(0x8240), static_cast<s16>(0x8364), static_cast<s16>(0x84CE), static_cast<s16>(0x865D), static_cast<s16>(0x8805), static_cast<s16>(0x89DE), static_cast<s16>(0x8BD7), static_cast<s16>(0x8DF4),
+                         static_cast<s16>(0x9051), static_cast<s16>(0x92E2), static_cast<s16>(0x95DE), static_cast<s16>(0x990F), static_cast<s16>(0x9C81), static_cast<s16>(0xA079), static_cast<s16>(0xA54C), static_cast<s16>(0xAAD2),
+                         static_cast<s16>(0xB18A), static_cast<s16>(0xB90A), static_cast<s16>(0xC124), static_cast<s16>(0xC9CC), static_cast<s16>(0xD339), static_cast<s16>(0xDDD3), static_cast<s16>(0xE9D6), static_cast<s16>(0xF893),
+                         static_cast<s16>(0x096F), static_cast<s16>(0x1ACA), static_cast<s16>(0x29EC), static_cast<s16>(0x381F), static_cast<s16>(0x45F9), static_cast<s16>(0x546A), static_cast<s16>(0x63C3), static_cast<s16>(0x73B5)
                     }
                };
              
              constexpr CodeBook<1,32> codeBook1
                {
                     {
-                       s16(0x9F65), s16(0xB56B), s16(0xC583), s16(0xD371), s16(0xE018), s16(0xEBB4), s16(0xF61C), s16(0xFF59),
-                         s16(0x085B), s16(0x1106), s16(0x1952), s16(0x214A), s16(0x28C9), s16(0x2FF8), s16(0x36E6), s16(0x3D92),
-                         s16(0x43DF), s16(0x49BB), s16(0x4F46), s16(0x5467), s16(0x5930), s16(0x5DA3), s16(0x61EC), s16(0x65F9),
-                         s16(0x69D4), s16(0x6D5A), s16(0x709E), s16(0x73AD), s16(0x766B), s16(0x78F0), s16(0x7B5A), s16(0x7DA5)
+                       static_cast<s16>(0x9F65), static_cast<s16>(0xB56B), static_cast<s16>(0xC583), static_cast<s16>(0xD371), static_cast<s16>(0xE018), static_cast<s16>(0xEBB4), static_cast<s16>(0xF61C), static_cast<s16>(0xFF59),
+                         static_cast<s16>(0x085B), static_cast<s16>(0x1106), static_cast<s16>(0x1952), static_cast<s16>(0x214A), static_cast<s16>(0x28C9), static_cast<s16>(0x2FF8), static_cast<s16>(0x36E6), static_cast<s16>(0x3D92),
+                         static_cast<s16>(0x43DF), static_cast<s16>(0x49BB), static_cast<s16>(0x4F46), static_cast<s16>(0x5467), static_cast<s16>(0x5930), static_cast<s16>(0x5DA3), static_cast<s16>(0x61EC), static_cast<s16>(0x65F9),
+                         static_cast<s16>(0x69D4), static_cast<s16>(0x6D5A), static_cast<s16>(0x709E), static_cast<s16>(0x73AD), static_cast<s16>(0x766B), static_cast<s16>(0x78F0), static_cast<s16>(0x7B5A), static_cast<s16>(0x7DA5)
                     }
                };
              
              constexpr CodeBook<2,16> codeBook2
                {
                     {
-                       s16(0x96F8), s16(0xA3B4), s16(0xAF45), s16(0xBA53), s16(0xC4B1), s16(0xCECC), s16(0xD86F), s16(0xE21E),
-                         s16(0xEBF3), s16(0xF640), s16(0x00F7), s16(0x0C20), s16(0x1881), s16(0x269A), s16(0x376B), s16(0x4D60)
+                       static_cast<s16>(0x96F8), static_cast<s16>(0xA3B4), static_cast<s16>(0xAF45), static_cast<s16>(0xBA53), static_cast<s16>(0xC4B1), static_cast<s16>(0xCECC), static_cast<s16>(0xD86F), static_cast<s16>(0xE21E),
+                         static_cast<s16>(0xEBF3), static_cast<s16>(0xF640), static_cast<s16>(0x00F7), static_cast<s16>(0x0C20), static_cast<s16>(0x1881), static_cast<s16>(0x269A), static_cast<s16>(0x376B), static_cast<s16>(0x4D60)
                     }
                };
              
              constexpr CodeBook<3,16> codeBook3
                {
                     {
-                       s16(0xC654), s16(0xDEF2), s16(0xEFAA), s16(0xFD94), s16(0x096A), s16(0x143F), s16(0x1E7B), s16(0x282C),
-                         s16(0x3176), s16(0x3A89), s16(0x439F), s16(0x4CA2), s16(0x557F), s16(0x5E50), s16(0x6718), s16(0x6F8D)
+                       static_cast<s16>(0xC654), static_cast<s16>(0xDEF2), static_cast<s16>(0xEFAA), static_cast<s16>(0xFD94), static_cast<s16>(0x096A), static_cast<s16>(0x143F), static_cast<s16>(0x1E7B), static_cast<s16>(0x282C),
+                         static_cast<s16>(0x3176), static_cast<s16>(0x3A89), static_cast<s16>(0x439F), static_cast<s16>(0x4CA2), static_cast<s16>(0x557F), static_cast<s16>(0x5E50), static_cast<s16>(0x6718), static_cast<s16>(0x6F8D)
                     }
                };
              
              constexpr CodeBook<4,16> codeBook4
                {
                     {
-                       s16(0xABE7), s16(0xBBA8), s16(0xC81C), s16(0xD326), s16(0xDD0E), s16(0xE5D4), s16(0xEE22), s16(0xF618),
-                         s16(0xFE28), s16(0x064F), s16(0x0EB7), s16(0x17B8), s16(0x21AA), s16(0x2D8B), s16(0x3BA2), s16(0x4DF9)
+                       static_cast<s16>(0xABE7), static_cast<s16>(0xBBA8), static_cast<s16>(0xC81C), static_cast<s16>(0xD326), static_cast<s16>(0xDD0E), static_cast<s16>(0xE5D4), static_cast<s16>(0xEE22), static_cast<s16>(0xF618),
+                         static_cast<s16>(0xFE28), static_cast<s16>(0x064F), static_cast<s16>(0x0EB7), static_cast<s16>(0x17B8), static_cast<s16>(0x21AA), static_cast<s16>(0x2D8B), static_cast<s16>(0x3BA2), static_cast<s16>(0x4DF9)
                     }
                };
              
              constexpr CodeBook<5,8> codeBook5
                {
                     {
-                       s16(0xD51B), s16(0xF12E), s16(0x042E), s16(0x13C7), s16(0x2260), s16(0x311B), s16(0x40DE), s16(0x5385)
+                       static_cast<s16>(0xD51B), static_cast<s16>(0xF12E), static_cast<s16>(0x042E), static_cast<s16>(0x13C7), static_cast<s16>(0x2260), static_cast<s16>(0x311B), static_cast<s16>(0x40DE), static_cast<s16>(0x5385)
                     }
                };
              
              constexpr CodeBook<6,8> codeBook6
                {
                   {
-                     s16(0xB550), s16(0xC825), s16(0xD980), s16(0xE997), s16(0xF883), s16(0x0752), s16(0x1811), s16(0x2E18)
+                     static_cast<s16>(0xB550), static_cast<s16>(0xC825), static_cast<s16>(0xD980), static_cast<s16>(0xE997), static_cast<s16>(0xF883), static_cast<s16>(0x0752), static_cast<s16>(0x1811), static_cast<s16>(0x2E18)
                   }
                };
              
              constexpr CodeBook<7,8> codeBook7
                {
                     {
-                       s16(0xCEF0), s16(0xE4F9), s16(0xF6BB), s16(0x0646), s16(0x14F5), s16(0x23FF), s16(0x356F), s16(0x4A8D)
+                       static_cast<s16>(0xCEF0), static_cast<s16>(0xE4F9), static_cast<s16>(0xF6BB), static_cast<s16>(0x0646), static_cast<s16>(0x14F5), static_cast<s16>(0x23FF), static_cast<s16>(0x356F), static_cast<s16>(0x4A8D)
                     }
                };
              
@@ -214,55 +225,55 @@ namespace mods
              using Order2Coeffs = std::array<s16, 2>;
              constexpr std::array<Order2Coeffs, 25> order2Coeffs
                {{
-                  { s16(0xED2F), s16(0x5239) },
-                  { s16(0x54F1), s16(0xE4A9) },
-                  { s16(0x2620), s16(0xEE3E) },
-                  { s16(0x09D6), s16(0x2C40) },
-                  { s16(0xEFB5), s16(0x2BE0) },
+                  { static_cast<s16>(0xED2F), static_cast<s16>(0x5239) },
+                  { static_cast<s16>(0x54F1), static_cast<s16>(0xE4A9) },
+                  { static_cast<s16>(0x2620), static_cast<s16>(0xEE3E) },
+                  { static_cast<s16>(0x09D6), static_cast<s16>(0x2C40) },
+                  { static_cast<s16>(0xEFB5), static_cast<s16>(0x2BE0) },
                   
-                  { s16(0x3FE1), s16(0x3339) },
-                  { s16(0x442F), s16(0xE6FE) },
-                  { s16(0x4458), s16(0xF9DF) },
-                  { s16(0xF231), s16(0x43DB) },
-                  { s16(0x3DB0), s16(0xF705) },
+                  { static_cast<s16>(0x3FE1), static_cast<s16>(0x3339) },
+                  { static_cast<s16>(0x442F), static_cast<s16>(0xE6FE) },
+                  { static_cast<s16>(0x4458), static_cast<s16>(0xF9DF) },
+                  { static_cast<s16>(0xF231), static_cast<s16>(0x43DB) },
+                  { static_cast<s16>(0x3DB0), static_cast<s16>(0xF705) },
                   
-                  { s16(0x4F7B), s16(0xFEFB) },
-                  { s16(0x26AD), s16(0x0CDC) },
-                  { s16(0x33C2), s16(0x0739) },
-                  { s16(0x12BE), s16(0x43A2) },
-                  { s16(0x1BDF), s16(0x1F3E) },
+                  { static_cast<s16>(0x4F7B), static_cast<s16>(0xFEFB) },
+                  { static_cast<s16>(0x26AD), static_cast<s16>(0x0CDC) },
+                  { static_cast<s16>(0x33C2), static_cast<s16>(0x0739) },
+                  { static_cast<s16>(0x12BE), static_cast<s16>(0x43A2) },
+                  { static_cast<s16>(0x1BDF), static_cast<s16>(0x1F3E) },
                   
-                  { s16(0x0211), s16(0x0796) },
-                  { s16(0x2AEB), s16(0x163F) },
-                  { s16(0x050D), s16(0x3A38) },
-                  { s16(0x0D1E), s16(0x0D78) },
-                  { s16(0x150F), s16(0x3346) },
+                  { static_cast<s16>(0x0211), static_cast<s16>(0x0796) },
+                  { static_cast<s16>(0x2AEB), static_cast<s16>(0x163F) },
+                  { static_cast<s16>(0x050D), static_cast<s16>(0x3A38) },
+                  { static_cast<s16>(0x0D1E), static_cast<s16>(0x0D78) },
+                  { static_cast<s16>(0x150F), static_cast<s16>(0x3346) },
                   
-                  { s16(0x38A4), s16(0x0B7D) },
-                  { s16(0x2D5D), s16(0x1FDF) },
-                  { s16(0x19B7), s16(0x2822) },
-                  { s16(0x0D99), s16(0x1F12) },
-                  { s16(0x194C), s16(0x0CE6) }
+                  { static_cast<s16>(0x38A4), static_cast<s16>(0x0B7D) },
+                  { static_cast<s16>(0x2D5D), static_cast<s16>(0x1FDF) },
+                  { static_cast<s16>(0x19B7), static_cast<s16>(0x2822) },
+                  { static_cast<s16>(0x0D99), static_cast<s16>(0x1F12) },
+                  { static_cast<s16>(0x194C), static_cast<s16>(0x0CE6) }
                }};
              
              constexpr std::array<s16,64> pulseScales 
                {                  
-                  s16(0x0002), s16(0x0006), s16(0xFFFE), s16(0xFFFA),
-                  s16(0x0004), s16(0x000C), s16(0xFFFC), s16(0xFFF4),
-                  s16(0x0006), s16(0x0012), s16(0xFFFA), s16(0xFFEE),
-                  s16(0x000A), s16(0x001E), s16(0xFFF6), s16(0xFFE2),
-                  s16(0x0010), s16(0x0030), s16(0xFFF0), s16(0xFFD0),
-                  s16(0x0019), s16(0x004B), s16(0xFFE7), s16(0xFFB5),
-                  s16(0x0028), s16(0x0078), s16(0xFFD8), s16(0xFF88),
-                  s16(0x0040), s16(0x00C0), s16(0xFFC0), s16(0xFF40),
-                  s16(0x0065), s16(0x012F), s16(0xFF9B), s16(0xFED1),
-                  s16(0x00A1), s16(0x01E3), s16(0xFF5F), s16(0xFE1D),
-                  s16(0x0100), s16(0x0300), s16(0xFF00), s16(0xFD00),
-                  s16(0x0196), s16(0x04C2), s16(0xFE6A), s16(0xFB3E),
-                  s16(0x0285), s16(0x078F), s16(0xFD7B), s16(0xF871),
-                  s16(0x0400), s16(0x0C00), s16(0xFC00), s16(0xF400),
-                  s16(0x0659), s16(0x130B), s16(0xF9A7), s16(0xECF5),
-                  s16(0x0A14), s16(0x1E3C), s16(0xF5EC), s16(0xE1C4)
+                  static_cast<s16>(0x0002), static_cast<s16>(0x0006), static_cast<s16>(0xFFFE), static_cast<s16>(0xFFFA),
+                  static_cast<s16>(0x0004), static_cast<s16>(0x000C), static_cast<s16>(0xFFFC), static_cast<s16>(0xFFF4),
+                  static_cast<s16>(0x0006), static_cast<s16>(0x0012), static_cast<s16>(0xFFFA), static_cast<s16>(0xFFEE),
+                  static_cast<s16>(0x000A), static_cast<s16>(0x001E), static_cast<s16>(0xFFF6), static_cast<s16>(0xFFE2),
+                  static_cast<s16>(0x0010), static_cast<s16>(0x0030), static_cast<s16>(0xFFF0), static_cast<s16>(0xFFD0),
+                  static_cast<s16>(0x0019), static_cast<s16>(0x004B), static_cast<s16>(0xFFE7), static_cast<s16>(0xFFB5),
+                  static_cast<s16>(0x0028), static_cast<s16>(0x0078), static_cast<s16>(0xFFD8), static_cast<s16>(0xFF88),
+                  static_cast<s16>(0x0040), static_cast<s16>(0x00C0), static_cast<s16>(0xFFC0), static_cast<s16>(0xFF40),
+                  static_cast<s16>(0x0065), static_cast<s16>(0x012F), static_cast<s16>(0xFF9B), static_cast<s16>(0xFED1),
+                  static_cast<s16>(0x00A1), static_cast<s16>(0x01E3), static_cast<s16>(0xFF5F), static_cast<s16>(0xFE1D),
+                  static_cast<s16>(0x0100), static_cast<s16>(0x0300), static_cast<s16>(0xFF00), static_cast<s16>(0xFD00),
+                  static_cast<s16>(0x0196), static_cast<s16>(0x04C2), static_cast<s16>(0xFE6A), static_cast<s16>(0xFB3E),
+                  static_cast<s16>(0x0285), static_cast<s16>(0x078F), static_cast<s16>(0xFD7B), static_cast<s16>(0xF871),
+                  static_cast<s16>(0x0400), static_cast<s16>(0x0C00), static_cast<s16>(0xFC00), static_cast<s16>(0xF400),
+                  static_cast<s16>(0x0659), static_cast<s16>(0x130B), static_cast<s16>(0xF9A7), static_cast<s16>(0xECF5),
+                  static_cast<s16>(0x0A14), static_cast<s16>(0x1E3C), static_cast<s16>(0xF5EC), static_cast<s16>(0xE1C4)
                };
              
              constexpr std::array<s16,120> pulseValues
@@ -319,48 +330,49 @@ namespace mods
              _flag = _bitReader.read(1) != 0;
              
              u32 offset1_0 = _bitReader.read(4) << 4U;
-             at(_offset2,3) = _bitReader.read(offset2Size);
-             at(_offset2,2) = _bitReader.read(offset2Size);
-             at(_offset2,1) = _bitReader.read(offset2Size);
-             at(_offset2,0) = _bitReader.read(offset2Size);
+             at(_offset2,3) = static_cast<s32>(_bitReader.read(offset2Size));
+             at(_offset2,2) = static_cast<s32>(_bitReader.read(offset2Size));
+             at(_offset2,1) = static_cast<s32>(_bitReader.read(offset2Size));
+             at(_offset2,0) = static_cast<s32>(_bitReader.read(offset2Size));
              
              u32 offset1_1 = _bitReader.read(4);
-             at(_pulseval,1) = _bitReader.read(pulsevalSize);
-             at(_pulseval,0) = _bitReader.read(pulsevalSize);
+             at(_pulseval,1) = static_cast<s32>(_bitReader.read(pulsevalSize));
+             at(_pulseval,0) = static_cast<s32>(_bitReader.read(pulsevalSize));
              
              offset1_1 |= _bitReader.read(4) << 4U;
-             at(_pulseval,3) = _bitReader.read(pulsevalSize);
-             at(_pulseval,2) = _bitReader.read(pulsevalSize);
+             at(_pulseval,3) = static_cast<s32>(_bitReader.read(pulsevalSize));
+             at(_pulseval,2) = static_cast<s32>(_bitReader.read(pulsevalSize));
              
              offset1_0 |= _bitReader.read(1);
-             at(_pulsepos,0) = _bitReader.read(pulseposSize);
-             at(_pulseoff,0) = _bitReader.read(4);
+             at(_pulsepos,0) = static_cast<s32>(_bitReader.read(pulseposSize));
+             at(_pulseoff,0) = static_cast<s32>(_bitReader.read(4));
              
              offset1_0 |= _bitReader.read(1) << 1U;
-             at(_pulsepos,1) = _bitReader.read(pulseposSize);
-             at(_pulseoff,1) = _bitReader.read(4);
+             at(_pulsepos,1) = static_cast<s32>(_bitReader.read(pulseposSize));
+             at(_pulseoff,1) = static_cast<s32>(_bitReader.read(4));
              
              offset1_0 |= _bitReader.read(1) << 2U;
-             at(_pulsepos,2) = _bitReader.read(pulseposSize);
-             at(_pulseoff,2) = _bitReader.read(4);
+             at(_pulsepos,2) = static_cast<s32>(_bitReader.read(pulseposSize));
+             at(_pulseoff,2) = static_cast<s32>(_bitReader.read(4));
              
              offset1_0 |= _bitReader.read(1) << 3U;
-             at(_pulsepos,3) = _bitReader.read(pulseposSize);
-             at(_pulseoff,3) = _bitReader.read(4);
+             at(_pulsepos,3) = static_cast<s32>(_bitReader.read(pulseposSize));
+             at(_pulseoff,3) = static_cast<s32>(_bitReader.read(4));
              
-             at(_offset1,0) = offset1_0;
-             at(_offset1,1) = offset1_1;
+             at(_offset1,0) = static_cast<s32>(offset1_0);
+             at(_offset1,1) = static_cast<s32>(offset1_1);
           }
         
         void TruspeechDecoderConverter::correlateFilter()
           {
              using mods::utils::at;
              using mods::utils::arithmeticShifter::shiftRight;
+             using mods::utils::arithmeticShifter::Shift;
              
              std::array<s16,_numberOfFilterCoefficients> tmp {};
              auto& correlatedVector = at(_correlatedVectors, _currentCorrelatedVector);
              
-             static constexpr int roundConstant = 0x4000;
+             static constexpr s16 roundConstant = 0x4000;
              static constexpr int fixedPointShift = 15;
              
              for(size_t i=0; i<correlatedVector.size(); ++i)
@@ -370,15 +382,15 @@ namespace mods
 		       std::copy(correlatedVector.begin(), correlatedVector.begin() + i, tmp.begin());
                        for(size_t j=0; j<i; ++j)
                          {
-                            at(correlatedVector,j) += shiftRight(at(tmp, i - j -1) * at(_vector,i) + roundConstant, fixedPointShift);
+                            at(correlatedVector,j) = static_cast<s16>(at(correlatedVector,j) + shiftRight((at(tmp, i - j -1) * at(_vector,i)) + roundConstant, static_cast<Shift>(fixedPointShift)));
                          }
                     }
                   static constexpr int offsetVector = 8;
-                  at(correlatedVector,i) = shiftRight(offsetVector - at(_vector,i), 3);
+                  at(correlatedVector,i) = static_cast<s16>(shiftRight(offsetVector - at(_vector,i), static_cast<Shift>(3)));
                }
              for(size_t i=0; i<correlatedVector.size(); ++i)
                {
-                  at(correlatedVector,i) = shiftRight(at(correlatedVector,i) * at(decay_994_1000,i), fixedPointShift);
+                  at(correlatedVector,i) = static_cast<s16>(shiftRight(at(correlatedVector,i) * at(decay_994_1000,i), static_cast<Shift>(fixedPointShift)));
                }
              
              _filtVal = at(_vector,0);
@@ -388,6 +400,7 @@ namespace mods
           {
              using mods::utils::at;
              using mods::utils::arithmeticShifter::shiftRight;
+             using mods::utils::arithmeticShifter::Shift;
              
              auto& previousCorrelatedVector = at(_correlatedVectors, 1 - _currentCorrelatedVector);
              auto& correlatedVector = at(_correlatedVectors, _currentCorrelatedVector);
@@ -415,8 +428,8 @@ namespace mods
                   
                   for(size_t i=0; i<correlatedVector.size(); ++i)
                     {
-                       at(filter1, i) = shiftRight(at(correlatedVector, i) * mixCoef1 + at(previousCorrelatedVector, i) * mixCoef2 + roundConstant, fixedPointShift);
-                       at(filter2, i) = shiftRight(at(correlatedVector, i) * mixCoef2 + at(previousCorrelatedVector, i) * mixCoef1 + roundConstant, fixedPointShift);
+                       at(filter1, i) = static_cast<s16>(shiftRight((at(correlatedVector, i) * mixCoef1) + (at(previousCorrelatedVector, i) * mixCoef2) + roundConstant, static_cast<Shift>(fixedPointShift)));
+                       at(filter2, i) = static_cast<s16>(shiftRight((at(correlatedVector, i) * mixCoef2) + (at(previousCorrelatedVector, i) * mixCoef1) + roundConstant, static_cast<Shift>(fixedPointShift)));
                     }
                }
              
@@ -431,6 +444,7 @@ namespace mods
           {
              using mods::utils::at;
              using mods::utils::arithmeticShifter::shiftRight;
+             using mods::utils::arithmeticShifter::Shift;
              
              static constexpr int clearFilterSpecialCase = 127;
              static constexpr int offset2Factor = 25;
@@ -438,31 +452,31 @@ namespace mods
              
              std::array<s16, _filterBufferLength + _subframeLength> tmp {};
              
-             int t = at(_offset2, subframe);
-             if(t == clearFilterSpecialCase)
+             const int toff = at(_offset2, subframe);
+             if(toff == clearFilterSpecialCase)
 	       {
 		  std::fill(_newVector.begin(), _newVector.end(), 0);
 		  return;
 	       }
              for(size_t i=0; i<_filterBuffer.size(); ++i)
                {
-                  at(tmp,i) = at(_filterBuffer,i);
+                  at(tmp,i) = static_cast<s16>(at(_filterBuffer,i));
                }
-             s32 off = (t / offset2Factor) + at(_offset1, shiftRight(subframe, 1)) + baseOffset;
+             s32 off = (toff / offset2Factor) + at(_offset1, shiftRight(subframe, static_cast<Shift>(1))) + baseOffset;
              off = mods::utils::clamp(off, 0, _filterBufferLength-1);
              size_t idx0 = _filterBufferLength - 1 - off;
              size_t idx1 = _filterBuffer.size();
-             const auto& filter = at(order2Coeffs, t % order2Coeffs.size());
+             const auto& filter = at(order2Coeffs, toff % order2Coeffs.size());
              
              static constexpr int roundConstant = 0x2000;
              static constexpr int fixedPointShift = 14;
              for(size_t i=0; i<_newVector.size(); ++i,++idx1)
                {
-                  s16 v = shiftRight(at(tmp, idx0)   * at(filter,0) + 
-                                     at(tmp, idx0+1) * at(filter,1) + roundConstant, fixedPointShift);
+                  const auto val = static_cast<s16>(shiftRight((at(tmp, idx0)   * at(filter,0)) + 
+                                                               (at(tmp, idx0+1) * at(filter,1)) + roundConstant, static_cast<Shift>(fixedPointShift)));
                   ++idx0;
-                  at(_newVector, i) = v;
-                  at(tmp, idx1) = v;
+                  at(_newVector, i) = val;
+                  at(tmp, idx1) = val;
                }
           }
         
@@ -470,6 +484,7 @@ namespace mods
           {
              using mods::utils::at;
              using mods::utils::arithmeticShifter::shiftRight;
+             using mods::utils::arithmeticShifter::Shift;
              
              static constexpr int numberOfPulses = 7;
              std::array<s16, numberOfPulses> tmp {};
@@ -480,22 +495,22 @@ namespace mods
              for(size_t i=0; i<tmp.size(); ++i)
                {
                   auto& val = at(_pulseval, subframe);
-                  auto t = static_cast<u32>(val) & 3U;
-                  val = shiftRight(val, 2);
-                  at(tmp, tmp.size()-1-i) = at(pulseScales, at(_pulseoff, subframe) * 4 + t);
+                  auto offset = static_cast<u32>(val) & 3U;
+                  val = shiftRight(val, static_cast<Shift>(2));
+                  at(tmp, tmp.size()-1-i) = at(pulseScales, (at(_pulseoff, subframe) * 4) + offset);
                }
              
              static constexpr int coef1Shift = 15;
-             int coef = shiftRight(at(_pulsepos, subframe), coef1Shift);
+             int coef = shiftRight(at(_pulsepos, subframe), static_cast<Shift>(coef1Shift));
              size_t idxPulseValue = buf.size()/2;
              size_t idx2 = 0;
              for(size_t i=0, j=3; (i < buf.size()/2) && (j > 0); ++i)
                {
-                  auto t = at(pulseValues, idxPulseValue);
+                  auto offset = at(pulseValues, idxPulseValue);
                   ++idxPulseValue;
-                  if(coef >= t)
+                  if(coef >= offset)
                     {
-                       coef -= t;
+                       coef -= offset;
                     }
                   else
                     {
@@ -510,11 +525,11 @@ namespace mods
              idxPulseValue = 0;
              for(size_t i=buf.size()/2, j=4; (i < buf.size()) && (j > 0); ++i)
                {
-                  auto t = at(pulseValues, idxPulseValue);
+                  auto offset = at(pulseValues, idxPulseValue);
                   ++idxPulseValue;
-                  if(coef >= t)
+                  if(coef >= offset)
                     {
-                       coef -= t;
+                       coef -= offset;
                     }
                   else
                     {
@@ -530,6 +545,7 @@ namespace mods
           {
              using mods::utils::at;
              using mods::utils::arithmeticShifter::shiftRight;
+             using mods::utils::arithmeticShifter::Shift;
              static constexpr int shiftOffset = _filterBufferLength - _subframeLength;
              
              auto& buf = at(_subframes, subframe);
@@ -537,8 +553,8 @@ namespace mods
              std::move(_filterBuffer.begin() + buf.size(), _filterBuffer.end(), _filterBuffer.begin());
              for(size_t i=0; i<buf.size(); ++i)
                {
-                  at(_filterBuffer, i + shiftOffset) = buf[i] + at(_newVector,i) - shiftRight(at(_newVector,i), 3);
-                  buf[i] += at(_newVector,i);
+                  at(_filterBuffer, i + shiftOffset) = buf[i] + at(_newVector,i) - shiftRight(at(_newVector,i), static_cast<Shift>(3));
+                  buf[i] = static_cast<s16>(buf[i] + at(_newVector,i));
                }
           }
         
@@ -546,76 +562,77 @@ namespace mods
           {
              using mods::utils::at;
              using mods::utils::arithmeticShifter::shiftRight;
+             using mods::utils::arithmeticShifter::Shift;
              
              static constexpr int roundConstant = 0x800;
              static constexpr u32 fixedPointShift = 12;
              static constexpr int clampLimit = 0x7FFE;
              
              auto& buf = at(_subframes, subframe);
-             std::array<int, _numberOfFilterCoefficients> t {};
+             std::array<int, _numberOfFilterCoefficients> tcoefs {};
              
              auto* tmp = &_tmp1;
              auto filter = at(_filters, subframe);
-             for(s16& v : buf)
+             for(s16& val : buf)
                {
                   int sum = 0;
                   for(size_t k=0; k<tmp->size(); ++k)
                     {
                        sum += at(*tmp, k) * static_cast<s32>(at(filter, k));
                     }
-                  sum = v + shiftRight(sum + roundConstant, fixedPointShift);
-                  v = mods::utils::clamp(sum, -clampLimit, clampLimit);
+                  sum = val + shiftRight(sum + roundConstant, static_cast<Shift>(fixedPointShift));
+                  val = static_cast<s16>(mods::utils::clamp(sum, -clampLimit, clampLimit));
                   for(size_t k=tmp->size()-1; k>0; --k)
                     {
                        at(*tmp, k) = at(*tmp, k-1);
                     }
-                  at(*tmp, 0) = v;
+                  at(*tmp, 0) = val;
                }
              
              static constexpr int decayShift = 15;
-             for(size_t i=0; i<t.size(); ++i)
+             for(size_t i=0; i<tcoefs.size(); ++i)
                {
-                  at(t, i) = shiftRight(at(decay_35_64, i) * at(filter, i), decayShift);
+                  at(tcoefs, i) = shiftRight(at(decay_35_64, i) * at(filter, i), static_cast<Shift>(decayShift));
                }
              
              tmp = &_tmp2;
-             for(s16& v : buf)
+             for(s16& val : buf)
                {
                   int sum = 0;
                   for(size_t k=0; k<tmp->size(); ++k)
                     {
-                       sum += at(*tmp, k) * at(t, k);
+                       sum += at(*tmp, k) * at(tcoefs, k);
                     }
                   for(size_t k=tmp->size()-1; k>0; --k)
                     {
                        at(*tmp, k) = at(*tmp, k-1);
                     }
-                  at(*tmp, 0) = v;
-                  v += shiftRight(-sum, fixedPointShift);
+                  at(*tmp, 0) = val;
+                  val = static_cast<s16>(val + shiftRight(-sum, static_cast<Shift>(fixedPointShift)));
                }
              
-             for(size_t i=0; i<t.size(); ++i)
+             for(size_t i=0; i<tcoefs.size(); ++i)
                {
-                  at(t, i) = shiftRight(at(decay_3_4, i) * at(filter, i), decayShift);
+                  at(tcoefs, i) = shiftRight(at(decay_3_4, i) * at(filter, i), static_cast<Shift>(decayShift));
                }
              
              tmp = &_tmp3;
-             for(s16& v : buf)
+             for(s16& val : buf)
                {
-                  s32 sum = v * static_cast<s16>(1U << fixedPointShift);
+                  s32 sum = val * static_cast<s16>(1U << fixedPointShift);
                   for(size_t k=0; k<tmp->size(); ++k)
                     {
-                       sum += at(*tmp, k) * at(t, k);
+                       sum += at(*tmp, k) * at(tcoefs, k);
                     }
                   for(size_t k=tmp->size()-1; k>0; --k)
                     {
                        at(*tmp, k) = at(*tmp, k-1);
                     }
-                  at(*tmp, 0) = mods::utils::clamp(shiftRight(sum + roundConstant, fixedPointShift), -clampLimit, clampLimit);
+                  at(*tmp, 0) = static_cast<s16>(mods::utils::clamp(shiftRight(sum + roundConstant, static_cast<Shift>(fixedPointShift)), -clampLimit, clampLimit));
                   
-                  sum = shiftRight(at(*tmp, 1) * (_filtVal - shiftRight(_filtVal, 2)), 4) + sum;
-                  sum = sum - shiftRight(sum, 3);
-                  v = mods::utils::clamp(shiftRight(sum + roundConstant, fixedPointShift), -clampLimit, clampLimit);
+                  sum = shiftRight(at(*tmp, 1) * (_filtVal - shiftRight(_filtVal, static_cast<Shift>(2))), static_cast<Shift>(4)) + sum;
+                  sum = sum - shiftRight(sum, static_cast<Shift>(3));
+                  val = static_cast<s16>(mods::utils::clamp(shiftRight(sum + roundConstant, static_cast<Shift>(fixedPointShift)), -clampLimit, clampLimit));
                }
           }
         

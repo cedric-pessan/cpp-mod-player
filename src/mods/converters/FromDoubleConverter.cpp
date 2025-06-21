@@ -1,8 +1,16 @@
 
+#include "mods/converters/Converter.hpp"
 #include "mods/converters/FromDoubleConverter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
+#include "mods/utils/types.hpp"
 
+#include <algorithm>
+#include <cstddef>
 #include <iostream>
 #include <limits>
+#include <memory>
+#include <utility>
 
 namespace mods
 {
@@ -15,7 +23,7 @@ namespace mods
             {
                if(sizeof(T) > sizeof(double))
                  {
-                    std::cout << "TODO: very large data type to convert" << std::endl;
+                    std::cout << "TODO: very large data type to convert" << '\n';
                  }
             }
         
@@ -28,7 +36,7 @@ namespace mods
         template<typename T>
           void FromDoubleConverter<T>::read(mods::utils::RWBuffer<T>* buf)
             {
-               int nbElems = buf->size();
+               const int nbElems = buf->size();
                
                ensureTempBufferSize(nbElems);
                
@@ -40,12 +48,8 @@ namespace mods
                for(int i = 0; i<nbElems; ++i)
                  {
                     double value = inView[i];
-                    if(value >= 1.0) {
-                       value = 1.0;
-                    }
-                    if(value <= -1.0) {
-                       value = -1.0;
-                    }
+                    value = std::min(value, 1.0);
+                    value = std::max(value, -1.0);
                     if(value >= 0.0) {
                        value *= static_cast<double>(std::numeric_limits<T>::max());
                     } else {

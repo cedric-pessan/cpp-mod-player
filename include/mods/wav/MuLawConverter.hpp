@@ -3,6 +3,7 @@
 
 #include "mods/converters/Converter.hpp"
 
+#include <array>
 #include <limits>
 
 namespace mods

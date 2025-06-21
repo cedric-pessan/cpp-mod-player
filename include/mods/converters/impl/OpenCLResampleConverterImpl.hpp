@@ -35,7 +35,9 @@ namespace mods
                   auto compileFirFilterProgram(bool rleInput) -> cl::Program;
                   auto buildTapsBuffer() -> cl::Buffer;
                   
-                  virtual void fillBuffers(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* sampleBuffer, cl::Buffer* zerosBuffer, cl::Buffer* repeatBuffer) = 0;
+                  virtual void fillSampleBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* sampleBuffer) = 0;
+                  virtual void fillZerosBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* zerosBuffer) = 0;
+                  virtual void fillRepeatBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* repeatBuffer) = 0;
                   
                   cl::Context _context;
                   cl::CommandQueue _queue;
@@ -49,8 +51,7 @@ namespace mods
                   cl::Buffer _repeatBuffer;
                   cl::Buffer _outputBuffer;
                };
-          }
-         // namespace impl
+          } // namespace impl
      } // namespace converters
 } // namespace mods
 #endif // WITH_OPENCL

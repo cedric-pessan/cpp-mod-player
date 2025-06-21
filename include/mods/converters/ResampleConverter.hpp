@@ -36,6 +36,8 @@ namespace mods
              auto currentSampleRemainingDuration() const -> size_t;
              auto initBuffer() -> mods::utils::RWBuffer<T>;
              auto shouldDedup() const -> bool;
+             auto addNextSamplesToHistory(int toAdd) -> int;
+             void tryToDedup();
              
              PARAMETERS _resampleParameters;
              impl::History _history;

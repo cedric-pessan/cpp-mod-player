@@ -10,7 +10,10 @@ namespace mods
         class ConstFraction
           {
            public:
-             constexpr ConstFraction(u64 numerator, u64 denominator)
+             enum Numerator : u64;
+             enum Denominator : u64;
+             
+             constexpr ConstFraction(Numerator numerator, Denominator denominator)
                : _numerator(numerator),
                _denominator(denominator)
                  {
@@ -25,9 +28,9 @@ namespace mods
              
              constexpr auto reduce() const -> ConstFraction
                {
-                  u64 factor = gcd(_numerator, _denominator);
-                  return {_numerator / factor, 
-                          _denominator / factor};
+                  const u64 factor = gcd(_numerator, _denominator);
+                  return {static_cast<Numerator>(_numerator / factor), 
+                          static_cast<Denominator>(_denominator / factor)};
                }
              
              constexpr auto getDenominator() const -> u64

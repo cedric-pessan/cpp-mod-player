@@ -16,6 +16,8 @@
 #include "mods/converters/UnsignedToSignedConverter.hpp"
 #include "mods/converters/UpscaleConverter.hpp"
 #include "mods/utils/OpenCLManager.hpp"
+#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/ADPCMDecoderConverter.hpp"
 #include "mods/wav/ALawConverter.hpp"
 #include "mods/wav/DVIADPCMDecoderConverter.hpp"
@@ -25,12 +27,19 @@
 #include "mods/wav/MultiChannelMixer.hpp"
 #include "mods/wav/OKIADPCMDecoderConverter.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
+#include "mods/wav/StatCollector.hpp"
 #include "mods/wav/TruspeechDecoderConverter.hpp"
 #include "mods/wav/UnpackToTypeConverter.hpp"
 #include "mods/wav/WavConverterFactory.hpp"
+#include "mods/wav/WavTypes.hpp"
 
 #include <algorithm>
+#include <array>
+#include <cstddef>
 #include <iostream>
+#include <memory>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace mods
@@ -80,7 +89,7 @@ namespace mods
                 case WavAudioFormat::PCM:
                   if(std::find(PCMBitsPerSample.begin(), PCMBitsPerSample.end(), bitsPerSample) == PCMBitsPerSample.end())
                     {
-                       std::cout << "Warning: invalid bits per sample for PCM: " << bitsPerSample << std::endl;
+                       std::cout << "Warning: invalid bits per sample for PCM: " << bitsPerSample << '\n';
                     }
                   if(bitsPerSample == BITS_IN_BYTE)
                     {
@@ -105,7 +114,7 @@ namespace mods
                   break;
                   
                 default:
-                  std::cout << "WavConverter: unknown default value for " << toString(codec) << std::endl;
+                  std::cout << "WavConverter: unknown default value for " << toString(codec) << '\n';
                }
              
              // read stage
@@ -154,22 +163,22 @@ namespace mods
                     {
                        if(nbChannels != 1)
                          {
-                            std::cout << "Warning: GSM only supports 1 channel" << std::endl;
+                            std::cout << "Warning: GSM only supports 1 channel" << '\n';
                          }
                        std::vector<Converter<s16>::ptr> uncompressedChannels;
                        uncompressedChannels.push_back(std::make_unique<GSMDecoderConverter>(std::move(inputStream)));
-                       return buildScaleToContainerSizeStage<s16>(std::move(uncompressedChannels), WavBitsPerContainer::_16, GSMDecoderConverter::getOutputBitsPerSample(), frequency, peak, channelMask);
+                       return buildScaleToContainerSizeStage<s16>(std::move(uncompressedChannels), GSMDecoderConverter::getOutputBitsPerSample(), WavBitsPerContainer::_16, frequency, peak, channelMask);
                     }
                   
                 case WavAudioFormat::TRUSPEECH:
                     {
                        if(nbChannels != 1)
                          {
-                            std::cout << "Warning: Truespeech only supports 1 channel" << std::endl;
+                            std::cout << "Warning: Truespeech only supports 1 channel" << '\n';
                          }
                        std::vector<Converter<s16>::ptr> uncompressedChannels;
                        uncompressedChannels.push_back(std::make_unique<TruspeechDecoderConverter>(std::move(inputStream)));
-                       return buildScaleToContainerSizeStage<s16>(std::move(uncompressedChannels), WavBitsPerContainer::_16, TruspeechDecoderConverter::getOutputBitsPerSample(), frequency, peak, channelMask);
+                       return buildScaleToContainerSizeStage<s16>(std::move(uncompressedChannels), TruspeechDecoderConverter::getOutputBitsPerSample(), WavBitsPerContainer::_16, frequency, peak, channelMask);
                     }
                   
                 case WavAudioFormat::DVI_ADPCM:
@@ -190,11 +199,11 @@ namespace mods
                     {
                        if(nbChannels > 2)
                          {
-                            std::cout << "Warning: ADPCM only supports up to 2 channels" << std::endl;
+                            std::cout << "Warning: ADPCM only supports up to 2 channels" << '\n';
                          }
                        
                        std::vector<Converter<s16>::ptr> uncompressedChannels;
-                       int bitsPerSample;
+                       int bitsPerSample = 0;
                        
                        if(nbChannels == 2)
                          {
@@ -210,7 +219,7 @@ namespace mods
                     }
                   
                 default:
-                  std::cout << "WavConverter: unknown codec for uncompressing stage: 0x" << std::hex << toUnderlying(codec) << std::dec << std::endl;
+                  std::cout << "WavConverter: unknown codec for uncompressing stage: 0x" << std::hex << toUnderlying(codec) << std::dec << '\n';
                   return nullptr;
                }
           }
@@ -232,25 +241,23 @@ namespace mods
                {
                   return buildUnpackStage<T>(std::move(channels), bitsPerContainer, bitsPerSample, frequency, peak, channelMask, floatingPointStream);
                }
-             else
+             
+             if(channels.size() != 1)
                {
-                  if(channels.size() != 1)
-                    {
-                       std::cout << "Warning: we have several uncompressed channels but not the expected number" << std::endl;
-                    }
-                  
-                  auto demuxConverter = std::make_unique<DemuxConverter<T>>(std::move(channels.back()), nbChannels, toUnderlying(bitsPerContainer));
-                  auto* firstChannels = demuxConverter->getFirstChannels();
-                  
-                  std::vector<typename Converter<T>::ptr> demuxedChannels;
-                  demuxedChannels.reserve(nbChannels);
-                  for(auto& channel : *firstChannels)
-                    {
-                       demuxedChannels.push_back(std::move(channel));
-                    }
-                  demuxedChannels.push_back(std::move(demuxConverter));
-                  return buildUnpackStage<T>(std::move(demuxedChannels), bitsPerContainer, bitsPerSample, frequency, peak, channelMask, floatingPointStream);
+                  std::cout << "Warning: we have several uncompressed channels but not the expected number" << '\n';
                }
+             
+             auto demuxConverter = std::make_unique<DemuxConverter<T>>(std::move(channels.back()), nbChannels, toUnderlying(bitsPerContainer));
+             auto* firstChannels = demuxConverter->getFirstChannels();
+             
+             std::vector<typename Converter<T>::ptr> demuxedChannels;
+             demuxedChannels.reserve(nbChannels);
+             for(auto& channel : *firstChannels)
+               {
+                  demuxedChannels.push_back(std::move(channel));
+               }
+             demuxedChannels.push_back(std::move(demuxConverter));
+             return buildUnpackStage<T>(std::move(demuxedChannels), bitsPerContainer, bitsPerSample, frequency, peak, channelMask, floatingPointStream);
           }
         
         // static
@@ -261,9 +268,9 @@ namespace mods
                                                      u32 frequency,
                                                      double peak,
                                                      u32 channelMask,
-                                                     bool floatingPointStream) -> typename std::enable_if<std::is_signed<T>::value, mods::converters::Converter<s16>::ptr>::type
+                                                     bool /* floatingPointStream */) -> typename std::enable_if_t<std::is_signed<T>::value, mods::converters::Converter<s16>::ptr>
           {
-             return buildScaleToContainerSizeStage<T>(std::move(channels), bitsPerContainer, bitsPerSample, frequency, peak, channelMask);
+             return buildScaleToContainerSizeStage<T>(std::move(channels), bitsPerSample, bitsPerContainer, frequency, peak, channelMask);
           }
         
         // static
@@ -274,16 +281,18 @@ namespace mods
                                                      u32 frequency,
                                                      double peak,
                                                      u32 channelMask,
-                                                     bool floatingPointStream) -> typename std::enable_if<std::is_unsigned<T>::value, mods::converters::Converter<s16>::ptr>::type
+                                                     bool floatingPointStream) -> typename std::enable_if_t<std::is_unsigned<T>::value, mods::converters::Converter<s16>::ptr>
           {
              using mods::converters::CastConverter;
              using mods::converters::Converter;
+             
+             auto inputChannels = std::move(channels);
              
              if(floatingPointStream)
                {
                   if(toUnderlying(bitsPerContainer) != bitsPerSample)
                     {
-                       std::cout << "WavConverter: bits per sample should be equal to bits per container for floating point streams" << std::endl;
+                       std::cout << "WavConverter: bits per sample should be equal to bits per container for floating point streams" << '\n';
                     }
                   
                   switch(bitsPerContainer)
@@ -291,8 +300,8 @@ namespace mods
                      case WavBitsPerContainer::_32:
                          {
                             std::vector<Converter<float>::ptr> castedChannels;
-                            castedChannels.reserve(channels.size());
-                            for(auto& channel : channels)
+                            castedChannels.reserve(inputChannels.size());
+                            for(auto& channel : inputChannels)
                               {
                                  castedChannels.push_back(std::make_unique<CastConverter<float, T>>(std::move(channel)));
                               }
@@ -302,8 +311,8 @@ namespace mods
                      case WavBitsPerContainer::_64:
                          {
                             std::vector<Converter<double>::ptr> castedChannels;
-                            castedChannels.reserve(channels.size());
-                            for(auto& channel : channels)
+                            castedChannels.reserve(inputChannels.size());
+                            for(auto& channel : inputChannels)
                               {
                                  castedChannels.push_back(std::make_unique<CastConverter<double, T>>(std::move(channel)));
                               }
@@ -311,7 +320,7 @@ namespace mods
                          }
                        
                      default:
-                       std::cout << "WavConverter: unsupported " << toUnderlying(bitsPerContainer) << " bits per container for unpacking floating point container stage" << std::endl;
+                       std::cout << "WavConverter: unsupported " << toUnderlying(bitsPerContainer) << " bits per container for unpacking floating point container stage" << '\n';
                        return nullptr;
                     }
                }
@@ -322,38 +331,38 @@ namespace mods
                      case WavBitsPerContainer::_16:
                          {
                             std::vector<Converter<s16>::ptr> castedChannels;
-                            castedChannels.reserve(channels.size());
-                            for(auto& channel : channels)
+                            castedChannels.reserve(inputChannels.size());
+                            for(auto& channel : inputChannels)
                               {
                                  castedChannels.push_back(std::make_unique<CastConverter<s16, T>>(std::move(channel)));
                               }
-                            return buildScaleToContainerSizeStage<s16>(std::move(castedChannels), bitsPerContainer, bitsPerSample, frequency, peak, channelMask);
+                            return buildScaleToContainerSizeStage<s16>(std::move(castedChannels), bitsPerSample, bitsPerContainer, frequency, peak, channelMask);
                          }
                        
                      case WavBitsPerContainer::_24:
                          {
                             std::vector<Converter<s32>::ptr> unpackedChannels;
-                            unpackedChannels.reserve(channels.size());
-                            for(auto& channel : channels)
+                            unpackedChannels.reserve(inputChannels.size());
+                            for(auto& channel : inputChannels)
                               {
                                  unpackedChannels.push_back(std::make_unique<UnpackToTypeConverter<s32>>(std::move(channel), 3));
                               }
-                            return buildScaleToContainerSizeStage<s32>(std::move(unpackedChannels), WavBitsPerContainer::_32, bitsPerSample, frequency, peak, channelMask);
+                            return buildScaleToContainerSizeStage<s32>(std::move(unpackedChannels), bitsPerSample, WavBitsPerContainer::_32, frequency, peak, channelMask);
                          }
                        
                      case WavBitsPerContainer::_32:
                          {
                             std::vector<Converter<s32>::ptr> castedChannels;
-                            castedChannels.reserve(channels.size());
-                            for(auto& channel : channels)
+                            castedChannels.reserve(inputChannels.size());
+                            for(auto& channel : inputChannels)
                               {
                                  castedChannels.push_back(std::make_unique<CastConverter<s32, T>>(std::move(channel)));
                               }
-                            return buildScaleToContainerSizeStage<s32>(std::move(castedChannels), bitsPerContainer, bitsPerSample, frequency, peak, channelMask);
+                            return buildScaleToContainerSizeStage<s32>(std::move(castedChannels), bitsPerSample, bitsPerContainer, frequency, peak, channelMask);
                          }
                        
                      default:
-                       std::cout << "WavConverter: unsupported " << toUnderlying(bitsPerContainer) << " bits per container for unpacking container stage (unsigned type)" << std::endl;
+                       std::cout << "WavConverter: unsupported " << toUnderlying(bitsPerContainer) << " bits per container for unpacking container stage (unsigned type)" << '\n';
                        return nullptr;
                     }
                }
@@ -362,8 +371,8 @@ namespace mods
         // static
         template<typename T>
           auto WavConverterFactory::buildScaleToContainerSizeStage(std::vector<typename mods::converters::Converter<T>::ptr>&& channels,
-                                                                   WavBitsPerContainer bitsPerContainer,
                                                                    u16 bitsPerSample,
+                                                                   WavBitsPerContainer bitsPerContainer,
                                                                    u32 frequency,
                                                                    double peak,
                                                                    u32 channelMask) -> mods::converters::Converter<s16>::ptr
@@ -375,16 +384,14 @@ namespace mods
                {
                   return buildUpscaleStage<T>(std::move(channels), frequency, peak, channelMask);
                }
-             else
+             
+             std::vector<typename Converter<T>::ptr> scaledChannels;
+             scaledChannels.reserve(channels.size());
+             for(auto& channel : channels)
                {
-                  std::vector<typename Converter<T>::ptr> scaledChannels;
-                  scaledChannels.reserve(channels.size());
-                  for(auto& channel : channels)
-                    {
-                       scaledChannels.push_back(std::make_unique<FillLSBConverter<T>>(std::move(channel), toUnderlying(bitsPerContainer) - bitsPerSample));
-                    }
-                  return buildUpscaleStage<T>(std::move(scaledChannels), frequency, peak, channelMask);
+                  scaledChannels.push_back(std::make_unique<FillLSBConverter<T>>(std::move(channel), toUnderlying(bitsPerContainer) - bitsPerSample));
                }
+             return buildUpscaleStage<T>(std::move(scaledChannels), frequency, peak, channelMask);
           }
         
         // static
@@ -398,26 +405,26 @@ namespace mods
              using mods::converters::ToDoubleConverter;
              using mods::converters::UpscaleConverter;
              
+             auto inputChannels = std::move(channels);
+             
              if(isResamplableByPositiveIntegerFactor(frequency) && peak == 1.0)
                {
                   std::vector<Converter<s16>::ptr> upscaledChannels;
-                  upscaledChannels.reserve(channels.size());
-                  for(auto& channel : channels)
+                  upscaledChannels.reserve(inputChannels.size());
+                  for(auto& channel : inputChannels)
                     {
                        upscaledChannels.push_back(std::make_unique<UpscaleConverter<s16, s8>>(std::move(channel)));
                     }
-                  return buildPositiveIntegerResamplingStage<s16>(std::move(upscaledChannels), frequency, channelMask);
+                  return buildPositiveIntegerResamplingStage<s16>(frequency, std::move(upscaledChannels), channelMask);
                }
-             else
+             
+             std::vector<Converter<double>::ptr> upscaledChannels;
+             upscaledChannels.reserve(inputChannels.size());
+             for(auto& channel: inputChannels)
                {
-                  std::vector<Converter<double>::ptr> upscaledChannels;
-                  upscaledChannels.reserve(channels.size());
-                  for(auto& channel: channels)
-                    {
-                       upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s8>>(std::move(channel)));
-                    }
-                  return buildPeakStage(std::move(upscaledChannels), frequency, peak, channelMask);
+                  upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s8>>(std::move(channel)));
                }
+             return buildPeakStage(std::move(upscaledChannels), static_cast<Frequency>(frequency), peak, static_cast<ChannelMask>(channelMask));
           }
         
         // static
@@ -432,18 +439,16 @@ namespace mods
              
              if(isResamplableByPositiveIntegerFactor(frequency) && peak == 1.0)
                {
-                  return buildPositiveIntegerResamplingStage<s16>(std::move(channels), frequency, channelMask);
+                  return buildPositiveIntegerResamplingStage<s16>(frequency, std::move(channels), channelMask);
                }
-             else
+             
+             std::vector<Converter<double>::ptr> upscaledChannels;
+             upscaledChannels.reserve(channels.size());
+             for(auto& channel: channels)
                {
-                  std::vector<Converter<double>::ptr> upscaledChannels;
-                  upscaledChannels.reserve(channels.size());
-                  for(auto& channel: channels)
-                    {
-                       upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(channel)));
-                    }
-                  return buildPeakStage(std::move(upscaledChannels), frequency, peak, channelMask);
+                  upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s16>>(std::move(channel)));
                }
+             return buildPeakStage(std::move(upscaledChannels), static_cast<Frequency>(frequency), peak, static_cast<ChannelMask>(channelMask));
           }
         
         // static
@@ -458,18 +463,16 @@ namespace mods
              
              if(isResamplableByPositiveIntegerFactor(frequency) && peak == 1.0)
                {
-                  return buildPositiveIntegerResamplingStage<s32>(std::move(channels), frequency, channelMask);
+                  return buildPositiveIntegerResamplingStage<s32>(frequency, std::move(channels), channelMask);
                }
-             else
+             
+             std::vector<Converter<double>::ptr> upscaledChannels;
+             upscaledChannels.reserve(channels.size());
+             for(auto& channel : channels)
                {
-                  std::vector<Converter<double>::ptr> upscaledChannels;
-                  upscaledChannels.reserve(channels.size());
-                  for(auto& channel : channels)
-                    {
-                       upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s32>>(std::move(channel)));
-                    }
-                  return buildPeakStage(std::move(upscaledChannels), frequency, peak, channelMask);
+                  upscaledChannels.push_back(std::make_unique<ToDoubleConverter<s32>>(std::move(channel)));
                }
+             return buildPeakStage(std::move(upscaledChannels), static_cast<Frequency>(frequency), peak, static_cast<ChannelMask>(channelMask));
           }
         
         // static
@@ -482,13 +485,15 @@ namespace mods
              using mods::converters::Converter;
              using mods::converters::ToDoubleConverter;
              
+             auto inputChannels = std::move(channels);
+             
              std::vector<Converter<double>::ptr> upscaledChannels;
-             upscaledChannels.reserve(channels.size());
-             for(auto& channel : channels)
+             upscaledChannels.reserve(inputChannels.size());
+             for(auto& channel : inputChannels)
                {
                   upscaledChannels.push_back(std::make_unique<ToDoubleConverter<float>>(std::move(channel)));
                }
-             return buildPeakStage(std::move(upscaledChannels), frequency, peak, channelMask);
+             return buildPeakStage(std::move(upscaledChannels), static_cast<Frequency>(frequency), peak, static_cast<ChannelMask>(channelMask));
           }
         
         // static
@@ -498,14 +503,14 @@ namespace mods
                                                               double peak,
                                                               u32 channelMask) -> mods::converters::Converter<s16>::ptr
           {
-             return buildPeakStage(std::move(channels), frequency, peak, channelMask);
+             return buildPeakStage(std::move(channels), static_cast<Frequency>(frequency), peak, static_cast<ChannelMask>(channelMask));
           }
         
         // static
         auto WavConverterFactory::buildPeakStage(std::vector<mods::converters::Converter<double>::ptr>&& channels,
-                                                 u32 frequency,
+                                                 Frequency frequency,
                                                  double peak,
-                                                 u32 channelMask) -> mods::converters::Converter<s16>::ptr
+                                                 ChannelMask channelMask) -> mods::converters::Converter<s16>::ptr
           {
              using mods::converters::Converter;
              using mods::converters::DivideConverter;
@@ -523,6 +528,24 @@ namespace mods
              return buildResamplingStage(std::move(channels), frequency, channelMask);
           }
         
+        namespace
+          {
+             template<typename ParamType>
+               auto buildResampleConverter(mods::converters::Converter<double>::ptr&& channel, const ParamType& params) -> mods::converters::Converter<double>::ptr
+               {
+                  using mods::converters::OpenCLConverterTypes;
+                  using mods::converters::SoftwareResampleConverter;
+                  
+                  if(mods::utils::OpenCLManager::isEnabled())
+                    {
+                       using ResampleConverterImpl = typename OpenCLConverterTypes<ParamType, double>::ResampleConverterImpl;
+                       return std::make_unique<ResampleConverterImpl>(std::move(channel), params);
+                    }
+                  
+                  return std::make_unique<SoftwareResampleConverter<ParamType, double>>(std::move(channel), params);
+               }
+          } // namespace
+        
         // static
         auto WavConverterFactory::buildResamplingStage(std::vector<typename mods::converters::Converter<double>::ptr>&& channels,
                                                        u32 frequency,
@@ -530,8 +553,6 @@ namespace mods
           {
              using mods::converters::Converter;
              using mods::converters::DynamicResampleParameters;
-             using mods::converters::OpenCLConverterTypes;
-             using mods::converters::SoftwareResampleConverter;
              using mods::converters::StaticResampleParameters;
              
              std::vector<typename Converter<double>::ptr> resampledChannels;
@@ -542,16 +563,8 @@ namespace mods
                   for(auto& channel : channels)
                     {
                        using ParamType = StaticResampleParameters<StandardFrequency::_8000, StandardFrequency::_44100>;
-                       ParamType params;
-                       if(mods::utils::OpenCLManager::isEnabled())
-                         {
-                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType, double>::ResampleConverterImpl;
-                            resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(channel), params));
-                         }
-                       else
-                         {
-                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType, double>>(std::move(channel), params));
-                         }
+                       const ParamType params;
+                       resampledChannels.push_back(buildResampleConverter(std::move(channel), params));
                     }
                   return buildMixingStage<double>(std::move(resampledChannels), channelMask);
 		  
@@ -559,77 +572,45 @@ namespace mods
                   for(auto& channel : channels)
 		    {
                        using ParamType = StaticResampleParameters<StandardFrequency::_10000, StandardFrequency::_44100>;
-                       ParamType params;
-                       if(mods::utils::OpenCLManager::isEnabled())
-                         {
-                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType, double>::ResampleConverterImpl;
-                            resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(channel), params));
-                         }
-                       else
-                         {
-                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType, double>>(std::move(channel), params));
-                         }
+                       const ParamType params;
+                       resampledChannels.push_back(buildResampleConverter(std::move(channel), params));
 		    }
                   return buildMixingStage<double>(std::move(resampledChannels), channelMask);
                   
                 case StandardFrequency::_11025:
-                  return buildPositiveIntegerResamplingStage<double>(std::move(channels), frequency, channelMask);
+                  return buildPositiveIntegerResamplingStage<double>(frequency, std::move(channels), channelMask);
                   
                 case StandardFrequency::_22000:
                   for(auto& channel : channels)
                     {
                        using ParamType = StaticResampleParameters<StandardFrequency::_22000, StandardFrequency::_44100>;
-                       ParamType params;
-                       if(mods::utils::OpenCLManager::isEnabled())
-                         {
-                            using ResampleConverterImpl = typename OpenCLConverterTypes<ParamType, double>::ResampleConverterImpl;
-                            resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(channel), params));
-                         }
-                       else
-                         {
-                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType, double>>(std::move(channel), params));
-                         }
+                       const ParamType params;
+                       resampledChannels.push_back(buildResampleConverter(std::move(channel), params));
                     }
                   return buildMixingStage<double>(std::move(resampledChannels), channelMask);
                   
                 case StandardFrequency::_22050:
-                  return buildPositiveIntegerResamplingStage<double>(std::move(channels), frequency, channelMask);
+                  return buildPositiveIntegerResamplingStage<double>(frequency, std::move(channels), channelMask);
                   
                 case StandardFrequency::_48000:
                   for(auto& channel : channels)
                     {
                        using ParamType = StaticResampleParameters<StandardFrequency::_48000, StandardFrequency::_44100>;
-                       ParamType params;
-                       if(mods::utils::OpenCLManager::isEnabled())
-                         {
-                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType, double>::ResampleConverterImpl;
-                            resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(channel), params));
-                         }
-                       else
-                         {
-                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType, double>>(std::move(channel), params));
-                         }
+                       const ParamType params;
+                       resampledChannels.push_back(buildResampleConverter(std::move(channel), params));
                     }
                   return buildMixingStage<double>(std::move(resampledChannels), channelMask);
                   
                 case StandardFrequency::_44100:
-                  return buildPositiveIntegerResamplingStage<double>(std::move(channels), frequency, channelMask);
+                  return buildPositiveIntegerResamplingStage<double>(frequency, std::move(channels), channelMask);
                   
                 default:
-                  std::cout << "WARNING: WavConverter: non standard frequency: " << frequency << ", using generic resampler" << std::endl;
+                  std::cout << "WARNING: WavConverter: non standard frequency: " << frequency << ", using generic resampler" << '\n';
                   for(auto& channel : channels)
 		    {
                        using ParamType = DynamicResampleParameters;
-                       ParamType params(frequency, toUnderlying(StandardFrequency::_44100));
-                       if(mods::utils::OpenCLManager::isEnabled())
-                         {
-                            using ResampleConverterImpl = OpenCLConverterTypes<ParamType, double>::ResampleConverterImpl;
-                            resampledChannels.push_back(std::make_unique<ResampleConverterImpl>(std::move(channel), params));
-                         }
-                       else
-                         {
-                            resampledChannels.push_back(std::make_unique<SoftwareResampleConverter<ParamType, double>>(std::move(channel), params));
-                         }
+                       const ParamType params(frequency, toUnderlying(StandardFrequency::_44100));
+                       resampledChannels.push_back(buildResampleConverter(std::move(channel), params));
 		    }
                   return buildMixingStage<double>(std::move(resampledChannels), channelMask);
                }
@@ -637,8 +618,8 @@ namespace mods
         
         // static
         template<typename T>
-          auto WavConverterFactory::buildPositiveIntegerResamplingStage(std::vector<typename mods::converters::Converter<T>::ptr>&& channels,
-                                                                        u32 frequency,
+          auto WavConverterFactory::buildPositiveIntegerResamplingStage(u32 frequency,
+                                                                        std::vector<typename mods::converters::Converter<T>::ptr>&& channels,
                                                                         u32 channelMask) -> mods::converters::Converter<s16>::ptr
           {
              using mods::converters::Converter;
@@ -666,7 +647,7 @@ namespace mods
                   return buildMixingStage<T>(std::move(channels), channelMask);
                   
                 default:
-                  std::cout << "WARNING: WavConverter: only integer resampling supported for types that are not 'double' and found frequency: " << frequency << std::endl;
+                  std::cout << "WARNING: WavConverter: only integer resampling supported for types that are not 'double' and found frequency: " << frequency << '\n';
                   return nullptr;
                }
           }
@@ -729,9 +710,10 @@ namespace mods
              using mods::converters::Converter;
              using mods::converters::ToDoubleConverter;
              
+             auto inputChannels = std::move(channels);
              std::vector<Converter<double>::ptr> floatChannels;
-             floatChannels.reserve(channels.size());
-             for(auto& channel : channels)
+             floatChannels.reserve(inputChannels.size());
+             for(auto& channel : inputChannels)
                {
                   floatChannels.push_back(std::make_unique<ToDoubleConverter<T>>(std::move(channel)));
                }
@@ -775,14 +757,14 @@ namespace mods
           {
              using mods::converters::MultiplexerConverter;
              
-             return std::make_unique<MultiplexerConverter<s16>>(std::move(left), std::move(right));
+             return std::make_unique<MultiplexerConverter<s16>>(MultiplexerConverter<s16>::LeftAndRightChannels{std::move(left), std::move(right)});
           }
         
         // static
-        auto WavConverterFactory::isResamplableByPositiveIntegerFactor(int frequency) -> bool
+        auto WavConverterFactory::isResamplableByPositiveIntegerFactor(u32 frequency) -> bool
           {
-             auto f = static_cast<StandardFrequency>(frequency);
-             return f == StandardFrequency::_44100 || f == StandardFrequency::_22050 || f == StandardFrequency::_11025;
+             auto freq = static_cast<StandardFrequency>(frequency);
+             return freq == StandardFrequency::_44100 || freq == StandardFrequency::_22050 || freq == StandardFrequency::_11025;
           }
         
      } // namespace wav

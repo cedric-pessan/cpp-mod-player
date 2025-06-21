@@ -1,8 +1,19 @@
 
+#include "mods/mod/ChannelId.hpp"
+#include "mods/mod/Instrument.hpp"
+#include "mods/mod/Note.hpp"
 #include "mods/mod/PatternListReader.hpp"
+#include "mods/mod/PatternReader.hpp"
+#include "mods/utils/AmigaRLESample.hpp"
+#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
 
+#include <cstddef>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <vector>
 
 namespace mods
 {
@@ -18,17 +29,15 @@ namespace mods
           _patternsOrderList(patternsOrderList),
           _nbChannels(nbChannels),
           _patterns(patterns),
-          _patternReader(_nbChannels, getPatternBuffer(_currentPatternIndex), instruments, sampleBuffers,
-                         &_unconsumedBuffers.at(toUnderlying(ChannelId::LEFT)),
-                         &_unconsumedBuffers.at(toUnderlying(ChannelId::RIGHT)))
+          _patternReader(_nbChannels, getPatternBuffer(_currentPatternIndex), instruments, sampleBuffers, &_unconsumedBuffers)
             {
             }
         
         auto PatternListReader::getProgressInfo() const -> std::string
           {
-             std::stringstream ss;
-             ss << "Pattern " << _currentPatternIndex << " / " << _numberOfPatterns << ", line " << _patternReader.getCurrentLine() << " / " << PatternReader::getNumberOfLines() << "     ";
-             return ss.str();
+             std::stringstream infoStream;
+             infoStream << "Pattern " << _currentPatternIndex << " / " << _numberOfPatterns << ", line " << _patternReader.getCurrentLine() << " / " << PatternReader::getNumberOfLines() << "     ";
+             return infoStream.str();
           }
         
         auto PatternListReader::isChannelFinished(ChannelId channel) const -> bool
@@ -51,7 +60,7 @@ namespace mods
                {
                   if(!_unconsumedBuffers.at(idxBuffer).empty())
                     {
-                       auto& value = _unconsumedBuffers.at(idxBuffer).front();
+                       const auto& value = _unconsumedBuffers.at(idxBuffer).front();
                        (*buf)[read++] = value;
                        _unconsumedBuffers.at(idxBuffer).pop_front();
                     }
@@ -64,7 +73,7 @@ namespace mods
                        int initialLine = 0;
                        if(_patternReader.hasPatternJump())
                          {
-                            int patternOfJumpTarget = _patternReader.getPatternOfJumpTarget();
+                            const int patternOfJumpTarget = _patternReader.getPatternOfJumpTarget();
                             if(patternOfJumpTarget >= 0)
                               {
                                  _currentPatternIndex = patternOfJumpTarget;
@@ -89,9 +98,9 @@ namespace mods
         
         auto PatternListReader::getPatternBuffer(size_t patternIndex) -> mods::utils::RBuffer<Note>
           {
-             auto p = _patternsOrderList[patternIndex];
+             auto pattern = _patternsOrderList[patternIndex];
              auto patternBufferLength = _nbChannels * PatternReader::getNumberOfLines();
-             return _patterns.slice<Note>(p * patternBufferLength, patternBufferLength);
+             return _patterns.slice<Note>(pattern * patternBufferLength, patternBufferLength);
           }
      } // namespace mod
 } // namespace mods

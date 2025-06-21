@@ -3,9 +3,9 @@
 
 #include "endianness.hpp"
 #include "mods/utils/PackedArray.hpp"
+#include "mods/utils/at.hpp"
 #include "mods/utils/nativeEndian.hpp"
 
-#include <cassert>
 #include <climits>
 #include <cstdint>
 #include <type_traits>
@@ -190,9 +190,9 @@ class s16be
 #pragma pack(pop)
 
 template<typename E>
-  constexpr auto toUnderlying(E e) noexcept
+  constexpr auto toUnderlying(E enumValue) noexcept
 {
-   return static_cast<std::underlying_type_t<E>>(e);
+   return static_cast<std::underlying_type_t<E>>(enumValue);
 }
 
 namespace mods
@@ -200,31 +200,17 @@ namespace mods
    namespace utils
      {
         template<typename T>
-          auto at(const T& a, std::size_t i) -> const typename T::value_type&
+          constexpr auto clamp(T value, T low, T high) -> T
             {
-               assert(i >= 0 && i < a.size());
-               return a[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
-            }
-        
-        template<typename T>
-          auto at(T& a, std::size_t i) -> typename T::value_type&
-            {
-               assert(i >= 0 && i < a.size());
-               return a[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
-            }
-        
-        template<typename T>
-          constexpr auto clamp(T v, T lo, T hi) -> T
-            {
-               if(v < lo)
+               if(value < low)
                  {
-                    return lo;
+                    return low;
                  }
-               if(v > hi)
+               if(value > high)
                  {
-                    return hi;
+                    return high;
                  }
-               return v;
+               return value;
             }
      } // namespace utils
 } // namespace mods

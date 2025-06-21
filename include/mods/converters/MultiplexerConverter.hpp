@@ -13,7 +13,13 @@ namespace mods
           class MultiplexerConverter : public Converter<T>
           {
            public:
-             MultiplexerConverter(typename Converter<T>::ptr left, typename Converter<T>::ptr right);
+             struct LeftAndRightChannels
+               {
+                  typename Converter<T>::ptr left;
+                  typename Converter<T>::ptr right;
+               };
+             
+             explicit MultiplexerConverter(LeftAndRightChannels inputChannels);
              
              MultiplexerConverter() = delete;
              MultiplexerConverter(const MultiplexerConverter&) = delete;

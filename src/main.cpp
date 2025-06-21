@@ -2,17 +2,21 @@
 #include "mods/ModuleReader.hpp"
 #include "mods/SoundPlayer.hpp"
 #include "mods/utils/RBuffer.hpp"
+#include "mods/utils/RBufferBackend.hpp"
 #include "mods/utils/types.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <memory>
+#include <string>
+#include <utility>
 
 namespace
 {
    void printModuleInfo(const std::string& info)
      {
-        std::cout << info << std::endl;
+        std::cout << info << '\n';
      }
    
    void printModuleProgress(std::string progress)
@@ -31,20 +35,19 @@ auto main(int argc, char** argv) -> int
 {
    if(argc < 2)
      {
-        std::cout << "no input file" << std::endl;
+        std::cout << "no input file" << '\n';
         return 0;
      }
    
    auto deleter = std::make_unique<mods::utils::RBufferBackend::EmptyDeleter>();
-   auto* argvp = static_cast<u8*>(static_cast<void*>(argv));
-   auto argBuffer = std::make_unique<mods::utils::RBufferBackend>(argvp, argc * sizeof(char*), std::move(deleter));
+   auto argBuffer = std::make_unique<mods::utils::RBufferBackend>(argv, argc, std::move(deleter));
    const mods::utils::RBuffer<char*> args(std::move(argBuffer));
    
-   std::string filename = args[1];
+   const std::string filename = args[1];
    auto dotIdx = filename.find_last_of('.');
    if(dotIdx == std::string::npos) 
      {
-        std::cout << "count not find extension: " << filename << std::endl;
+        std::cout << "count not find extension: " << filename << '\n';
         return 0;
      }
    std::string format = filename.substr(dotIdx+1);
@@ -53,14 +56,14 @@ auto main(int argc, char** argv) -> int
    auto fmt = mods::ModuleReader::parseFormat(format);
    if(fmt == mods::ModuleFormat::UNKNOWN) 
      {
-        std::cout << "unknown format:" << format << std::endl;
+        std::cout << "unknown format:" << format << '\n';
         return 0;
      }
    
    auto reader = mods::ModuleReader::buildReader(fmt, filename);
    if(!reader)
      {
-        std::cout << "could not initialize reader for " << filename << std::endl;
+        std::cout << "could not initialize reader for " << filename << '\n';
         return 0;
      }
    
@@ -68,7 +71,7 @@ auto main(int argc, char** argv) -> int
                             [](const std::string& progress){ printModuleProgress(progress); });
    player.play(std::move(reader));
    
-   std::cout << std::endl;
+   std::cout << '\n';
    
    return 0;
 }

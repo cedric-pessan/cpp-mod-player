@@ -1,5 +1,13 @@
 
+#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/RBufferBackend.hpp"
+#include "mods/utils/optional.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/Format.hpp"
+#include "mods/wav/WavTypes.hpp"
+
+#include <memory>
+#include <utility>
 
 namespace mods
 {
@@ -87,7 +95,7 @@ namespace mods
              if(!_metadataExtension.has_value())
                {
                   auto deleter = std::make_unique<mods::utils::RBufferBackend::EmptyDeleter>();
-                  auto backend = std::make_unique<mods::utils::RBufferBackend>(nullptr, 0, std::move(deleter));
+                  auto backend = std::make_unique<mods::utils::RBufferBackend>(std::move(deleter));
                   return mods::utils::RBuffer<u8>(std::move(backend));
                }
              return *_metadataExtension;

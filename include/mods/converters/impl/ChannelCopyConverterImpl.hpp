@@ -4,13 +4,15 @@
 #include "mods/converters/Converter.hpp"
 #include "mods/utils/DynamicRingBuffer.hpp"
 
+#include <array>
+
 namespace mods
 {
    namespace converters
      {
         namespace impl
           {
-             enum struct CopyDestId
+             enum struct CopyDestId : u8
                {
                   MASTER,
                     SLAVE
@@ -31,8 +33,8 @@ namespace mods
                   auto operator=(InternalCopySourceConverter&&) -> InternalCopySourceConverter& = delete;
                   ~InternalCopySourceConverter() = default;
                   
-                  auto isFinished(CopyDestId id) const -> bool;
-                  void read(mods::utils::RWBuffer<T>* buf, CopyDestId id);
+                  auto isFinished(CopyDestId copyId) const -> bool;
+                  void read(mods::utils::RWBuffer<T>* buf, CopyDestId copyId);
                   
                 private:
                   using UnconsumedBuffer = mods::utils::DynamicRingBuffer<T>;
@@ -45,7 +47,7 @@ namespace mods
                class ChannelCopyConverterSlave : public Converter<T>
                {
                 protected:
-                  ChannelCopyConverterSlave(typename InternalCopySourceConverter<T>::sptr src, CopyDestId id);
+                  ChannelCopyConverterSlave(typename InternalCopySourceConverter<T>::sptr src, CopyDestId copyId);
                   
                 public:
                   ChannelCopyConverterSlave() = delete;

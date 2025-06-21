@@ -1,5 +1,17 @@
 
+#include "mods/converters/Converter.hpp"
+#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/GSMDecoderConverter.hpp"
+#include "mods/wav/GSMInt16.hpp"
+
+#include <array>
+#include <cstddef>
+#include <memory>
+#include <string>
+#include <utility>
 
 namespace mods
 {
@@ -9,7 +21,7 @@ namespace mods
         constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_fac;
         constexpr std::array<GSMInt16, 4> GSMDecoderConverter::_qlb;
         constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_mic;
-        constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_b;
+        constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_bConsts;
         constexpr std::array<GSMInt16, 8> GSMDecoderConverter::_inva;
         
         GSMDecoderConverter::GSMDecoderConverter(Converter<u8>::ptr src)
@@ -56,10 +68,9 @@ namespace mods
         template<typename ARRAY>
           auto GSMDecoderConverter::initializeArrayRWBuffer(ARRAY& backArray) -> mods::utils::RWBuffer<typename ARRAY::value_type>
             {
-               auto* ptr = static_cast<u8*>(static_cast<void*>(backArray.data()));
                auto len = backArray.size();
                auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
-               auto buffer = std::make_unique<mods::utils::RWBufferBackend>(ptr, len * sizeof(typename ARRAY::value_type), std::move(deleter));
+               auto buffer = std::make_unique<mods::utils::RWBufferBackend>(backArray.data(), len, std::move(deleter));
                return mods::utils::RWBuffer<u8>(std::move(buffer)).slice<typename ARRAY::value_type>(0, len);
             }
         
@@ -95,20 +106,20 @@ namespace mods
              using mods::utils::at;
              for(size_t i=0; i<_larC.size(); ++i)
                {
-                  at(_larC,i) = _bitReader.read(at(_larSizes,i));
+                  at(_larC,i) = static_cast<int>(_bitReader.read(at(_larSizes,i)));
                }
              
              for(int i=0; i<4; ++i)
                {
                   auto& subframe = at(_subframes,i);
-                  subframe.N = _bitReader.read(LTP_LAG_SIZE);
-                  subframe.b = _bitReader.read(LTP_GAIN_SIZE);
+                  subframe.N = static_cast<int>(_bitReader.read(LTP_LAG_SIZE));
+                  subframe.b = static_cast<int>(_bitReader.read(LTP_GAIN_SIZE));
                   
-                  subframe.M = _bitReader.read(RPE_GRID_POSITION_SIZE);
-                  subframe.Xmax = _bitReader.read(RPE_BLOCK_AMPLITUDE_SIZE);
+                  subframe.M = static_cast<int>(_bitReader.read(RPE_GRID_POSITION_SIZE));
+                  subframe.Xmax = static_cast<int>(_bitReader.read(RPE_BLOCK_AMPLITUDE_SIZE));
                   for(size_t j=0; j<subframe.x.size(); ++j)
                     {
-                       at(subframe.x,j) = _bitReader.read(RPE_PULSE_SIZE);
+                       at(subframe.x,j) = static_cast<int>(_bitReader.read(RPE_PULSE_SIZE));
                     }
                }
           }
@@ -154,23 +165,23 @@ namespace mods
              
              static constexpr int exponentOffset = 6;
              
-             GSMInt16 temp1 = at(_fac, mantissa.getValue());
-             GSMInt16 temp2 = exponentOffset - exponent;
-             GSMInt16 temp3 = 1 << (temp2 - 1);
+             const GSMInt16 temp1 = at(_fac, mantissa.getValue());
+             const GSMInt16 temp2 = exponentOffset - exponent;
+             const GSMInt16 temp3 = 1 << (temp2 - 1);
              
-             auto& x = at(_subframes, subframe).x;
-             auto& xp = at(_subframes, subframe).xp;
+             auto& xParam = at(_subframes, subframe).x;
+             auto& xpParam = at(_subframes, subframe).xp;
              
              static constexpr int pulseDecodeOffset = -7;
              static constexpr int pulseFixedPointConversionShift = 12;
              
-             for(size_t i=0; i <xp.size(); ++i)
+             for(size_t i=0; i <xpParam.size(); ++i)
                {
-                  GSMInt16 temp = (at(x,i) << 1) + pulseDecodeOffset;;
+                  GSMInt16 temp = (at(xParam,i) << 1) + pulseDecodeOffset;;
                   temp <<= pulseFixedPointConversionShift;
                   temp = temp.mult_round(temp1);
                   temp += temp3;
-                  at(xp,i) = temp >> temp2;
+                  at(xpParam,i) = temp >> temp2;
                }
           }
         
@@ -179,17 +190,17 @@ namespace mods
              using mods::utils::at;
              
              auto& sub = at(_subframes,subframe);
-             auto& ep = sub.ep;
-             auto& M = sub.M;
-             auto& xp = sub.xp;
+             auto& epParam = sub.ep;
+             auto& MParam = sub.M;
+             auto& xpParam = sub.xp;
              
-             for(size_t k=0; k<ep.size(); ++k)
+             for(size_t k=0; k<epParam.size(); ++k)
                {
-                  at(ep,k) = 0;
+                  at(epParam,k) = 0;
                }
-             for(size_t i=0; i<xp.size(); ++i)
+             for(size_t i=0; i<xpParam.size(); ++i)
                {
-                  at(ep,M.getValue() + (3*i)) = at(xp,i);
+                  at(epParam,MParam.getValue() + (3*i)) = at(xpParam,i);
                }
           }
         
@@ -205,55 +216,37 @@ namespace mods
              static constexpr int minNr = 40;
              static constexpr int maxNr = 120;
              
-             auto Nr = Ncr;
+             auto NrParam = Ncr;
              if(Ncr < minNr)
                {
-                  Nr = _nrp;
+                  NrParam = _nrp;
                }
              if(Ncr > maxNr)
                {
-                  Nr = _nrp;
+                  NrParam = _nrp;
                }
-             _nrp = Nr;
+             _nrp = NrParam;
              
              const auto& brp = at(_qlb,bcr.getValue());
              
-             for(size_t k=0; k<erp.size(); ++k)
+             for(int k=0; k<static_cast<int>(erp.size()); ++k)
                {
-                  auto drpp = brp.mult_round(_drp[k - Nr]);
+                  auto drpp = brp.mult_round(_drp[k - NrParam]);
                   _drp[k] = at(erp,k) + drpp;
                }
              
              _drp.slideOrigin(_rpeBlockSize);
           }
         
-        namespace
+        const std::array<GSMDecoderConverter::ShortTermSynthesisFilteringParameters, 4> GSMDecoderConverter::shortTermSynthesisParameters
           {
-             enum struct ShortTermSynthesisFilteringRanges
                {
-                  range_0_12,
-                    range_13_26,
-                    range_27_39,
-                    range_40_159
-               };
-             
-              struct ShortTermSynthesisFilteringParameters
-               {
-                  ShortTermSynthesisFilteringRanges kRange;
-                  int startk;
-                  int endk;
-               };
-             
-             const std::array<ShortTermSynthesisFilteringParameters, 4> shortTermSynthesisParameters
-               {
-                    {
-                         { ShortTermSynthesisFilteringRanges::range_0_12, 0, 12 },
-                         { ShortTermSynthesisFilteringRanges::range_13_26, 13, 26 },
-                         { ShortTermSynthesisFilteringRanges::range_27_39, 27, 39 },
-                         { ShortTermSynthesisFilteringRanges::range_40_159, 40, 159 }
-                    }
-               };
-          } // namespace
+                    { ShortTermSynthesisFilteringRanges::range_0_12, 0, 12 },
+                    { ShortTermSynthesisFilteringRanges::range_13_26, 13, 26 },
+                    { ShortTermSynthesisFilteringRanges::range_27_39, 27, 39 },
+                    { ShortTermSynthesisFilteringRanges::range_40_159, 40, 159 }
+               }
+          };
         
         void GSMDecoderConverter::shortTermSynthesis()
           {
@@ -277,7 +270,7 @@ namespace mods
                        break;
                     }
                   computeReflectionCoefficients();
-                  shortTermSynthesisFiltering(param.startk, param.endk);
+                  shortTermSynthesisFiltering(param);
                }
           }
         
@@ -293,7 +286,7 @@ namespace mods
              for(size_t i=0; i<larPP.size(); ++i)
                {
                   GSMInt16 temp1 = (at(_larC,i) + at(_mic,i)) << scaleShift;
-                  GSMInt16 temp2 = at(_b,i) << 1;
+                  const GSMInt16 temp2 = at(_bConsts,i) << 1;
                   temp1 -= temp2;
                   temp1 = at(_inva,i).mult_round(temp1);
                   at(larPP,i) = temp1 + temp1;
@@ -379,11 +372,11 @@ namespace mods
                }
           }
         
-        void GSMDecoderConverter::shortTermSynthesisFiltering(int k_start, int k_end)
+        void GSMDecoderConverter::shortTermSynthesisFiltering(const ShortTermSynthesisFilteringParameters& params)
           {
              using mods::utils::at;
              
-             for(int k=k_start; k<=k_end; ++k)
+             for(int k=params.startk; k<=params.endk; ++k)
                {
                   auto sri = _drp[k];
                   for(size_t i=0; i<_rp.size(); ++i)
@@ -419,7 +412,7 @@ namespace mods
                   GSMInt16 value = at(_sro,k) + at(_sro,k);
                   value >>= 3;
                   value <<= 3;
-                  _decodedBuffer[k] = value.getValue();
+                  _decodedBuffer[k] = static_cast<s16>(value.getValue());
                }
           }
         

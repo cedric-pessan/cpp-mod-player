@@ -1,27 +1,15 @@
 
 #include "mods/mod/VolumeSlide.hpp"
-
-#include <iostream>
+#include "mods/utils/types.hpp"
 
 namespace mods
 {
    namespace mod
      {
-        void VolumeSlide::init(u16 currentVolume, u8 slideUp, u8 slideDown)
+        void VolumeSlide::init(Volume currentVolume, Delta delta)
           {
              _volume = currentVolume;
-             if(slideUp > 0 && slideDown > 0)
-               {
-                  _delta = 0;
-               }
-             else if(slideUp > 0)
-               {
-                  _delta = slideUp;
-               }
-             else
-               {
-                  _delta = -slideDown;
-               }
+             _delta = delta;
           }
         
         auto VolumeSlide::getModifiedPeriod(u16 period) -> u16
@@ -29,24 +17,26 @@ namespace mods
              return period;
           }
         
-        auto VolumeSlide::getModifiedVolume(u16 volume) const -> u16
+        auto VolumeSlide::getModifiedVolume(u16 /*volume*/) const -> u16
           {
              return _volume;
           }
         
         void VolumeSlide::tick()
           {
-             s16 v = _volume;
-             v += _delta;
-             if(v > 64)
+             const int maxVolume = 64;
+             
+             s32 tmpVolume = _volume;
+             tmpVolume += _delta;
+             if(tmpVolume > maxVolume)
                {
-                  v = 64;
+                  tmpVolume = maxVolume;
                }
-             else if(v < 0)
+             else if(tmpVolume < 0)
                {
-                  v = 0;
+                  tmpVolume = 0;
                }
-             _volume = static_cast<u16>(v);
+             _volume = static_cast<u16>(tmpVolume);
           }
      } // namespace mod
 } // namespace mods

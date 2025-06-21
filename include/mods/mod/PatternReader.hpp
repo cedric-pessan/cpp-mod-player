@@ -26,8 +26,7 @@ namespace mods
                            const mods::utils::RBuffer<Note>& patternBuffer,
                            const mods::utils::RBuffer<Instrument>& instruments,
                            const std::vector<mods::utils::RBuffer<s8>>& sampleBuffers,
-                           OutputQueue* _leftOutput,
-                           OutputQueue* _rightOutput);
+                           std::array<OutputQueue, 2>* outputs);
              
              PatternReader() = delete;
              PatternReader(const PatternReader&) = delete;
@@ -55,7 +54,7 @@ namespace mods
              auto computeTickLength() const -> size_t;
              
              void readAndMixTick(OutputQueue* output, const std::vector<ChannelState*>& channels);
-             auto readAndMixSample(const std::vector<ChannelState*>& channels, u32 maxLength) const -> RLESample;
+             static auto readAndMixSample(const std::vector<ChannelState*>& channels, u32 maxLength) -> RLESample;
              
              void decodeLine();
              void updateSpeed();

@@ -1,7 +1,9 @@
 
+#include "mods/converters/Converter.hpp"
 #include "mods/converters/UnsignedToSignedConverter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
 
-#include <iostream>
 #include <type_traits>
 
 namespace mods
@@ -30,11 +32,11 @@ namespace mods
                
                _src->read(&inBuf);
                
-               for(TOut& v : *buf)
+               for(TOut& elem : *buf)
                  {
-                    u32 value = static_cast<u32>(v);
-                    s32 svalue = static_cast<s32>(value);
-                    v = static_cast<TOut>(svalue - getOffset());
+                    const u32 value = static_cast<u32>(static_cast<TIn>(elem));
+                    const s32 svalue = static_cast<s32>(value);
+                    elem = static_cast<TOut>(svalue - getOffset());
                  }
             }
         

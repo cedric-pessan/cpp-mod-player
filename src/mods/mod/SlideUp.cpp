@@ -1,5 +1,6 @@
 
 #include "mods/mod/SlideUp.hpp"
+#include "mods/utils/types.hpp"
 
 namespace mods
 {

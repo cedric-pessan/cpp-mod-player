@@ -5,6 +5,7 @@
 #include "mods/utils/BitReader.hpp"
 #include "mods/wav/GSMInt16.hpp"
 
+#include <array>
 #include <functional>
 
 namespace mods
@@ -43,6 +44,23 @@ namespace mods
              template<typename ARRAY>
                static auto initializeArrayRWBuffer(ARRAY& backArray) -> mods::utils::RWBuffer<typename ARRAY::value_type>;
              
+             enum struct ShortTermSynthesisFilteringRanges : u8
+               {
+                  range_0_12,
+                    range_13_26,
+                    range_27_39,
+                    range_40_159
+               };
+             
+             struct ShortTermSynthesisFilteringParameters
+               {
+                  ShortTermSynthesisFilteringRanges kRange;
+                  int startk;
+                  int endk;
+               };
+             
+             static const std::array<ShortTermSynthesisFilteringParameters, 4> shortTermSynthesisParameters;
+             
              void decodeGSMFrame();
              void uncompressGSMFrame();
              void readParameters();
@@ -57,7 +75,7 @@ namespace mods
              void larInterpolation_27_39();
              void larInterpolation_40_159();
              void computeReflectionCoefficients();
-             void shortTermSynthesisFiltering(int k_start, int k_end);
+             void shortTermSynthesisFiltering(const ShortTermSynthesisFilteringParameters& params);
              void deEmphasisFiltering();
              void upscale();
              
@@ -117,7 +135,7 @@ namespace mods
                   -32, -32, -16, -16, -8, -8, -4, -4
                };
              
-             constexpr static std::array<GSMInt16, 8> _b
+             constexpr static std::array<GSMInt16, 8> _bConsts
                {
                   0, 0, 2048, -2560, 94, -1792, -341, -1144
                };

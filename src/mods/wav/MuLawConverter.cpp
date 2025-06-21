@@ -1,8 +1,13 @@
 
+#include "mods/converters/Converter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/MuLawConverter.hpp"
 
-#include <iostream>
+#include <cstdlib>
 #include <limits>
+#include <string>
+#include <utility>
 
 namespace mods
 {
@@ -21,7 +26,7 @@ namespace mods
         
         void MuLawConverter::read(mods::utils::RWBuffer<s16>* buf)
           {
-             size_t nbElems = buf->size();
+             const size_t nbElems = buf->size();
              
              auto inBuf = buf->slice<u8>(0, nbElems);
              auto inView = buf->slice<s8>(0, nbElems);
@@ -31,8 +36,8 @@ namespace mods
              
              for(size_t i=0; i<nbElems; ++i)
                {
-                  size_t idx = nbElems - 1 - i;
-                  s8 value = inView[idx];
+                  const size_t idx = nbElems - 1 - i;
+                  const s8 value = inView[idx];
                   outView[idx] = muLawTransform(value);
                }
           }
@@ -40,8 +45,8 @@ namespace mods
         auto MuLawConverter::muLawTransform(s8 value) const -> s16
           {
              using mods::utils::at;
-             u8 v = static_cast<u8>(value);
-             return at(_lookupTable, v);
+             const u8 uValue = static_cast<u8>(value);
+             return at(_lookupTable, uValue);
           }
         
         void MuLawConverter::fillLookupTable()
@@ -51,10 +56,10 @@ namespace mods
              
              for(u32 value=0; value<std::numeric_limits<u8>::max(); ++value)
                {
-                  u32 v = value ^ byteMask; // invert all bits
-                  u32 exponent = (v >> MANTISSA_SIZE) & EXPONENT_MASK;
-                  u32 mantissa = v & MANTISSA_MASK;
-                  bool negative = (v & signMask) == 0;
+                  const u32 uValue = value ^ byteMask; // invert all bits
+                  const u32 exponent = (uValue >> MANTISSA_SIZE) & EXPONENT_MASK;
+                  const u32 mantissa = uValue & MANTISSA_MASK;
+                  const bool negative = (uValue & signMask) == 0;
                   
                   u16 dest = mantissa << 1U;
                   static constexpr u32 baseMantissa = 0b100001U;
@@ -63,10 +68,10 @@ namespace mods
                   static constexpr u32 constantOffset = 33;
                   dest -= constantOffset;
                   dest <<= 2U;
-                  s16 signedDest = dest;
+                  s16 signedDest = static_cast<s16>(dest);
                   if(negative)
                     {
-                       signedDest = -signedDest;
+                       signedDest = static_cast<s16>(-signedDest);
                     }
                   _lookupTable.at(value) = signedDest;
                }

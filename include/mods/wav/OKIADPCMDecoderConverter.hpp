@@ -45,8 +45,8 @@ namespace mods
              class Decoder
                {
                 public:
-                  Decoder(mods::utils::RBuffer<u8> encodedBuffer,
-                          int numChannel,
+                  Decoder(int numChannel,
+                          mods::utils::RBuffer<u8> encodedBuffer,
                           int nbChannels);
                   
                   Decoder() = delete;

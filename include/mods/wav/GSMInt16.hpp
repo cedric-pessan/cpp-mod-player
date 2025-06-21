@@ -36,17 +36,17 @@ namespace mods
                   return _value;
                }
              
-             auto operator==(const GSMInt16& v) const -> bool
+             auto operator==(const GSMInt16& right) const -> bool
                {
-                  return _value == v._value;
+                  return _value == right._value;
                }
-             auto operator>(const GSMInt16& v) const -> bool
+             auto operator>(const GSMInt16& right) const -> bool
                {
-                  return _value > v._value;
+                  return _value > right._value;
                }
-             auto operator<(const GSMInt16& v) const -> bool
+             auto operator<(const GSMInt16& right) const -> bool
                {
-                  return _value < v._value;
+                  return _value < right._value;
                }
              
              auto operator>>(const GSMInt16& shift) const -> GSMInt16
@@ -71,9 +71,9 @@ namespace mods
                   return 0 - _value;
                }
              
-             auto operator+(const GSMInt16& v) const -> GSMInt16
+             auto operator+(const GSMInt16& right) const -> GSMInt16
                {
-                  auto res = _value + v._value;
+                  auto res = _value + right._value;
                   if(res > _max)
                     {
                        res = _max;
@@ -84,9 +84,9 @@ namespace mods
                     }
                   return res;
                }
-             auto operator-(const GSMInt16& v) const -> GSMInt16
+             auto operator-(const GSMInt16& right) const -> GSMInt16
                {
-                  auto res = _value - v._value;
+                  auto res = _value - right._value;
                   if(res > _max)
                     {
                        res = _max;
@@ -98,16 +98,18 @@ namespace mods
                   return res;
                }
              
-             auto mult_round(const GSMInt16& v) const -> GSMInt16
+             auto mult_round(const GSMInt16& right) const -> GSMInt16
                {
-                  if(_value == _min && v._value == _min)
+                  using mods::utils::arithmeticShifter::Shift;
+                  
+                  if(_value == _min && right._value == _min)
                     {
                        return _max;
                     }
-                  s32 res = _value * v._value + _roundConstant;
+                  const s32 res = (_value * right._value) + _roundConstant;
                   
                   static constexpr int fixedPointShiftAfterMult = 15;
-                  return mods::utils::arithmeticShifter::shiftRight(res, fixedPointShiftAfterMult);
+                  return mods::utils::arithmeticShifter::shiftRight(res, static_cast<Shift>(fixedPointShiftAfterMult));
                }
              
              auto abs() const -> GSMInt16
@@ -130,30 +132,30 @@ namespace mods
                   return *this;
                }
              
-             auto operator<<=(const GSMInt16& v) -> GSMInt16&
+             auto operator<<=(const GSMInt16& right) -> GSMInt16&
                {
-                  auto res = *this << v;
+                  auto res = *this << right;
                   _value = res._value;
                   return *this;
                }
              
-             auto operator>>=(const GSMInt16& v) -> GSMInt16&
+             auto operator>>=(const GSMInt16& right) -> GSMInt16&
                {
-                  auto res = *this >> v;
+                  auto res = *this >> right;
                   _value = res._value;
                   return *this;
                }
              
-             auto operator+=(const GSMInt16& v) -> GSMInt16&
+             auto operator+=(const GSMInt16& right) -> GSMInt16&
                {
-                  auto res = *this + v;
+                  auto res = *this + right;
                   _value = res._value;
                   return *this;
                }
              
-             auto operator-=(const GSMInt16& v) -> GSMInt16&
+             auto operator-=(const GSMInt16& right) -> GSMInt16&
                {
-                  auto res = *this - v;
+                  auto res = *this - right;
                   _value = res._value;
                   return *this;
                }
@@ -166,15 +168,17 @@ namespace mods
              
              auto doLeftShift(const GSMInt16& shift) const -> GSMInt16
                {
-                  u32 x = static_cast<u32>(_value);
-                  auto n = static_cast<u32>(shift.getValue());
-                  return x << n;
+                  const u32 xTmp = static_cast<u32>(_value);
+                  auto nShift = static_cast<u32>(shift.getValue());
+                  return static_cast<int>(xTmp << nShift);
                }
              
              auto doRightShift(const GSMInt16& shift) const -> GSMInt16
                {
-                  auto n = static_cast<u32>(shift.getValue());
-                  return mods::utils::arithmeticShifter::shiftRight(_value, n);
+                  using mods::utils::arithmeticShifter::Shift;
+                  
+                  auto nShift = static_cast<u32>(shift.getValue());
+                  return mods::utils::arithmeticShifter::shiftRight(_value, static_cast<Shift>(nShift));
                }
              
              s32 _value = 0;

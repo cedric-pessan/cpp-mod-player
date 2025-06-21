@@ -24,7 +24,7 @@ namespace mods
              void read(mods::utils::RWBuffer<double>* buf) override;
              
            private:
-             auto convert(T in) -> double;
+             auto convert(T input) -> double;
              
              typename Converter<T>::ptr _src;
           };

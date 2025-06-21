@@ -12,6 +12,9 @@ namespace mods
         class Vibrato : public Effect
           {
            public:
+             enum Depth : int;
+             enum VibratoFrequency : int;
+             
              Vibrato();
              Vibrato(const Vibrato&) = delete;
              Vibrato(Vibrato&&) = default;
@@ -19,7 +22,7 @@ namespace mods
              auto operator=(Vibrato&&) -> Vibrato& = delete;
              ~Vibrato() override = default;
              
-             void init(int depth, int oscillationFrequency, u16 period);
+             void init(Depth depth, VibratoFrequency oscillationFrequency, u16 period);
              
              auto getModifiedPeriod(u16 period) -> u16 override;
              auto getModifiedVolume(u16 volume) const -> u16 override;
@@ -30,9 +33,10 @@ namespace mods
              int _oscillationFrequency = 0;
              int _sinePos = 0;
              bool _negSine = false;
-             u16 _period;
+             u16 _period = 0;
              
-             std::array<int, 32> _sine;
+             constexpr static int SINE_TABLE_SIZE = 32;
+             std::array<int, SINE_TABLE_SIZE> _sine {};
           };
      } // namespace mod
 } // namespace mods

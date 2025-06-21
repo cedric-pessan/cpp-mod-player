@@ -26,7 +26,7 @@ namespace mods
              auto getNextDecimatedSample() -> double;
              void updateHistory();
              auto calculateInterpolatedSample() -> double;
-             auto getTap(size_t i, const impl::SampleWithZeros& sample) const -> double;
+             auto getTap(size_t tapIndex, const impl::SampleWithZeros& sample) const -> double;
           };
      } // namespace converters
 } // namespace mods

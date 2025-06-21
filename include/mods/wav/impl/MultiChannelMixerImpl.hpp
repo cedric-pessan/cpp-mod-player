@@ -4,19 +4,21 @@
 #include "mods/converters/Converter.hpp"
 #include "mods/utils/DynamicRingBuffer.hpp"
 
+#include <array>
+
 namespace mods
 {
    namespace wav
      {
         namespace impl
           {
-             enum struct ChannelId
+             enum struct ChannelId : u8
                {
                   Left,
                     Right
                };
              
-             enum struct DepthPositions
+             enum struct DepthPositions : u8
                {
                   Front,
                     FrontCenter,
@@ -33,7 +35,7 @@ namespace mods
                     NbDepthPositions
                };
              
-             enum struct ChannelTypes
+             enum struct ChannelTypes : u8
                {
                   SPEAKER_FRONT_LEFT,
                     SPEAKER_FRONT_RIGHT,
@@ -82,7 +84,7 @@ namespace mods
                   void ensureChannelBuffersSizes(size_t len);
                   
                   void computeMixingCoefficients(u32 channelMask);
-                  auto mix(int idxOutBuffer, size_t idxSample) const -> double;
+                  auto mix(const std::vector<double>& coefficients, size_t idxSample) const -> double;
                   
                   using UnconsumedBuffer = mods::utils::DynamicRingBuffer<double>;
                   std::array<UnconsumedBuffer,2> _unconsumedBuffers;

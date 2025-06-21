@@ -1,9 +1,18 @@
 
+#include "mods/converters/Converter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/DVIADPCMDecoderConverter.hpp"
 #include "mods/wav/Format.hpp"
+#include "mods/wav/impl/DVIADPCMDecoderConverterImpl.hpp"
 
+#include <array>
+#include <cstdlib>
 #include <iostream>
 #include <limits>
+#include <memory>
+#include <utility>
 
 namespace mods
 {
@@ -14,46 +23,46 @@ namespace mods
           _blockSize(format.getBitsPerContainer() / BITS_IN_BYTE * format.getNumChannels()),
           _nbChannels(format.getNumChannels()),
 	  _encodedBuffer(allocateNewTempBuffer(_blockSize)),
-          _dataBuffer(_encodedBuffer.readOnlySlice<u8>(sizeof(impl::DVIADPCMHeader) * _nbChannels, _blockSize - sizeof(impl::DVIADPCMHeader) * _nbChannels)),
+          _dataBuffer(_encodedBuffer.readOnlySlice<u8>(sizeof(impl::DVIADPCMHeader) * _nbChannels, _blockSize - (sizeof(impl::DVIADPCMHeader) * _nbChannels))),
           _headers(_encodedBuffer.readOnlySlice<impl::DVIADPCMHeader>(0, _nbChannels))
 	    {
                if(_blockSize <= sizeof(impl::DVIADPCMHeader))
                  {
-                    std::cout << "Warning: block size is too small" << std::endl;
+                    std::cout << "Warning: block size is too small" << '\n';
                  }
                
                if(format.getBitsPerSample() != 4)
                  {
-                    std::cout << "Warning: DVIADPCMDecoderConverter: stream is not 4 bits per sample" << std::endl;
+                    std::cout << "Warning: DVIADPCMDecoderConverter: stream is not 4 bits per sample" << '\n';
                  }
                
                if(!format.hasMetaData())
                  {
-                    std::cout << "Warning: DVIADPCMDecoderConverter: wav does not have required format extension" << std::endl;
+                    std::cout << "Warning: DVIADPCMDecoderConverter: wav does not have required format extension" << '\n';
                  }
                
                auto metadata = format.getMetaData();
                if(metadata.size() != sizeof(u16))
                  {
-                    std::cout << "Warning: DVIADPCMDecoderConverter: wrong extension size" << std::endl;
+                    std::cout << "Warning: DVIADPCMDecoderConverter: wrong extension size" << '\n';
                  }
                
                auto dviMetadata = metadata.slice<u16>(0,1);
-               u16 samplesPerBlock = dviMetadata[0];
+               const u16 samplesPerBlock = dviMetadata[0];
                
-               if(((samplesPerBlock-1)*4 + sizeof(impl::DVIADPCMHeader) * BITS_IN_BYTE) != format.getBitsPerContainer())
+               if((static_cast<u64>((samplesPerBlock-1)*4) + sizeof(impl::DVIADPCMHeader) * BITS_IN_BYTE) != format.getBitsPerContainer())
                  {
-                    std::cout << "Warning: DVIADPCMDecoderConverter: number of samples per block does not match bits per container" << std::endl;
+                    std::cout << "Warning: DVIADPCMDecoderConverter: number of samples per block does not match bits per container" << '\n';
                  }
                
-               if((((samplesPerBlock - 1) * _nbChannels) % (2 * sizeof(u32))) !=  0)
+               if((static_cast<u64>((samplesPerBlock - 1) * _nbChannels) % (2 * sizeof(u32))) !=  0)
                  {
-                    std::cout << "Warning: DVIADPCMDecoderConverter: samples per block must be a multiple of 8" << std::endl;
+                    std::cout << "Warning: DVIADPCMDecoderConverter: samples per block must be a multiple of 8" << '\n';
                  }
                
                for(int i=0; i<_nbChannels; ++i)
                  {
-                    _decoders.emplace_back(_dataBuffer, _headers, i, _nbChannels);
+                    _decoders.emplace_back(i, _dataBuffer, _headers, _nbChannels);
                  }
 	    }
         
@@ -99,11 +108,11 @@ namespace mods
 	  {
              if((buf->size() % _nbChannels) != 0)
                {
-                  std::cout << "DVI/ADPCM should read a multiple of channel number" << std::endl;
+                  std::cout << "DVI/ADPCM should read a multiple of channel number" << '\n';
                }
 	     
              size_t count = 0;
-             size_t nbElems = buf->size();
+             const size_t nbElems = buf->size();
              auto& out = *buf;
              
              while(count < nbElems)
@@ -123,7 +132,7 @@ namespace mods
                          }
                     }
                   
-                  s16 sample = _decoders[_currentChannel].getSample();
+                  const s16 sample = _decoders[_currentChannel].getSample();
                   out[count++] = sample;
                   ++_currentChannel;
                   if(_currentChannel == _decoders.size())
@@ -142,13 +151,13 @@ namespace mods
 	     return mods::utils::RWBuffer<u8>(std::move(buffer));
 	  }
         
-        DVIADPCMDecoderConverter::Decoder::Decoder(mods::utils::RBuffer<u8> dataBuffer,
+        DVIADPCMDecoderConverter::Decoder::Decoder(int numChannel,
+                                                   mods::utils::RBuffer<u8> dataBuffer,
                                                    const mods::utils::RBuffer<impl::DVIADPCMHeader>& headers,
-                                                   int numChannel,
                                                    int nbChannels)
           : _dataBuffer(std::move(dataBuffer)),
           _itDataBuffer(_dataBuffer.end()),
-          _header(headers[numChannel]),
+          _header(&headers[numChannel]),
           _nbChannels(nbChannels),
           _numChannel(numChannel)
           {
@@ -157,7 +166,7 @@ namespace mods
         void DVIADPCMDecoderConverter::Decoder::resetBuffer()
           {
              _sampleAvailable = false;
-             _itDataBuffer = _dataBuffer.begin() + 4 * _numChannel;
+             _itDataBuffer = _dataBuffer.begin() + 4L * _numChannel;
              _currentByteInDataWord = 0;
              _firstSampleInBlock = true;
              _index = 0;
@@ -193,21 +202,21 @@ namespace mods
                {
                   using mods::utils::at;
                   
-                  _index = _header.getStepSizeTableIndex();
+                  _index = _header->getStepSizeTableIndex();
                   _index = mods::utils::clamp(_index, 0, static_cast<int>(stepSizeTable.size()-1));
                   _stepSize = at(stepSizeTable, _index);
                   _firstSampleInBlock = false;
-                  _newSample = _header.getFirstSample();
-                  return _header.getFirstSample();
+                  _newSample = _header->getFirstSample();
+                  return _header->getFirstSample();
                }
              
              static constexpr u8 nibbleMask = 0xFU;
              
-             u8 v = *_itDataBuffer;
-             int sample = v & nibbleMask;
-             s16 decodedSample = decodeSample(sample);
+             const u8 currentByte = *_itDataBuffer;
+             int sample = currentByte & nibbleMask;
+             const s16 decodedSample = decodeSample(sample);
              
-             sample = static_cast<u8>(v >> 4U) & nibbleMask;
+             sample = static_cast<u8>(currentByte >> 4U) & nibbleMask;
              _nextSample = decodeSample(sample);
              _sampleAvailable = true;
              
@@ -215,7 +224,7 @@ namespace mods
              if(_currentByteInDataWord == 4)
                {
                   _currentByteInDataWord = 0;
-                  _itDataBuffer += 1 + (_nbChannels-1) * 4;
+                  _itDataBuffer += 1 + ((_nbChannels-1) * 4);
                }
              else
                {
@@ -231,21 +240,21 @@ namespace mods
              
              static constexpr u32 signBitMask = 8U;
 	     
-	     u32 originalSample = static_cast<u32>(sample);
+	     const u32 originalSample = static_cast<u32>(sample);
 	     int difference = 0;
 	     if((originalSample & 4U) != 0)
 	       {
-		  difference += _stepSize;
+		  difference += static_cast<int>(_stepSize);
 	       }
 	     if((originalSample & 2U) != 0)
 	       {
-		  difference += (_stepSize >> 1U);
+		  difference += static_cast<int>(_stepSize >> 1U);
 	       }
 	     if((originalSample & 1U) != 0)
 	       {
-		  difference += (_stepSize >> 2U);
+		  difference += static_cast<int>(_stepSize >> 2U);
 	       }
-	     difference += (_stepSize >> 3U);
+	     difference += static_cast<int>(_stepSize >> 3U);
 	     if((originalSample & signBitMask) != 0)
 	       {
 		  difference = -difference;

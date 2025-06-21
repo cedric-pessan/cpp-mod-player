@@ -9,13 +9,13 @@ namespace mods
 {
    namespace utils
      {
-	enum struct ByteSwap
+	enum struct ByteSwap : u8
 	  {
 	     None,
 	       U32
 	  };
 	
-	enum struct BitOrder
+	enum struct BitOrder : u8
 	  {
 	     LsbToMsb,
 	       MsbToLsb

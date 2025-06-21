@@ -1,5 +1,11 @@
 
 #include "mods/converters/ChannelCopyConverter.hpp"
+#include "mods/converters/Converter.hpp"
+#include "mods/converters/impl/ChannelCopyConverterImpl.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
+
+#include <cstddef>
 
 namespace mods
 {
@@ -14,9 +20,9 @@ namespace mods
                    }
              
              template<typename T>
-               auto InternalCopySourceConverter<T>::isFinished(CopyDestId id) const -> bool
+               auto InternalCopySourceConverter<T>::isFinished(CopyDestId copyId) const -> bool
                {
-                  auto idxBuffer = toUnderlying(id);
+                  auto idxBuffer = toUnderlying(copyId);
                   if(!_unconsumedBuffers.at(idxBuffer).empty())
                     {
                        return false;
@@ -25,10 +31,10 @@ namespace mods
                }
              
              template<typename T>
-               void InternalCopySourceConverter<T>::read(mods::utils::RWBuffer<T>* buf, CopyDestId id)
+               void InternalCopySourceConverter<T>::read(mods::utils::RWBuffer<T>* buf, CopyDestId copyId)
                  {
                     size_t read = 0;
-                    auto idxBuffer = toUnderlying(id);
+                    auto idxBuffer = toUnderlying(copyId);
                     auto& out = *buf;
                     while(!_unconsumedBuffers.at(idxBuffer).empty() && read < out.size())
                       {
@@ -48,9 +54,9 @@ namespace mods
                  }
              
              template<typename T>
-               ChannelCopyConverterSlave<T>::ChannelCopyConverterSlave(typename InternalCopySourceConverter<T>::sptr src, CopyDestId id)
+               ChannelCopyConverterSlave<T>::ChannelCopyConverterSlave(typename InternalCopySourceConverter<T>::sptr src, CopyDestId copyId)
                  : _src(std::move(src)),
-               _id(id)
+               _id(copyId)
                  {
                  }
              

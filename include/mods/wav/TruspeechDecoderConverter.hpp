@@ -4,6 +4,8 @@
 #include "mods/converters/Converter.hpp"
 #include "mods/utils/BitReader.hpp"
 
+#include <array>
+
 namespace mods
 {
    namespace wav

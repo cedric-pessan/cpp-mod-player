@@ -11,14 +11,14 @@ namespace mods
           class CastConverter : public mods::converters::Converter<TOut>
           {
            public:
-             CastConverter(typename Converter<TIn>::ptr src);
+             explicit CastConverter(typename Converter<TIn>::ptr src);
              
              CastConverter() = delete;
              CastConverter(const CastConverter&) = delete;
              CastConverter(CastConverter&&) = delete;
              auto operator=(const CastConverter&) -> CastConverter& = delete;
              auto operator=(CastConverter&&) -> CastConverter& = delete;
-             ~CastConverter() = default;
+             ~CastConverter() override = default;
              
              auto isFinished() const -> bool override;
              void read(mods::utils::RWBuffer<TOut>* buf) override;

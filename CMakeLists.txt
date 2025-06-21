@@ -1,6 +1,6 @@
 ##################
 # module reader
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 14)
 
 project(modreader)
@@ -14,14 +14,14 @@ include(TestBigEndian)
 
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 
-Find_Package(SDL REQUIRED)
+Find_Package(SDL2 REQUIRED)
 Find_Package(OpenCL)
 
 if(OpenCL_FOUND)
 set(WITH_OPENCL 1)
 endif()
 
-include_directories(${SDL_INCLUDE_DIR}
+include_directories(${SDL2_INCLUDE_DIR}
                     ${OpenCL_INCLUDE_DIR}
                     ${CMAKE_CURRENT_BINARY_DIR}/include
                     ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -108,7 +108,7 @@ add_executable(modreader src/main.cpp
                          ${CMAKE_CURRENT_BINARY_DIR}/include/mods/utils/Filters.hpp
                          ${CMAKE_CURRENT_BINARY_DIR}/src/mods/utils/Filters.cpp)
 
-target_link_libraries(modreader ${SDL_LIBRARY} ${OpenCL_LIBRARY})
+target_link_libraries(modreader ${SDL2_LIBRARIES} ${OpenCL_LIBRARY})
 
 set_property(TARGET filter_generator PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 set_property(TARGET modreader PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)

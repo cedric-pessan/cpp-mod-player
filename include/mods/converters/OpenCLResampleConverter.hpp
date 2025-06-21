@@ -27,7 +27,9 @@ namespace mods
              void read(mods::utils::RWBuffer<double>* buf) override;
              
            private:
-             void fillBuffers(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* sampleBuffer, cl::Buffer* zerosBuffer, cl::Buffer* repeatBuffer) override;
+             void fillSampleBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* sampleBuffer) override;
+             void fillZerosBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* zerosBuffer) override;
+             void fillRepeatBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* repeatBuffer) override;
           };
         
         class AmigaResampleParameters;
@@ -52,7 +54,9 @@ namespace mods
              
            private:
              auto buildFilteredTapsBuffer() -> cl::Buffer;
-             void fillBuffers(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* sampleBuffer, cl::Buffer* zerosBuffer, cl::Buffer* repeatBuffer) override;
+             void fillSampleBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* sampleBuffer) override;
+             void fillZerosBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* zerosBuffer) override;
+             void fillRepeatBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* repeatBuffer) override;
              
              bool _filtered = false;
              std::vector<double> _filteredTaps;

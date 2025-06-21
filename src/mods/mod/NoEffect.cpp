@@ -1,7 +1,6 @@
 
 #include "mods/mod/NoEffect.hpp"
-
-#include <iostream>
+#include "mods/utils/types.hpp"
 
 namespace mods
 {

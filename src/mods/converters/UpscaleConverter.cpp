@@ -1,5 +1,8 @@
 
+#include "mods/converters/Converter.hpp"
 #include "mods/converters/UpscaleConverter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
 
 #include <iostream>
 
@@ -13,7 +16,7 @@ namespace mods
               {
                  if(sizeof(TOut) > 2*sizeof(TIn))
                    {
-                      std::cout << "TODO: out format too large" << std::endl;
+                      std::cout << "TODO: out format too large" << '\n';
                    }
               }
         
@@ -26,7 +29,7 @@ namespace mods
         template<typename TOut, typename TIn>
           void UpscaleConverter<TOut, TIn>::read(mods::utils::RWBuffer<TOut>* buf)
             {
-               int nbElems = buf->size();
+               const int nbElems = buf->size();
                
                auto inView = buf->template slice<TIn>(0, nbElems);
                
@@ -34,8 +37,8 @@ namespace mods
                
                for(int i = nbElems-1; i>=0; --i)
                  {
-                    u32 v = static_cast<u8>(inView[i]);
-                    TOut value = (v << shiftLeftValue()) | ((v >> shiftRightValue()) & maskValue());
+                    const u32 inputValue = static_cast<u8>(inView[i]);
+                    TOut value = (inputValue << shiftLeftValue()) | ((inputValue >> shiftRightValue()) & maskValue());
                     (*buf)[i] = value;
                  }
             }

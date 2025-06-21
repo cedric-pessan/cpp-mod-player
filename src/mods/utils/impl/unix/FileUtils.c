@@ -3,8 +3,6 @@
 
 #include <fcntl.h>
 #include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 int modsOpen(const char* pathName, int flags)
 {

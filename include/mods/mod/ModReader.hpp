@@ -16,7 +16,7 @@ namespace mods
         class ModReader : public ModuleReader
           {
            public:
-             ModReader(const std::string& fileName);
+             explicit ModReader(const std::string& fileName);
              ~ModReader() override = default;
              
              ModReader() = delete;
@@ -47,7 +47,7 @@ namespace mods
                using Converter = mods::converters::Converter<T>;
              using RLESample = mods::utils::AmigaRLESample;
              
-             static auto buildModConverter(std::shared_ptr<PatternListReader> patternListReader) -> Converter<s16>::ptr;
+             static auto buildModConverter(PatternListReader* patternListReader) -> Converter<s16>::ptr;
              
              static auto buildResamplerStage(Converter<RLESample>::ptr left,
                                              Converter<RLESample>::ptr right) -> Converter<s16>::ptr;
@@ -77,7 +77,7 @@ namespace mods
              mods::utils::RBuffer<Note> _patterns;
              std::vector<mods::utils::RBuffer<s8>> _sampleBuffers;
              
-             std::shared_ptr<PatternListReader> _patternListReader;
+             PatternListReader _patternListReader;
              mods::converters::Converter<s16>::ptr _modConverter;
           };
      } // namespace mod

@@ -1,8 +1,8 @@
 #ifndef MODS_WAV_WAVREADER_HPP
 #define MODS_WAV_WAVREADER_HPP
 
-#include "mods/converters/Converter.hpp"
 #include "mods/ModuleReader.hpp"
+#include "mods/converters/Converter.hpp"
 #include "mods/utils/RBuffer.hpp"
 #include "mods/wav/Format.hpp"
 #include "mods/wav/StatCollector.hpp"
@@ -55,13 +55,18 @@ namespace mods
                                   size_t offset,
                                   std::stringstream& description);
              void readCue() const;
-             void parseAdtl() const;
+             static void parseAdtl();
              static auto readPeak(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
                                   const mods::utils::RBuffer<u8>& riffBuffer,
                                   size_t offset,
                                   int nbChannels) -> double;
              
-             void buildInfo(int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec);
+             static void readListChunk(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                       const mods::utils::RBuffer<u8>& riffBuffer,
+                                       size_t offset,
+                                       std::stringstream& description);
+             
+             void buildInfo(const Format& format, const std::string& description);
              
              mods::converters::Converter<s16>::ptr _converter;
              const mods::utils::RBuffer<u8> _fileBuffer;

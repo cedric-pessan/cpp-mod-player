@@ -1,7 +1,17 @@
 
+#include "mods/converters/Converter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/MultiChannelMixer.hpp"
+#include "mods/wav/impl/MultiChannelMixerImpl.hpp"
 
-#include <iostream>
+#include <array>
+#include <cstdlib>
+#include <memory>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 namespace mods
 {
@@ -64,7 +74,7 @@ namespace mods
                   
                   while(!_unconsumedBuffers.at(idxBuffer).empty() && read < toRead)
                     {
-                       double value = _unconsumedBuffers.at(idxBuffer).front();
+                       const double value = _unconsumedBuffers.at(idxBuffer).front();
                        outView[read++] = value;
                        _unconsumedBuffers.at(idxBuffer).pop_front();
                     }
@@ -82,10 +92,10 @@ namespace mods
                        
                        for(size_t i=0; i<remainsToRead; ++i)
                          {
-                            double sample = mix(idxBuffer, i);
+                            double sample = mix(_coefficients.at(idxBuffer), i);
                             outView[read++] = sample;
                             
-                            sample = mix(1-idxBuffer, i);
+                            sample = mix(_coefficients.at(1-idxBuffer), i);
                             _unconsumedBuffers.at(1-idxBuffer).push_back(sample);
                          }
                     }
@@ -131,10 +141,7 @@ namespace mods
                {
                   u32 mask = 1;
                   size_t idxChannel =0;
-                  constexpr int maxDepthPositions = toUnderlying(DepthPositions::NbDepthPositions);
-                  std::array<bool, maxDepthPositions> filledDepthPositions {};
-                  int nbDepthPositions = 0;
-                  std::fill(filledDepthPositions.begin(), filledDepthPositions.end(), false);
+                  std::unordered_set<DepthPositions> filledDepthPositions;
                   
                   for(size_t i=0; i<2; ++i)
                     {
@@ -145,12 +152,7 @@ namespace mods
                     {
                        if((channelMask & mask) != 0)
                          {
-                            auto depthPosition = toUnderlying(descriptor.depthPosition);
-                            if(!filledDepthPositions.at(depthPosition))
-                              {
-                                 ++nbDepthPositions;
-                                 filledDepthPositions.at(depthPosition) = true;
-                              }
+                            filledDepthPositions.insert(descriptor.depthPosition);
                             if(descriptor.left) 
                               {
                                  _coefficients[toUnderlying(ChannelId::Left)][idxChannel] = descriptor.defaultLeftCoefficient;
@@ -178,12 +180,7 @@ namespace mods
                          }
                        if((channelMask & mask) == 0) // free output
                          {
-                            auto depthPosition = toUnderlying(descriptor.depthPosition);
-                            if(!filledDepthPositions.at(depthPosition))
-                              {
-                                 ++nbDepthPositions;
-                                 filledDepthPositions.at(depthPosition) = true;
-                              }
+                            filledDepthPositions.insert(descriptor.depthPosition);
                             if(descriptor.left) 
                               {
                                  _coefficients[toUnderlying(ChannelId::Left)][idxChannel] = descriptor.defaultLeftCoefficient;
@@ -199,15 +196,14 @@ namespace mods
                   
                   for(size_t i=0; i<_channels.size(); ++i)
                     {
-                       _coefficients[toUnderlying(ChannelId::Left)][i] /= nbDepthPositions;
-                       _coefficients[toUnderlying(ChannelId::Right)][i] /= nbDepthPositions;
+                       _coefficients[toUnderlying(ChannelId::Left)][i] /= static_cast<double>(filledDepthPositions.size());
+                       _coefficients[toUnderlying(ChannelId::Right)][i] /= static_cast<double>(filledDepthPositions.size());
                     }
                }
              
-             auto InternalMultiChannelMixerSourceConverter::mix(int idxOutBuffer, size_t idxSample) const -> double
+             auto InternalMultiChannelMixerSourceConverter::mix(const std::vector<double>& coefficients, size_t idxSample) const -> double
                {
                   double sample = 0.0;
-                  const auto& coefficients = _coefficients.at(idxOutBuffer);
                   for(size_t i=0; i<_channels.size(); ++i)
                     {
                        const auto& buf = _channelsBuffers[i];

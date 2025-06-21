@@ -3,6 +3,10 @@
 #include "mods/mod/ModReader.hpp"
 #include "mods/wav/WavReader.hpp"
 
+#include <memory>
+#include <stdexcept>
+#include <string>
+
 namespace mods
 {
    // static

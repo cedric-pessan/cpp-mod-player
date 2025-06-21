@@ -7,7 +7,7 @@ namespace mods
      {
         namespace bessel
           {
-             auto i0(double x) -> double;
+             auto i0(double xParam) -> double;
              
           } // namespace bessel
      } // namespace utils

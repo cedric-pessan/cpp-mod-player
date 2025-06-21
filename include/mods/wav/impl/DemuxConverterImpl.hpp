@@ -17,7 +17,7 @@ namespace mods
                   using sptr = std::shared_ptr<InternalDemuxConverter>;
                   using Converter = mods::converters::Converter<T>;
                   
-                  InternalDemuxConverter(typename Converter::ptr src, u32 nbChannels, u32 bitsPerContainer);
+                  InternalDemuxConverter(u32 nbChannels, typename Converter::ptr src, u32 bitsPerContainer);
                   
                   InternalDemuxConverter() = delete;
                   InternalDemuxConverter(const InternalDemuxConverter&) = delete;

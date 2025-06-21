@@ -1,8 +1,6 @@
 #ifndef MODS_WAV_IMPL_ADPCMDECODERCONVERTERIMPL_HPP
 #define MODS_WAV_IMPL_ADPCMDECODERCONVERTERIMPL_HPP
 
-#include "mods/wav/ADPCMDecoderConverter.hpp"
-
 namespace mods
 {
    namespace wav
@@ -96,6 +94,14 @@ namespace mods
                     }
                };
 #pragma pack(pop)
+             
+             struct ChannelPreamble
+               {
+                  s16 sampleTMinus1;
+                  s16 sampleTMinus2;
+                  size_t predictor;
+                  s16 initialDelta;
+               };
 	     
 	     class ADPCMChannelDecoder
 	       {
@@ -107,7 +113,7 @@ namespace mods
 		  auto operator=(ADPCMChannelDecoder&&) -> ADPCMChannelDecoder& = delete;
 		  ~ADPCMChannelDecoder() = default;
 		  
-		  void initDecoder(s16 sampleTMinus1, s16 sampleTMinus2, size_t predictor, const mods::utils::RBuffer<s16>& coefs, s16 initialDelta);
+		  void initDecoder(const ChannelPreamble& channelPreamble, const mods::utils::RBuffer<s16>& coefs);
 		  auto getSampleTMinus2() const -> s16;
 		  auto getSampleTMinus1() const -> s16;
 		  auto decodeSample(u8 sample) -> s16;

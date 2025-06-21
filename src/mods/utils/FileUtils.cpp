@@ -1,9 +1,16 @@
 
-#include "mods/utils/impl/FileUtils.hpp"
 #include "mods/utils/FileUtils.hpp"
 #include "mods/utils/RBuffer.hpp"
+#include "mods/utils/RBufferBackend.hpp"
+#include "mods/utils/impl/FileUtils.hpp"
+#include "mods/utils/types.hpp"
 
+#include <cstddef>
 #include <fstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace mods
@@ -27,8 +34,8 @@ namespace mods
                   class FileReaderDeleter : public RBufferBackend::Deleter
                     {
                      public:
-                       explicit FileReaderDeleter(std::vector<u8>&& v)
-                         : _v(std::move(v))
+                       explicit FileReaderDeleter(std::vector<char>&& vec)
+                         : _v(std::move(vec))
                            {
                            }
                        ~FileReaderDeleter() override = default;
@@ -40,25 +47,25 @@ namespace mods
                        auto operator=(FileReaderDeleter&&) -> FileReaderDeleter& = delete;
                        
                      private:
-                       std::vector<u8> _v;
+                       std::vector<char> _v;
                     };
                } // namespace
              
              auto readFileToBuffer(const std::string& filename) -> RBufferBackend::ptr
                {
                   std::ifstream file(filename, std::ios::binary | std::ios::ate);
-                  std::streamsize size = file.tellg();
+                  const std::streamsize size = file.tellg();
                   file.seekg(0, std::ios::beg);
                   
-                  std::vector<u8> v(size);
-                  if(file.read(static_cast<char*>(static_cast<void*>(v.data())), size))
+                  std::vector<char> vec(size);
+                  if(file.read(vec.data(), size))
                     {
-                       u8* ptr = v.data();
-                       size_t length = v.size();
-                       auto deleter = std::make_unique<FileReaderDeleter>(std::move(v));
+                       auto* ptr = vec.data();
+                       const size_t length = vec.size();
+                       auto deleter = std::make_unique<FileReaderDeleter>(std::move(vec));
                        return std::make_unique<RBufferBackend>(ptr, length, std::move(deleter));
                     }
-                  return RBufferBackend::ptr();
+                  return {};
                }
           } // namespace FileUtils
      } // namespace utils

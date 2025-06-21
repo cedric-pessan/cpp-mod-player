@@ -22,10 +22,10 @@ namespace mods
         
         template<typename... Args>
           constexpr explicit optional(Args&&... args)
-            {
-               ::new(&_value.value)T(std::forward<Args>(args)...); // NOLINT(cppcoreguidelines-pro-type-union-access)
-               _hasValue = true;
-            }
+            : _hasValue(true)
+              {
+                 ::new(&_value.value)T(std::forward<Args>(args)...); // NOLINT(cppcoreguidelines-pro-type-union-access)
+              }
         
         ~optional()
           {
@@ -63,24 +63,24 @@ namespace mods
              return std::addressof(_value.value); // NOLINT(cppcoreguidelines-pro-type-union-access)
           }
         
-        optional(optional&& o) noexcept
+        optional(optional&& other) noexcept
           : _value()
             {
-               if(o._hasValue)
+               if(other._hasValue)
                  {
-                    *this = std::move(o._value.value); // NOLINT(cppcoreguidelines-pro-type-union-access)
-                    o._hasValue = false;
+                    *this = std::move(other._value.value); // NOLINT(cppcoreguidelines-pro-type-union-access)
+                    other._hasValue = false;
                  }
             }
         
-        auto operator=(optional&& o) noexcept -> optional&
+        auto operator=(optional&& other) noexcept -> optional&
           {
              cleanValue();
              _hasValue = false;
-             if(o._hasValue)
+             if(other._hasValue)
                {
-                  *this = std::move(o._value.value); // NOLINT(cppcoreguidelines-pro-type-union-access)
-                  o._hasValue = false;
+                  *this = std::move(other._value.value); // NOLINT(cppcoreguidelines-pro-type-union-access)
+                  other._hasValue = false;
                }
              return *this;
           }

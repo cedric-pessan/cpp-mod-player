@@ -1,5 +1,8 @@
 
+#include "mods/converters/Converter.hpp"
 #include "mods/converters/FillLSBConverter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
 
 #include <iostream>
 
@@ -15,7 +18,7 @@ namespace mods
               {
                  if(bitsToFill >= sizeof(T)*BITS_IN_BYTE)
                    {
-                      std::cout << "TODO: invalid number of bits to fill in FillLSBConverter" << std::endl;
+                      std::cout << "TODO: invalid number of bits to fill in FillLSBConverter" << '\n';
                    }
               }
         
@@ -30,12 +33,12 @@ namespace mods
             {
                _src->read(buf);
                
-               for(T& v : *buf)
+               for(T& value : *buf)
                  {
-                    u32 tmp = v;
+                    u32 tmp = static_cast<u32>(static_cast<s32>(value));
                     tmp &= ~_mask;
                     tmp |= ((tmp >> _shift) & _mask);
-                    v = tmp;
+                    value = tmp;
                  }
             }
         

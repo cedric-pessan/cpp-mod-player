@@ -1,9 +1,18 @@
 
+#include "mods/converters/Converter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
+#include "mods/utils/at.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/Format.hpp"
 #include "mods/wav/OKIADPCMDecoderConverter.hpp"
 
+#include <array>
+#include <cstddef>
 #include <iostream>
-#include <limits>
+#include <memory>
+#include <sys/types.h>
+#include <utility>
 
 namespace mods
 {
@@ -16,17 +25,17 @@ namespace mods
 	    {
                if(format.getBitsPerSample() == 3)
                  {
-                    std::cout << "Warning: OKIADPCMDecoderConverter: stream is 3 bits per sample" << std::endl;
+                    std::cout << "Warning: OKIADPCMDecoderConverter: stream is 3 bits per sample" << '\n';
                  }
                
                if(format.hasMetaData())
                  {
-                    std::cout << "Warning: OKIADPCMDecoderConverter: wav have extension (pole?)" << std::endl;
+                    std::cout << "Warning: OKIADPCMDecoderConverter: wav have extension (pole?)" << '\n';
                  }
                
                for(int i=0; i<_nbChannels; ++i)
                  {
-                    _decoders.emplace_back(_encodedBuffer, i, _nbChannels);
+                    _decoders.emplace_back(i, _encodedBuffer, _nbChannels);
                  }
 	    }
         
@@ -64,15 +73,15 @@ namespace mods
 	  {
 	     if((buf->size() & 1U) != 0)
 	       {
-		  std::cout << "Odd length in OKI/ADPCM not supported" << std::endl;
+		  std::cout << "Odd length in OKI/ADPCM not supported" << '\n';
 	       }
              if((buf->size() % _nbChannels) != 0)
                {
-                  std::cout << "OKI/ADPCM should read a multiple of channel number" << std::endl;
+                  std::cout << "OKI/ADPCM should read a multiple of channel number" << '\n';
                }
 	     
              size_t count = 0;
-             size_t nbElems = buf->size();
+             const size_t nbElems = buf->size();
              auto& out = *buf;
              
              while(count < nbElems)
@@ -86,7 +95,7 @@ namespace mods
                          }
                        
                        size_t minRequiredSize = nbElems - count;
-                       size_t roundNumber = 4 * _nbChannels;
+                       const size_t roundNumber = 4UL * _nbChannels;
                        minRequiredSize = ((minRequiredSize + roundNumber - 1) / roundNumber) * roundNumber;
                        ensureTempBufferSize(minRequiredSize);
                        
@@ -97,8 +106,8 @@ namespace mods
                          }
                     }
                   
-                  s16 sample = _decoders[_currentChannel].getSample();
-                  out[count++] = static_cast<u16>(sample) << 4U;
+                  const s16 sample = _decoders[_currentChannel].getSample();
+                  out[count++] = static_cast<s16>(static_cast<u16>(sample) << 4U);
                   ++_currentChannel;
                   if(_currentChannel == _decoders.size())
                     {
@@ -124,8 +133,8 @@ namespace mods
                }
           }
         
-        OKIADPCMDecoderConverter::Decoder::Decoder(mods::utils::RBuffer<u8> encodedBuffer,
-                                                   int numChannel,
+        OKIADPCMDecoderConverter::Decoder::Decoder(int numChannel,
+                                                   mods::utils::RBuffer<u8> encodedBuffer,
                                                    int nbChannels)
           : _encodedBuffer(std::move(encodedBuffer)),
           _itEncodedBuffer(_encodedBuffer.end()),
@@ -139,7 +148,7 @@ namespace mods
           {
              _sampleAvailable = false;
              _encodedBuffer = encodedBuffer;
-             _itEncodedBuffer = _encodedBuffer.begin() + 4 * _numChannel;
+             _itEncodedBuffer = _encodedBuffer.begin() + static_cast<ssize_t>(4L * _numChannel);
              _currentByteInDataWord = 0;
           }
         
@@ -170,11 +179,11 @@ namespace mods
              
              static constexpr u8 nibbleMask = 0xFU;
              
-             u8 v = *_itEncodedBuffer;
-             int sample = static_cast<u8>(v >> 4U) & nibbleMask;
-             s16 decodedSample = decodeSample(sample);
+             const u8 encodedValue = *_itEncodedBuffer;
+             int sample = static_cast<u8>(encodedValue >> 4U) & nibbleMask;
+             const s16 decodedSample = decodeSample(sample);
              
-             sample = v & nibbleMask;
+             sample = encodedValue & nibbleMask;
              _nextSample = decodeSample(sample);
              _sampleAvailable = true;
              
@@ -182,7 +191,7 @@ namespace mods
              if(_currentByteInDataWord == 4)
                {
                   _currentByteInDataWord = 0;
-                  _itEncodedBuffer += 1 + (_nbChannels-1) * 4;
+                  _itEncodedBuffer += 1 + ((_nbChannels-1) * 4);
                }
              else
                {
@@ -198,21 +207,21 @@ namespace mods
              
              static constexpr u32 signBitMask = 8U;
 	     
-	     u32 originalSample = static_cast<u32>(sample);
+	     const u32 originalSample = static_cast<u32>(sample);
 	     int difference = 0;
 	     if((originalSample & 4U) != 0)
 	       {
-		  difference += _stepSize;
+		  difference += static_cast<int>(_stepSize);
 	       }
 	     if((originalSample & 2U) != 0)
 	       {
-		  difference += (_stepSize >> 1U);
+		  difference += static_cast<int>(_stepSize >> 1U);
 	       }
 	     if((originalSample & 1U) != 0)
 	       {
-		  difference += (_stepSize >> 2U);
+		  difference += static_cast<int>(_stepSize >> 2U);
 	       }
-	     difference += (_stepSize >> 3U);
+	     difference += static_cast<int>(_stepSize >> 3U);
 	     if((originalSample & signBitMask) != 0)
 	       {
 		  difference = -difference;

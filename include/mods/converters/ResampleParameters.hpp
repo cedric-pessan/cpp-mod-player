@@ -28,7 +28,10 @@ namespace mods
              
              constexpr static auto getResampleFraction() -> mods::utils::ConstFraction
                {
-                  return mods::utils::ConstFraction(_inFrequency, _outFrequency).reduce();
+                  using Numerator = mods::utils::ConstFraction::Numerator;
+                  using Denominator = mods::utils::ConstFraction::Denominator;
+                  return mods::utils::ConstFraction(static_cast<Numerator>(_inFrequency), 
+                                                    static_cast<Denominator>(_outFrequency)).reduce();
                }
              
            public:
@@ -48,15 +51,15 @@ namespace mods
                }
              
            private:
-             using FilterType = mods::utils::LowPassFilter<std::min(_inFrequency, _outFrequency), 2, _inFrequency * getInterpolationFactor()>;
+             using FilterType = mods::utils::LowPassFilter<std::min(_inFrequency, _outFrequency), 2, static_cast<u64>(_inFrequency) * getInterpolationFactor()>;
              
            public:
-             constexpr static auto getNumTaps() -> int
+             constexpr static auto getNumTaps() -> size_t
                {
                   return FilterType::numberOfTaps;
                }
              
-             static auto getTap(size_t i) -> double;
+             static auto getTap(size_t tapIndex) -> double;
              
              constexpr static auto getTaps() -> const typename FilterType::TapsType&
                {
@@ -67,7 +70,7 @@ namespace mods
         class DynamicResampleParameters
           {
            public:
-             DynamicResampleParameters(int inFrequency, int outFrequency);
+             DynamicResampleParameters(u32 inFrequency, u32 outFrequency);
              
              DynamicResampleParameters() = delete;
              DynamicResampleParameters(const DynamicResampleParameters&) = default;
@@ -76,13 +79,13 @@ namespace mods
              auto operator=(DynamicResampleParameters&&) -> DynamicResampleParameters& = delete;
              ~DynamicResampleParameters() = default;
              
-             auto getNumTaps() const -> int;
+             auto getNumTaps() const -> size_t;
              
-             auto getInterpolationFactor() const -> int;
+             auto getInterpolationFactor() const -> u64;
              
-             auto getDecimationFactor() const -> int;
+             auto getDecimationFactor() const -> u64;
              
-             auto getTap(size_t i) const -> double;
+             auto getTap(size_t tapIndex) const -> double;
              
              auto getTaps() const -> const typename mods::utils::FirFilterDesigner::TapsType&;
              
@@ -113,24 +116,25 @@ namespace mods
              ~AmigaResampleParameters() = default;
              
            private:
-             constexpr static long _inFrequency = toUnderlying(StandardFrequency::AMIGA);
-             constexpr static long _outFrequency = toUnderlying(StandardFrequency::_44100);
-             constexpr static long _ledFrequency = toUnderlying(StandardFrequency::AMIGA_LED_CUTOFF);
+             constexpr static s64 _inFrequency = toUnderlying(StandardFrequency::AMIGA);
+             constexpr static s64 _outFrequency = toUnderlying(StandardFrequency::_44100);
+             constexpr static s64 _ledFrequency = toUnderlying(StandardFrequency::AMIGA_LED_CUTOFF);
              
-             constexpr static mods::utils::ConstFraction _resampleFraction = mods::utils::ConstFraction(_inFrequency, _outFrequency).reduce();
-             constexpr static long _interpolationFactor = _resampleFraction.getDenominator();
-             constexpr static long _decimationFactor = _resampleFraction.getNumerator();
+             constexpr static mods::utils::ConstFraction _resampleFraction = mods::utils::ConstFraction(static_cast<mods::utils::ConstFraction::Numerator>(_inFrequency),
+                                                                                                        static_cast<mods::utils::ConstFraction::Denominator>(_outFrequency)).reduce();
+             constexpr static s64 _interpolationFactor = _resampleFraction.getDenominator();
+             constexpr static s64 _decimationFactor = _resampleFraction.getNumerator();
              
              using DefaultFilterType = mods::utils::LowPassFilter<std::min(_inFrequency, _outFrequency), 2, _inFrequency * _interpolationFactor>;
              using LedFilterType = mods::utils::LowPassFilter<_ledFrequency, 1, _inFrequency * _interpolationFactor>;
              
            public:
-             constexpr static auto getInterpolationFactor() noexcept -> long
+             constexpr static auto getInterpolationFactor() noexcept -> s64
                {
                   return _interpolationFactor;
                }
              
-             constexpr static auto getDecimationFactor() noexcept -> long
+             constexpr static auto getDecimationFactor() noexcept -> s64
                {
                   return _decimationFactor;
                }
@@ -141,8 +145,8 @@ namespace mods
                   return DefaultFilterType::numberOfTaps;
                }
              
-             static auto getTap(size_t i) -> double;
-             static auto getFilteredTap(size_t i) -> double;
+             static auto getTap(size_t tapIndex) -> double;
+             static auto getFilteredTap(size_t tapIndex) -> double;
              
              static auto getTaps() -> const typename DefaultFilterType::TapsType&;
              static auto getFilteredTaps() -> const typename LedFilterType::TapsType&;

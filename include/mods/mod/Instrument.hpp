@@ -1,7 +1,6 @@
 #ifndef MODS_MOD_INSTRUMENT_HPP
 #define MODS_MOD_INSTRUMENT_HPP
 
-#include "mods/utils/PackedArray.hpp"
 #include "mods/utils/types.hpp"
 
 #include <string>
@@ -38,7 +37,7 @@ namespace mods
              
              mods::utils::PackedArray<char, _sampleNameLength> _sampleName;
              u16be _sampleLength;
-             s8 _fineTune;
+             u8 _fineTune;
              u8 _volume;
              u16be _repeatOffset;
              u16be _repeatLength;

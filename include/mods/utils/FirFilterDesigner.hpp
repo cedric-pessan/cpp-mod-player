@@ -13,7 +13,15 @@ namespace mods
         class FirFilterDesigner
           {
            public:
-	     FirFilterDesigner(u64 sampleFrequency, double cutOff, double expectedAttenuation, double transitionWidth);
+             struct Params
+               {
+                  u64 sampleFrequency;
+                  double cutOff;
+                  double expectedAttenuation;
+                  double transitionWidth;
+               };
+             
+	     explicit FirFilterDesigner(const Params& params);
              
              FirFilterDesigner() = delete;
              FirFilterDesigner(const FirFilterDesigner&) = default;

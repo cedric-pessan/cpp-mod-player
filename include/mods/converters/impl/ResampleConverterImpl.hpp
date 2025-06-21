@@ -12,7 +12,7 @@ namespace mods
              class SampleWithZeros
                {
                 public:
-                  SampleWithZeros(double sample, int zeros, bool filtered);
+                  SampleWithZeros(double sample, bool filtered, int zeros);
                   
                   SampleWithZeros() = default;
                   SampleWithZeros(const SampleWithZeros&) = delete;
@@ -21,7 +21,7 @@ namespace mods
                   auto operator=(SampleWithZeros&&) -> SampleWithZeros& = delete;
                   ~SampleWithZeros() = default;
                   
-                  auto isMergableWith(const SampleWithZeros&) -> bool;
+                  auto isMergableWith(const SampleWithZeros& neighborSample) const -> bool;
                   
                   void setNumberOfZeros(int numberOfZeros);
                   auto getNumberOfZeros() const -> int;
@@ -35,9 +35,9 @@ namespace mods
                   auto getRepeatCountReference() -> int&;
                   
                 private:
-                  int _numberOfZeros;
-                  double _sample;
-                  bool _filtered;
+                  int _numberOfZeros = 0;
+                  double _sample = 0.0;
+                  bool _filtered = false;
                   int _repeatCount = 1;
                };
              
@@ -74,11 +74,11 @@ namespace mods
                   void pop_front();
                   void pop_back();
                   auto isEmpty() const -> bool;
-                  auto getSample(size_t i) -> SampleWithZeros&;
+                  auto getSample(size_t num) -> SampleWithZeros&;
                   auto size() const -> size_t;
                   
                   void tryToMergeLast2Elements();
-                  int popFrontAndUnmergeNextElement(int maxToRemvoe);
+                  auto popFrontAndUnmergeNextElement(int maxToRemove) -> int;
                   
                   auto begin() -> iterator;
                   auto end() -> iterator;
@@ -104,14 +104,14 @@ namespace mods
                        auto operator=(Iterator&&) -> Iterator& = delete;
                        ~Iterator() = default;
                        
-                       auto operator-(const Iterator& it) const -> difference_type;
+                       auto operator-(const Iterator& itRight) const -> difference_type;
                        
                        auto operator*() const -> reference;
                        
                        auto operator++() -> Iterator&;
                        
                      private:
-                       History& _history;
+                       History* _history;
                        size_t _idx;
                     };
                };

@@ -1,6 +1,10 @@
 
+#include "mods/converters/Converter.hpp"
 #include "mods/converters/ToDoubleConverter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
 
+#include <cstddef>
 #include <iostream>
 #include <limits>
 
@@ -14,7 +18,7 @@ namespace mods
               {
                  if(sizeof(T) > sizeof(double))
                    {
-                      std::cout << "TODO: very large data type to convert" << std::endl;
+                      std::cout << "TODO: very large data type to convert" << '\n';
                    }
               }
         
@@ -27,7 +31,7 @@ namespace mods
         template<typename T>
           void ToDoubleConverter<T>::read(mods::utils::RWBuffer<double>* buf)
             {
-               size_t nbElems = buf->size();
+               const size_t nbElems = buf->size();
                
                auto inView = buf->slice<T>(0, nbElems);
                auto& outView = *buf;
@@ -36,22 +40,22 @@ namespace mods
                
                for(size_t i=0; i<nbElems; ++i)
                  {
-                    size_t idx = nbElems - 1 - i;
-                    double value = convert(inView[idx]);
+                    const size_t idx = nbElems - 1 - i;
+                    const double value = convert(inView[idx]);
                     outView[idx] = value;
                  }
             }
         
         template<>
-          auto ToDoubleConverter<float>::convert(float in) -> double
+          auto ToDoubleConverter<float>::convert(float input) -> double
             {
-               return in;
+               return input;
             }
         
         template<typename T>
-          auto ToDoubleConverter<T>::convert(T in) -> double
+          auto ToDoubleConverter<T>::convert(T input) -> double
             {
-               double value = in;
+               double value = input;
                if(value >= 0)
                  {
                     value /= static_cast<double>(std::numeric_limits<T>::max());

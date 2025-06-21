@@ -2,11 +2,18 @@
 #include "mods/ModuleReader.hpp"
 #include "mods/SoundPlayer.hpp"
 #include "mods/StandardFrequency.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
+#include "mods/utils/types.hpp"
 
 #include <SDL.h>
-#include <iostream>
+#include <SDL_audio.h>
+#include <SDL_hints.h>
+#include <SDL_stdinc.h>
+#include <cassert>
 #include <memory>
 #include <mutex>
+#include <string>
+#include <utility>
 
 namespace mods
 {
@@ -15,8 +22,8 @@ namespace mods
      {
         void SoundPlayer::s_ccallback(void* udata, Uint8* stream, int len)
           {
-             auto* sp = static_cast<SoundPlayer*>(udata);
-             sp->callback(stream, len);
+             auto* soundPlayer = static_cast<SoundPlayer*>(udata);
+             soundPlayer->callback(stream, len);
           }
      }
    
@@ -24,7 +31,8 @@ namespace mods
      : _moduleInfoCb(std::move(moduleInfoCb)),
      _moduleProgressCb(std::move(moduleProgressCb))
        {
-          int res = SDL_Init(SDL_INIT_AUDIO);
+          SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+          int res = SDL_Init(SDL_INIT_AUDIO | SDL_INIT_NOPARACHUTE);
           checkInit(res == 0, "sdl audio subsystem could not be initialized");
           SDL_AudioSpec spec;
           spec.freq = toUnderlying(StandardFrequency::_44100);
@@ -64,16 +72,16 @@ namespace mods
    
    auto SoundPlayer::addReaderToPlayList(ModuleReader::ptr reader) -> const SoundPlayer::SynchronizedReader&
      {
-        std::lock_guard<std::mutex> lock(_playListMutex);
-        SynchronizedReader r(std::move(reader), std::make_shared<std::mutex>());
-        r.second->lock(); // we will unlock in callback when read is finished
-        _playList.push_back(std::move(r));
+        const std::lock_guard<std::mutex> lock(_playListMutex);
+        SynchronizedReader syncReader(std::move(reader), std::make_shared<std::mutex>());
+        syncReader.second->lock(); // we will unlock in callback when read is finished
+        _playList.push_back(std::move(syncReader));
         return _playList.back();
      }
    
    void SoundPlayer::removeOldestReaderFromPlayList()
      {
-        std::lock_guard<std::mutex> lock(_playListMutex);
+        const std::lock_guard<std::mutex> lock(_playListMutex);
         _playList.pop_front();
      }
    
@@ -85,7 +93,7 @@ namespace mods
    void SoundPlayer::callback(u8* buf, int len)
      {
         assert((len % 2) == 0);
-        std::lock_guard<std::mutex> lock(_playListMutex);
+        const std::lock_guard<std::mutex> lock(_playListMutex);
         auto deleter = std::make_unique<mods::utils::RWBufferBackend::EmptyDeleter>();
         auto bufferBackend = std::make_unique<mods::utils::RWBufferBackend>(buf, len, std::move(deleter));
         mods::utils::RWBuffer<s16> rwbuf(std::move(bufferBackend));
@@ -113,13 +121,13 @@ namespace mods
    
    void SoundPlayer::sendModuleInfo(const ModuleReader& module)
      {
-        std::string info = module.getInfo();
+        const std::string info = module.getInfo();
         _moduleInfoCb(info);
      }
    
    void SoundPlayer::sendProgress(const ModuleReader& module)
      {
-        std::string progress = module.getProgressInfo();
+        const std::string progress = module.getProgressInfo();
         _moduleProgressCb(progress);
      }
    

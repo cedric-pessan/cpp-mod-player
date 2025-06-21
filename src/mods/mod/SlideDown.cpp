@@ -1,5 +1,6 @@
 
 #include "mods/mod/SlideDown.hpp"
+#include "mods/utils/types.hpp"
 
 namespace mods
 {

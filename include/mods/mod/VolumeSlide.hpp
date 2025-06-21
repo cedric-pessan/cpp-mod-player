@@ -10,18 +10,21 @@ namespace mods
         class VolumeSlide : public Effect
           {
            public:
+             enum Volume : u16;
+             enum Delta : s16;
+             
              VolumeSlide() = default;
              VolumeSlide(const VolumeSlide&) = delete;
              VolumeSlide(VolumeSlide&&) = delete;
              auto operator=(const VolumeSlide&) -> VolumeSlide& = delete;
              auto operator=(VolumeSlide&&) -> VolumeSlide& = delete;
-             ~VolumeSlide() = default;
+             ~VolumeSlide() override = default;
              
-             void init(u16 currentVolume, u8 slideUp, u8 slideDown);
+             void init(Volume currentVolume, Delta delta);
              
              auto getModifiedPeriod(u16 period) -> u16 override;
              auto getModifiedVolume(u16 volume) const -> u16 override;
-             void tick();
+             void tick() override;
              
            private:
              u16 _volume = 0;

@@ -16,10 +16,13 @@ namespace mods
              using reference = T&;
              using const_reference = const T&;
              using backend_type = RWBufferBackend;
+            
+             using Offset = typename RBuffer<T>::Offset;
+             using Length = typename RBuffer<T>::Length;
              
              explicit RWBuffer(const RWBufferBackend::sptr& backend)
                : RBuffer<T>(backend),
-               _buf(static_cast<T*>(static_cast<void*>(RWBufferBackend::Attorney::getBuffer(*backend))))
+               _buf(reinterpret_cast<T*>(RWBufferBackend::Attorney::getBuffer(*backend))) // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
                  {
                  }
              
@@ -67,7 +70,7 @@ namespace mods
                 private:
                   iterator(RWBuffer<T>& rwbuf, size_type pos)
                     : _pos(pos),
-                    _rwbuf(rwbuf)
+                    _rwbuf(&rwbuf)
                       {
                       }
                   friend class RWBuffer; // only RWBuffer can create these
@@ -93,7 +96,7 @@ namespace mods
                   auto operator*() const -> reference
                     {
                        assert(check(_pos < _rwbuf.size(), "out of bound iterator dereferenced"));
-                       return _rwbuf[_pos];
+                       return (*_rwbuf)[_pos];
                     }
                   
                   auto operator++() -> iterator
@@ -102,9 +105,9 @@ namespace mods
                        return *this;
                     }
                   
-                  auto operator-(const iterator& it) const -> difference_type
+                  auto operator-(const iterator& obj) const -> difference_type
                     {
-                       return _pos - it._pos;
+                       return _pos - obj._pos;
                     }
                   
                 private:
@@ -118,7 +121,7 @@ namespace mods
                     }
                   
                   size_type _pos;
-                  RWBuffer<T>& _rwbuf;
+                  RWBuffer<T>* _rwbuf;
                };
              
              auto begin() noexcept -> iterator
@@ -133,8 +136,8 @@ namespace mods
              
            private:
              RWBuffer(const RWBufferBackend::sptr& backend, size_t offset, size_t len)
-               : RBuffer<T>(backend, offset, len),
-               _buf(static_cast<T*>(static_cast<void*>(RWBufferBackend::Attorney::getBuffer(*backend) + offset))) // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+               : RBuffer<T>(backend, static_cast<Offset>(offset), static_cast<Length>(len)),
+               _buf(reinterpret_cast<T*>(RWBufferBackend::Attorney::getBuffer(*backend) + offset)) // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-bounds-pointer-arithmetic)
                  {
                  }
              

@@ -1,9 +1,17 @@
 
+#include "mods/StandardFrequency.hpp"
+#include "mods/mod/ChannelId.hpp"
+#include "mods/mod/ChannelState.hpp"
+#include "mods/mod/Instrument.hpp"
 #include "mods/mod/Note.hpp"
 #include "mods/mod/PatternReader.hpp"
-#include "mods/StandardFrequency.hpp"
+#include "mods/utils/AmigaRLESample.hpp"
+#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/types.hpp"
 
-#include <iostream>
+#include <array>
+#include <cstddef>
+#include <vector>
 
 namespace mods
 {
@@ -11,7 +19,7 @@ namespace mods
      {
         namespace
           {
-             enum struct ChannelLocation
+             enum struct ChannelLocation : u8
                {
                   LEFT,
                     RIGHT
@@ -32,11 +40,10 @@ namespace mods
                                      const mods::utils::RBuffer<Note>& patternBuffer,
                                      const mods::utils::RBuffer<Instrument>& instruments,
                                      const std::vector<mods::utils::RBuffer<s8>>& sampleBuffers,
-                                     OutputQueue* leftOutput,
-                                     OutputQueue* rightOutput)
+                                     std::array<OutputQueue, 2>* outputs)
           : _patternBuffer(patternBuffer),
-          _leftOutput(leftOutput),
-          _rightOutput(rightOutput)
+          _leftOutput(&outputs->at(toUnderlying(ChannelId::LEFT))),
+          _rightOutput(&outputs->at(toUnderlying(ChannelId::RIGHT)))
             {
                using mods::utils::at;
                
@@ -62,12 +69,11 @@ namespace mods
              static constexpr size_t outputFrequency = toUnderlying(StandardFrequency::AMIGA);
              static constexpr size_t secondPerMinute = 60;
              static constexpr size_t linesPerBeat = 4;
+             static constexpr size_t minuteLength = outputFrequency * secondPerMinute;
              
-             size_t minuteLength = outputFrequency * secondPerMinute;
+             const size_t beatLength = minuteLength / _bpm;
              
-             size_t beatLength = minuteLength / _bpm;
-             
-             size_t lineLength = beatLength / linesPerBeat;
+             const size_t lineLength = beatLength / linesPerBeat;
              return lineLength / _defaultSpeed;
           }
         
@@ -116,6 +122,8 @@ namespace mods
         
         void PatternReader::readAndMixTick(OutputQueue* output, const std::vector<ChannelState*>& channels)
           {
+             using mods::utils::AmigaRLESample;
+             
              size_t toRead = computeTickLength();
              while(toRead > 0)
                {
@@ -127,22 +135,24 @@ namespace mods
                     }
                   else
                     {
-                       output->push_back(RLESample(0, toRead, false));
+                       output->push_back(RLESample(0, static_cast<AmigaRLESample::SampleLength>(toRead), false));
                        toRead = 0;
                     }
                }
           }
         
-        auto PatternReader::readAndMixSample(const std::vector<ChannelState*>& channels, u32 maxLength) const -> RLESample
+        auto PatternReader::readAndMixSample(const std::vector<ChannelState*>& channels, u32 maxLength) -> RLESample
           {
+             using mods::utils::AmigaRLESample;
+             
              u32 length = maxLength;
              for(auto* channel : channels)
                {
                   channel->prepareNextSample();
-                  u32 l = channel->getCurrentSampleLength();
-                  if(l != 0 && l < length)
+                  const u32 curSampleLength = channel->getCurrentSampleLength();
+                  if(curSampleLength != 0 && curSampleLength < length)
                     {
-                       length = l;
+                       length = curSampleLength;
                     }
                }
              double mixedSample = 0.0;
@@ -151,14 +161,14 @@ namespace mods
                   mixedSample += channel->readAndConsumeNextSample(length);
                }
              mixedSample /= static_cast<double>(channels.size());
-             return RLESample(mixedSample, length, false);
+             return {mixedSample, static_cast<AmigaRLESample::SampleLength>(length), false};
           }
         
         void PatternReader::decodeLine()
           {
              for(size_t i=0; i < _channels.size(); ++i)
                {
-                  auto note = _patternBuffer.slice<Note>(_currentLine * _channels.size() + i, 1);
+                  auto note = _patternBuffer.slice<Note>((_currentLine * _channels.size()) + i, 1);
                   _channels[i].updateChannelToNewLine(note);
                }
           }
@@ -173,8 +183,10 @@ namespace mods
         
         void PatternReader::updateSpeed()
           {
+             static constexpr int MAXIMUM_SPEED = 32;
+             
              bool speedDefined = false;
-             int speed;
+             u32 speed = 0;
              
              for(auto& channel : _channels)
                {
@@ -187,10 +199,14 @@ namespace mods
              
              if(speedDefined)
                {
-                  if(speed > 32)
-                    _bpm = speed;
+                  if(speed > MAXIMUM_SPEED)
+                    {
+                       _bpm = speed;
+                    }
                   else
-                    _speed = speed;
+                    {
+                       _speed = speed;
+                    }
                }
           }
         

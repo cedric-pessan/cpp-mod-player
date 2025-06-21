@@ -1,8 +1,10 @@
 
 #include "mods/mod/Vibrato.hpp"
+#include "mods/utils/MathConstants.hpp"
+#include "mods/utils/types.hpp"
 
 #include <cmath>
-#include <iostream>
+#include <cstddef>
 
 namespace mods
 {
@@ -12,15 +14,15 @@ namespace mods
           {
              using mods::utils::at;
              
-             for(int i=0; i<32; ++i)
+             for(size_t i=0; i<_sine.size(); ++i)
                {
-                  double f = M_PI / 32.0 * (double)i;
-                  int v = std::sin(f) * 255.0;
-                  at(_sine, i) = v;
+                  const double sineValue = mods::utils::math::cPI / 32.0 * static_cast<double>(i);
+                  const int value = static_cast<int>(std::sin(sineValue) * 255.0);
+                  at(_sine, i) = value;
                }
           }
         
-        void Vibrato::init(int depth, int oscillationFrequency, u16 period)
+        void Vibrato::init(Depth depth, VibratoFrequency oscillationFrequency, u16 period)
           {
              _depth = depth;
              _oscillationFrequency = oscillationFrequency;
@@ -29,11 +31,13 @@ namespace mods
              _period = period;
           }
         
-        auto Vibrato::getModifiedPeriod(u16 period) -> u16
+        auto Vibrato::getModifiedPeriod(u16 /* period */) -> u16
           {
              using mods::utils::at;
              
-             int variation = _depth * at(_sine, _sinePos) / 128;
+             constexpr int vibratoDepthFactor = 128;
+             
+             int variation = _depth * at(_sine, _sinePos) / vibratoDepthFactor;
              if(_negSine)
                {
                   variation = -variation;
@@ -51,9 +55,9 @@ namespace mods
           {
              _sinePos += _oscillationFrequency;
              
-             while(_sinePos > 31)
+             while(_sinePos >= SINE_TABLE_SIZE)
                {
-                  _sinePos -= 32;
+                  _sinePos -= SINE_TABLE_SIZE;
                   _negSine = !_negSine;
                }
           }

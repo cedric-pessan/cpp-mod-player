@@ -1,7 +1,15 @@
 
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/DemuxConverter.hpp"
+#include "mods/wav/impl/DemuxConverterImpl.hpp"
 
+#include <cstddef>
 #include <iostream>
+#include <memory>
+#include <utility>
+#include <vector>
 
 namespace mods
 {
@@ -10,7 +18,7 @@ namespace mods
         namespace impl
           {
              template<typename T>
-               InternalDemuxConverter<T>::InternalDemuxConverter(typename Converter::ptr src, u32 nbChannels, u32 bitsPerContainer)
+               InternalDemuxConverter<T>::InternalDemuxConverter(u32 nbChannels, typename Converter::ptr src, u32 bitsPerContainer)
                  : _unconsumedBuffers(nbChannels),
                _src(std::move(src)),
                _elemsPerContainer(bitsPerContainer / BITS_IN_BYTE / sizeof(T)),
@@ -19,7 +27,7 @@ namespace mods
                  {
                     if(_elemsPerContainer * sizeof(T) * BITS_IN_BYTE != bitsPerContainer)
                       {
-                         std::cout << "Error: " << bitsPerContainer << " bits per container doesn't container an integer number of elements of type " << sizeof(T) << std::endl;
+                         std::cout << "Error: " << bitsPerContainer << " bits per container doesn't container an integer number of elements of type " << sizeof(T) << '\n';
                       }
                  }
              
@@ -57,7 +65,7 @@ namespace mods
                  {
                     if((buf->size() % _elemsPerContainer) != 0)
                       {
-                         std::cout << "Error: length should be a multiple of container size" << std::endl;
+                         std::cout << "Error: length should be a multiple of container size" << '\n';
                       }
                     
                     size_t read = 0;
@@ -133,6 +141,7 @@ namespace mods
                     };
                   
                   std::vector<ptr> slaves;
+                  slaves.reserve(nbChannels-1);
                   for(u32 i=0; i<nbChannels-1; ++i)
                     {
                        slaves.push_back(std::make_unique<make_unique_enabler>(_src, i));
@@ -155,7 +164,7 @@ namespace mods
         
         template<typename T>
           DemuxConverter<T>::DemuxConverter(ptr src, u32 nbChannels, u32 bitsPerContainer)
-            : impl::DemuxConverterSlave<T>(std::make_unique<impl::InternalDemuxConverter<T>>(std::move(src), nbChannels, bitsPerContainer), nbChannels-1),
+            : impl::DemuxConverterSlave<T>(std::make_unique<impl::InternalDemuxConverter<T>>(nbChannels, std::move(src), bitsPerContainer), nbChannels-1),
           _firstChannels(impl::DemuxConverterSlave<T>::buildSlaves(nbChannels))
             {
             }

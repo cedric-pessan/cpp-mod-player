@@ -1,7 +1,14 @@
 
+#include "mods/converters/Converter.hpp"
 #include "mods/converters/DownscaleConverter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
+#include "mods/utils/types.hpp"
 
+#include <cstddef>
 #include <iostream>
+#include <memory>
+#include <utility>
 
 namespace mods
 {
@@ -14,7 +21,7 @@ namespace mods
               {
                  if(sizeof(TOut) > sizeof(TIn))
                    {
-                      std::cout << "TOut should be smaller than TIn in DownscaleConverter" << std::endl;
+                      std::cout << "TOut should be smaller than TIn in DownscaleConverter" << '\n';
                    }
               }
         
@@ -27,7 +34,7 @@ namespace mods
         template<typename TOut, typename TIn>
           void DownscaleConverter<TOut, TIn>::read(mods::utils::RWBuffer<TOut>* buf)
             {
-               int nbElems = buf->size();
+               const int nbElems = buf->size();
                
                ensureTempBufferSize(nbElems * sizeof(TIn));
                

@@ -10,7 +10,9 @@ namespace mods
         class AmigaRLESample
           {
            public:
-             AmigaRLESample(double value, u32 length, bool filtered);
+             enum SampleLength : u32;
+             
+             AmigaRLESample(double value, SampleLength length, bool filtered);
              
              AmigaRLESample() = default;
              AmigaRLESample(const AmigaRLESample&) = default;

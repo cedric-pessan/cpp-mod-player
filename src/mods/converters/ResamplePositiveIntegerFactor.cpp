@@ -1,7 +1,8 @@
 
+#include "mods/converters/Converter.hpp"
 #include "mods/converters/ResamplePositiveIntegerFactor.hpp"
-
-#include <iostream>
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
 
 namespace mods
 {
@@ -22,7 +23,7 @@ namespace mods
         template<typename T, int FACTOR>
           void ResamplePositiveIntegerFactor<T, FACTOR>::read(mods::utils::RWBuffer<T>* buf)
             {
-               int nbElems = buf->size() / FACTOR;
+               const int nbElems = buf->size() / FACTOR;
                
                auto inView = buf->template slice<T>(0, nbElems);
                
@@ -33,7 +34,7 @@ namespace mods
                     T value = inView[i];
                     for(int j = FACTOR-1; j>=0; --j)
                     {
-                       (*buf)[i*FACTOR+j] = value;
+                       (*buf)[(i*FACTOR)+j] = value;
                     }
                }
             }

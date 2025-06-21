@@ -1,12 +1,28 @@
 
+#include "mods/StandardFrequency.hpp"
+#include "mods/converters/Converter.hpp"
 #include "mods/converters/OpenCLResampleConverter.hpp"
+#include "mods/converters/ResampleConverter.hpp"
 #include "mods/converters/ResampleParameters.hpp"
+#include "mods/converters/impl/OpenCLResampleConverterImpl.hpp"
+#include "mods/utils/AmigaRLESample.hpp"
 #include "mods/utils/OpenCLManager.hpp"
+#include "mods/utils/RWBuffer.hpp"
 #include "mods/utils/TransformedCollection.hpp"
 
+#include <cstddef>
+#include <functional>
+#include <iostream>
 #include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #ifdef WITH_OPENCL
+
+#include <CL/cl.h>
+#include <CL/opencl.hpp>
+
 namespace mods
 {
    namespace converters
@@ -127,14 +143,14 @@ namespace mods
                     {
                        auto& resampleParameters = this->getResampleParameters();
                        
-                       std::stringstream ss;
-                       ss << "constant unsigned int interpolationFactor = " << resampleParameters.getInterpolationFactor() << ";" << std::endl;
-                       ss << "constant unsigned int decimationFactor = " << resampleParameters.getDecimationFactor() << ";" << std::endl;
-                       ss << "constant unsigned int numTaps = " << resampleParameters.getNumTaps() << ";" << std::endl;
-                       ss << "constant bool supportsRLE = " << (rleInput ? "true;" : "false;") << std::endl;
-                       ss << getFirKernelSource();
+                       std::stringstream sStream;
+                       sStream << "constant unsigned int interpolationFactor = " << resampleParameters.getInterpolationFactor() << ";" << std::endl;
+                       sStream << "constant unsigned int decimationFactor = " << resampleParameters.getDecimationFactor() << ";" << std::endl;
+                       sStream << "constant unsigned int numTaps = " << resampleParameters.getNumTaps() << ";" << std::endl;
+                       sStream << "constant bool supportsRLE = " << (rleInput ? "true;" : "false;") << '\n';
+                       sStream << getFirKernelSource();
                        
-                       cl::Program program(_context, ss.str(), true);
+                       cl::Program program(_context, sStream.str(), true);
                        return program;
                     }
                   catch(cl::BuildError& buildError)
@@ -142,11 +158,11 @@ namespace mods
                        auto buildLog = buildError.getBuildLog();
                        for(auto& error : buildLog)
                          {
-                            std::cout << "Error while compiling fir filter for device " << error.first.getInfo<CL_DEVICE_NAME>() << std::endl;
-                            std::cout << error.second << std::endl;
+                            std::cout << "Error while compiling fir filter for device " << error.first.getInfo<CL_DEVICE_NAME>() << '\n';
+                            std::cout << error.second << '\n';
                          }
                     }
-                  return cl::Program();
+                  return {};
                }
              
              template<typename PARAMETERS, typename T>
@@ -157,7 +173,7 @@ namespace mods
                   _taps = std::vector<double>(resampleParameters.getTaps().begin(),
                                               resampleParameters.getTaps().end());
                   
-                  return cl::Buffer(_context, _taps.begin(), _taps.end(), true, true);
+                  return {_context, _taps.begin(), _taps.end(), true, true};
                }
         
              template<typename PARAMETERS, typename T>
@@ -165,14 +181,16 @@ namespace mods
                  {
                     auto nbElems = buf->size();
                     
-                    fillBuffers(_context, _queue, &_sampleBuffer, &_zerosBuffer, &_repeatBuffer);
+                    fillSampleBuffer(_context, _queue, &_sampleBuffer);
+                    fillZerosBuffer(_context, _queue, &_zerosBuffer);
+                    fillRepeatBuffer(_context, _queue, &_repeatBuffer);
                     
-                    if(!_outputBuffer.get() || _outputBuffer.getInfo<CL_MEM_SIZE>() < nbElems * sizeof(double))
+                    if(_outputBuffer.get() == nullptr || _outputBuffer.getInfo<CL_MEM_SIZE>() < nbElems * sizeof(double))
                       {
-                         _outputBuffer = cl::Buffer(_context, CL_MEM_WRITE_ONLY, nbElems * sizeof(double)); // NOLINT(hicpp-signed-bitwise)
+                         _outputBuffer = cl::Buffer(_context, CL_MEM_WRITE_ONLY, nbElems * sizeof(double)); // GOLINT(hicpp-signed-bitwise)
                       }
                     
-                    cl::NDRange global(nbElems);
+                    const cl::NDRange global(nbElems);
                     _firFilterKernel(cl::EnqueueArgs(_queue, global),
                                      _outputBuffer, _zerosBuffer, _sampleBuffer, _repeatBuffer, tapsBuffer);
                     
@@ -193,7 +211,7 @@ namespace mods
               }
         
         OpenCLResampleConverter<AmigaResampleParameters, mods::utils::AmigaRLESample>::OpenCLResampleConverter(Converter<RLESample>::ptr src, AmigaResampleParameters  resampleParameters)
-          : OpenCLResampleConverterBase<AmigaResampleParameters, RLESample>(std::move(src), std::move(resampleParameters), true),
+          : OpenCLResampleConverterBase<AmigaResampleParameters, RLESample>(std::move(src), resampleParameters, true),
           _ledFilterTapsBuffer(buildFilteredTapsBuffer())
             {
             }
@@ -261,27 +279,22 @@ namespace mods
         
         auto OpenCLResampleConverter<AmigaResampleParameters, mods::utils::AmigaRLESample>::buildFilteredTapsBuffer() -> cl::Buffer
           {
-             auto& resampleParameters = getResampleParameters();
              auto context = mods::utils::OpenCLManager::getContext();
              
-             _filteredTaps = std::vector<double>(resampleParameters.getFilteredTaps().begin(),
-                                                 resampleParameters.getFilteredTaps().end());
+             _filteredTaps = std::vector<double>(AmigaResampleParameters::getFilteredTaps().begin(),
+                                                 AmigaResampleParameters::getFilteredTaps().end());
              
-             return cl::Buffer(context, _filteredTaps.begin(), _filteredTaps.end(), true, true);
+             return {context, _filteredTaps.begin(), _filteredTaps.end(), true, true};
           }
         
         template<typename PARAMETERS, typename T>
-          void OpenCLResampleConverter<PARAMETERS, T>::fillBuffers(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* sampleBuffer, cl::Buffer* zerosBuffer, cl::Buffer* repeatBuffer)
+          void OpenCLResampleConverter<PARAMETERS, T>::fillSampleBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* sampleBuffer)
             {
                using SampleHistoryCollection = mods::utils::TransformedCollection<impl::History, std::function<double&(impl::SampleWithZeros&)>>;
-               using ZeroHistoryCollection = mods::utils::TransformedCollection<impl::History, std::function<int&(impl::SampleWithZeros&)>>;
                auto& history = this->getHistory();
                
                SampleHistoryCollection sampleHistory(history, [](impl::SampleWithZeros& sampleWithZeros) -> double& {
                   return sampleWithZeros.getSampleReference();
-               });
-               ZeroHistoryCollection zeroHistory(history, [](impl::SampleWithZeros& sampleWithZeros) -> int& {
-                  return sampleWithZeros.getNumberOfZerosReference();
                });
                
                if(sampleBuffer->get() && sampleBuffer->getInfo<CL_MEM_SIZE>() >= history.size() * sizeof(double))
@@ -292,6 +305,18 @@ namespace mods
                  {
                     *sampleBuffer = cl::Buffer(context, sampleHistory.begin(), sampleHistory.end(), true /* read only */);
                  }
+            }
+        
+        template<typename PARAMETERS, typename T>
+          void OpenCLResampleConverter<PARAMETERS, T>::fillZerosBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* zerosBuffer)
+            {
+               using ZeroHistoryCollection = mods::utils::TransformedCollection<impl::History, std::function<int&(impl::SampleWithZeros&)>>;
+               auto& history = this->getHistory();
+               
+               ZeroHistoryCollection zeroHistory(history, [](impl::SampleWithZeros& sampleWithZeros) -> int& {
+                  return sampleWithZeros.getNumberOfZerosReference();
+               });
+               
                if(zerosBuffer->get() && zerosBuffer->getInfo<CL_MEM_SIZE>() >= history.size() * sizeof(int))
                  {
                     cl::copy(queue, zeroHistory.begin(), zeroHistory.end(), *zerosBuffer);
@@ -302,24 +327,21 @@ namespace mods
                  }
             }
         
-        void OpenCLResampleConverter<AmigaResampleParameters, mods::utils::AmigaRLESample>::fillBuffers(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* sampleBuffer, cl::Buffer* zerosBuffer, cl::Buffer* repeatBuffer)
+        template<typename PARAMETERS, typename T>
+          void OpenCLResampleConverter<PARAMETERS, T>::fillRepeatBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* repeatBuffer)
+            {
+            }
+        
+        void OpenCLResampleConverter<AmigaResampleParameters, mods::utils::AmigaRLESample>::fillSampleBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* sampleBuffer)
           {
              using SampleHistoryCollection = mods::utils::TransformedCollection<impl::History, std::function<double&(impl::SampleWithZeros&)>>;
-             using ZeroHistoryCollection = mods::utils::TransformedCollection<impl::History, std::function<int&(impl::SampleWithZeros&)>>;
-             using RepeatHistoryCollection = mods::utils::TransformedCollection<impl::History, std::function<int&(impl::SampleWithZeros&)>>;
              auto& history = this->getHistory();
              
              SampleHistoryCollection sampleHistory(history, [](impl::SampleWithZeros& sampleWithZeros) -> double& {
                 return sampleWithZeros.getSampleReference();
              });
-             ZeroHistoryCollection zeroHistory(history, [](impl::SampleWithZeros& sampleWithZeros) -> int& {
-                return sampleWithZeros.getNumberOfZerosReference();
-             });
-             RepeatHistoryCollection repeatHistory(history, [](impl::SampleWithZeros& sampleWithZeros) -> int& {
-                return sampleWithZeros.getRepeatCountReference();
-             });
              
-             if(sampleBuffer->get() && sampleBuffer->getInfo<CL_MEM_SIZE>() >= history.size() * sizeof(double))
+             if(sampleBuffer->get() != nullptr && sampleBuffer->getInfo<CL_MEM_SIZE>() >= history.size() * sizeof(double))
                {
                   cl::copy(queue, sampleHistory.begin(), sampleHistory.end(), *sampleBuffer);
                }
@@ -327,7 +349,18 @@ namespace mods
                {
                   *sampleBuffer = cl::Buffer(context, sampleHistory.begin(), sampleHistory.end(), true /* read only */);
                }
-             if(zerosBuffer->get() && zerosBuffer->getInfo<CL_MEM_SIZE>() >= history.size() * sizeof(int))
+          }
+        
+        void OpenCLResampleConverter<AmigaResampleParameters, mods::utils::AmigaRLESample>::fillZerosBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* zerosBuffer)
+          {
+             using ZeroHistoryCollection = mods::utils::TransformedCollection<impl::History, std::function<int&(impl::SampleWithZeros&)>>;
+             auto& history = this->getHistory();
+             
+             ZeroHistoryCollection zeroHistory(history, [](impl::SampleWithZeros& sampleWithZeros) -> int& {
+                return sampleWithZeros.getNumberOfZerosReference();
+             });
+             
+             if(zerosBuffer->get() != nullptr && zerosBuffer->getInfo<CL_MEM_SIZE>() >= history.size() * sizeof(int))
                {
                   cl::copy(queue, zeroHistory.begin(), zeroHistory.end(), *zerosBuffer);
                }
@@ -335,7 +368,18 @@ namespace mods
                {
                   *zerosBuffer = cl::Buffer(context, zeroHistory.begin(), zeroHistory.end(), true /* read only */);
                }
-             if(repeatBuffer->get() && repeatBuffer->getInfo<CL_MEM_SIZE>() >= history.size() * sizeof(int))
+          }
+        
+        void OpenCLResampleConverter<AmigaResampleParameters, mods::utils::AmigaRLESample>::fillRepeatBuffer(const cl::Context& context, const cl::CommandQueue& queue, cl::Buffer* repeatBuffer)
+          {
+             using RepeatHistoryCollection = mods::utils::TransformedCollection<impl::History, std::function<int&(impl::SampleWithZeros&)>>;
+             auto& history = this->getHistory();
+             
+             RepeatHistoryCollection repeatHistory(history, [](impl::SampleWithZeros& sampleWithZeros) -> int& {
+                return sampleWithZeros.getRepeatCountReference();
+             });
+             
+             if(repeatBuffer->get() != nullptr && repeatBuffer->getInfo<CL_MEM_SIZE>() >= history.size() * sizeof(int))
                {
                   cl::copy(queue, repeatHistory.begin(), repeatHistory.end(), *repeatBuffer);
                }

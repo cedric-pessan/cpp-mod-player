@@ -1,31 +1,54 @@
 
+#include "mods/mod/Arpeggio.hpp"
 #include "mods/mod/ChannelState.hpp"
+#include "mods/mod/EffectType.hpp"
 #include "mods/mod/Instrument.hpp"
+#include "mods/mod/NoEffect.hpp"
 #include "mods/mod/Note.hpp"
+#include "mods/mod/SlideDown.hpp"
+#include "mods/mod/SlideUp.hpp"
+#include "mods/mod/Vibrato.hpp"
+#include "mods/mod/VibratoAndVolumeSlide.hpp"
+#include "mods/mod/VolumeSlide.hpp"
+#include "mods/utils/AmigaRLESample.hpp"
+#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/types.hpp"
 
+#include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <iostream>
 #include <limits>
+#include <memory>
+#include <vector>
 
 namespace mods
 {
    namespace mod
      {
+        namespace
+          {
+             constexpr double MAXIMUM_VOLUME = 64.0;
+          } // namespace
+        
         ChannelState::ChannelState(const std::vector<mods::utils::RBuffer<s8>>& sampleBuffers,
                                    const mods::utils::RBuffer<Instrument>& instruments)
-          : _currentValue(0.0, 0, false),
-          _sampleBuffers(sampleBuffers),
-          _instruments(instruments)
+          : _currentValue(0.0, static_cast<mods::utils::AmigaRLESample::SampleLength>(0), false),
+          _sampleBuffers(&sampleBuffers),
+          _instruments(instruments),
+          _fineTuneFactors{}
             {
                using mods::utils::at;
                
-               double halfToneFactor = std::pow(2.0, -1.0 / (12.0 * 8.0));
+               const double halfToneFactor = std::pow(2.0, -1.0 / (12.0 * 8.0));
                
-               for(int i=0; i<16; ++i)
+               for(size_t i=0; i<_fineTuneFactors.size(); ++i)
                  {
-                    double fineTune = static_cast<double>(i-8);
+                    const int fineTuneOffset = 8;
                     
-                    double factor = std::pow(halfToneFactor, fineTune);
+                    auto fineTune = static_cast<double>(static_cast<int>(i) - fineTuneOffset);
+                    
+                    const double factor = std::pow(halfToneFactor, fineTune);
                     at(_fineTuneFactors, i) = factor;
                  }
                
@@ -42,17 +65,19 @@ namespace mods
         
         void ChannelState::prepareNextSample()
           {
+             using mods::utils::AmigaRLESample;
+             
              if(_currentValue.getLength() == 0)
                {
                   if(_instrument == 0)
                     {
-                       _currentValue = RLESample(0.0, 0, false);
+                       _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
                        return;
                     }
-                  auto& buffer = _sampleBuffers[_instrument-1];
+                  const auto& buffer = (*_sampleBuffers)[_instrument-1];
                   if(_currentSample >= buffer.size())
                     {
-                       auto& instrument = _instruments[_instrument-1];
+                       const auto& instrument = _instruments[_instrument-1];
                        if(instrument.getRepeatLength() > 0)
                          {
                             if(_currentRepeatSample == 0 ||
@@ -60,27 +85,29 @@ namespace mods
                               {
                                  _currentRepeatSample = instrument.getRepeatOffset();
                               }
-                            s8 sample = buffer[_currentRepeatSample++];
+                            const s8 sample = buffer[_currentRepeatSample++];
                             processNextSample(sample);
                          }
                        else
                          {
-                            _currentValue = RLESample(0.0, 0, false);
+                            _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
                          }
                        return;
                     }
-                  s8 sample = buffer[_currentSample++];
+                  const s8 sample = buffer[_currentSample++];
                   processNextSample(sample);
                }
           }
         
         void ChannelState::processNextSample(s8 sample)
           {
+             using mods::utils::AmigaRLESample;
+             
              _period = _currentEffect->getModifiedPeriod(_period);
              
              auto convertedSample = toDouble(sample);
              
-             _currentValue = RLESample(convertedSample, _period, false);
+             _currentValue = RLESample(convertedSample, static_cast<AmigaRLESample::SampleLength>(_period), false);
           }
         
         auto ChannelState::toDouble(s8 sample) -> double
@@ -104,23 +131,29 @@ namespace mods
         
         auto ChannelState::readAndConsumeNextSample(u32 length) -> double
           {
+             using mods::utils::AmigaRLESample;
+             
              if(_currentValue.getLength() == 0)
                {
                   return 0.0;
                }
-             _currentValue = RLESample(_currentValue.getValue(), _currentValue.getLength() - length, _currentValue.isFiltered());
+             _currentValue = RLESample(_currentValue.getValue(), static_cast<AmigaRLESample::SampleLength>(_currentValue.getLength() - length), _currentValue.isFiltered());
              _volume = _currentEffect->getModifiedVolume(_volume);
-             return _currentValue.getValue() * static_cast<double>(_volume) / 64.0;
+             return _currentValue.getValue() * static_cast<double>(_volume) / MAXIMUM_VOLUME;
           }
         
         auto ChannelState::getFineTuneFactor(int fineTune) -> double
           {
+             constexpr int OFFSET_FINETUNE_0 = 8;
+             
              using mods::utils::at;
-             return at(_fineTuneFactors, fineTune + 8);
+             return at(_fineTuneFactors, fineTune + OFFSET_FINETUNE_0);
           }
         
         void ChannelState::updateChannelToNewLine(const mods::utils::RBuffer<Note>& note)
           {
+             using mods::utils::AmigaRLESample;
+             
              _speedSetOnLastLine = false;
              _hasPatternJump = false;
              
@@ -130,14 +163,14 @@ namespace mods
                   _volume = _instruments[_instrument-1].getVolume();
                   _currentSample = 0;
                   _currentRepeatSample = 0;
-                  _currentValue = RLESample(0.0, 0, false);
+                  _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
                }
              if(note->getPeriod() != 0)
                {
                   _currentSample = 0;
                   _currentRepeatSample = 0;
                   _period = note->getPeriod();
-                  _currentValue = RLESample(0.0, 0, false);
+                  _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
                   
                   if(_instrument != 0)
                     {
@@ -145,22 +178,27 @@ namespace mods
                          {
                             auto fineTune = _instruments[_instrument-1].getFineTune();
                             auto factor = getFineTuneFactor(fineTune);
-                            _period = std::round(static_cast<double>(_period) * factor);
+                            _period = static_cast<u16>(std::round(static_cast<double>(_period) * factor));
                          }
                     }
                }
              
-             u32 effect = note->getEffect();
+             applyEffect(note);
+          }
+        
+        void ChannelState::applyEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             const auto effect = static_cast<EffectType>(note->getEffect());
              switch(effect)
                {
-                case 0x0: // arpeggio
+                case EffectType::ARPEGGIO:
                     {
-                       u32 arg = note->getEffectArgument();
+                       const u32 arg = note->getEffectArgument();
                        if(arg != 0)
                          {
-                            u32 x = arg >> 4;
-                            u32 y = arg & 0xF;
-                            _arpeggio->init(x, y, _period);
+                            const u16 argX = arg >> 4U;
+                            const u16 argY = arg & 0xFU;
+                            _arpeggio->init(Arpeggio::Parameters{argX, argY, _period});
                             _currentEffect = _arpeggio.get();
                          }
                        else
@@ -170,30 +208,30 @@ namespace mods
                     }
                   break;
                   
-                case 0x1: // slide up
+                case EffectType::SLIDE_UP:
                     {
-                       u32 arg = note->getEffectArgument();
+                       const auto arg = static_cast<int>(note->getEffectArgument());
                        _slideUp->init(arg);
                        _currentEffect = _slideUp.get();
                     }
                   break;
                   
-                case 0x2: // slide down
+                case EffectType::SLIDE_DOWN:
                     {
-                       u32 arg = note->getEffectArgument();
+                       const auto arg = static_cast<int>(note->getEffectArgument());
                        _slideDown->init(arg);
                        _currentEffect = _slideDown.get();
                     }
                   break;
                   
-                case 0x4: // vibrato
+                case EffectType::VIBRATO:
                     {
-                       u32 arg = note->getEffectArgument();
-                       u32 oscillationFrequency = arg >> 4;
-                       u32 amplitude = arg & 0xF;
+                       const u32 arg = note->getEffectArgument();
+                       const u32 oscillationFrequency = arg >> 4U;
+                       const u32 amplitude = arg & 0xFU;
                        if(arg != 0)
                          {
-                            _vibrato->init(amplitude, oscillationFrequency, _period);
+                            _vibrato->init(static_cast<Vibrato::Depth>(amplitude), static_cast<Vibrato::VibratoFrequency>(oscillationFrequency), _period);
                          }
                        else
                          {
@@ -203,71 +241,95 @@ namespace mods
                     }
                   break;
                   
-                case 0x6: // vibrato + volume slide
+                case EffectType::VIBRATO_AND_VOLUME_SLIDE:
                     {
-                       u32 arg = note->getEffectArgument();
-                       u8 slideUp = (arg >> 4) & 0xF;
-                       u8 slideDown = arg & 0xF;
+                       const u32 arg = note->getEffectArgument();
+                       const u8 slideUp = (arg >> 4U) & 0xFU;
+                       const u8 slideDown = arg & 0xFU;
                        _vibrato->tick();
-                       _vibratoAndVolumeSlide->init(_volume, slideUp, slideDown);
+                       if(slideUp > 0 && slideDown > 0)
+                         {
+                            _vibratoAndVolumeSlide->init(_volume, 0);
+                         }
+                       else if(slideUp > 0)
+                         {
+                            _vibratoAndVolumeSlide->init(_volume, slideUp);
+                         }
+                       else
+                         {
+                            _vibratoAndVolumeSlide->init(_volume, static_cast<s16>(-slideDown));
+                         }
                        _currentEffect = _vibratoAndVolumeSlide.get();
                     }
                   break;
                   
-                case 0x9: // set sample offset
+                case EffectType::SET_SAMPLE_OFFSET:
                     {
-                       u32 arg = note->getEffectArgument();
-                       if(arg)
+                       const u32 arg = note->getEffectArgument();
+                       if(arg != 0)
                          {
-                            _currentSample = arg << 8;
+                            _currentSample = arg << BITS_IN_BYTE;
                             _currentRepeatSample = 0;
                          }
                        _currentEffect = _noEffect.get();
                     }
                   break;
                   
-                case 0xa: // volume slide
+                case EffectType::VOLUME_SLIDE:
                     {
-                       u32 arg = note->getEffectArgument();
-                       u8 slideUp = (arg >> 4) & 0xF;
-                       u8 slideDown = arg & 0xF;
-                       _volumeSlide->init(_volume, slideUp, slideDown);
+                       using Volume = VolumeSlide::Volume;
+                       using Delta = VolumeSlide::Delta;
+                       
+                       const u32 arg = note->getEffectArgument();
+                       const u8 slideUp = (arg >> 4U) & 0xFU;
+                       const u8 slideDown = arg & 0xFU;
+                       if(slideUp > 0 && slideDown > 0)
+                         {
+                            _volumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(0));
+                         }
+                       else if(slideUp > 0)
+                         {
+                            _volumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(slideUp));
+                         }
+                       else
+                         {
+                            _volumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(-slideDown));
+                         }
                        _currentEffect = _volumeSlide.get();
                     }
                   break;
                   
-                case 0xc: // set volume
-                  _volume = note->getEffectArgument();
-                  if(_volume > 64)
-                    {
-                       _volume = 64;
-                    }
+                case EffectType::SET_VOLUME:
+                  _volume = std::min(note->getEffectArgument(), static_cast<u32>(MAXIMUM_VOLUME));
                   _currentEffect = _noEffect.get();
                   break;
                   
-                case 0xd: // pattern break
+                case EffectType::PATTERN_BREAK:
                     {
-                       u32 arg = note->getEffectArgument();
-                       u8 x = (arg >> 4) & 0xF;
-                       u8 y = arg & 0xF;
+                       constexpr static int xCoef = 10;
+                       constexpr static int linesPerPattern = 64;
+                       
+                       const u32 arg = note->getEffectArgument();
+                       const u8 xArg = (arg >> 4U) & 0xFU;
+                       const u8 yArg = arg & 0xFU;
                        _hasPatternJump = true;
                        _patternOfJumpTarget = -1;
-                       _lineOfJumpTarget = x * 10 + y;
-                       if(_lineOfJumpTarget > 63) 
+                       _lineOfJumpTarget = xArg * xCoef + yArg;
+                       if(_lineOfJumpTarget >= linesPerPattern) 
                          {
                             _lineOfJumpTarget = 0;
                          }
                     }
                   break;
                   
-                case 0xf: // set speed
+                case EffectType::SET_SPEED:
                   _speedSetOnLastLine = true;
                   _speed = note->getEffectArgument();
                   _currentEffect = _noEffect.get();
                   break;
                   
                 default:
-                  std::cout << "unknown effect:" << std::hex << effect << std::dec << std::endl;
+                  std::cout << "unknown effect:" << std::hex << toUnderlying(effect) << std::dec << '\n';
                }
           }
         
@@ -276,7 +338,7 @@ namespace mods
              return _speedSetOnLastLine;
           }
         
-        auto ChannelState::getSpeed() const -> int
+        auto ChannelState::getSpeed() const -> u32
           {
              return _speed;
           }
@@ -301,4 +363,4 @@ namespace mods
              _currentEffect->tick();
           }
      } // namespace mod
-} // namespace mod
+} // namespace mods

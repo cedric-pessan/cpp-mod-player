@@ -1,5 +1,5 @@
-#ifndef MODS_CONVERTERS_UPSCALEWAVCONVERTER_HPP
-#define MODS_CONVERTERS_UPSCALEWAVCONVERTER_HPP
+#ifndef MODS_CONVERTERS_UPSCALECONVERTER_HPP
+#define MODS_CONVERTERS_UPSCALECONVERTER_HPP
 
 #include "mods/converters/Converter.hpp"
 
@@ -26,12 +26,12 @@ namespace mods
            private:
              constexpr auto shiftLeftValue() -> u32
                {
-                  return sizeof(TOut)*BITS_IN_BYTE - sizeof(TIn)*BITS_IN_BYTE;
+                  return (sizeof(TOut)*BITS_IN_BYTE) - (sizeof(TIn)*BITS_IN_BYTE);
                }
              
              constexpr auto shiftRightValue() -> u32
                {
-                  return sizeof(TIn)*BITS_IN_BYTE - shiftLeftValue();
+                  return (sizeof(TIn)*BITS_IN_BYTE) - shiftLeftValue();
                }
              
              constexpr auto maskValue() -> u32
@@ -44,4 +44,4 @@ namespace mods
      } // namespace converters
 } // namespace mods
 
-#endif // MODS_CONVERTERS_UPSCALEWAVCONVERTER_HPP
+#endif // MODS_CONVERTERS_UPSCALECONVERTER_HPP

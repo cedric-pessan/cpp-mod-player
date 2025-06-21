@@ -1,5 +1,12 @@
 
+#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/ReaderWavConverter.hpp"
+#include "mods/wav/StatCollector.hpp"
+
+#include <cstddef>
+#include <utility>
 
 namespace mods
 {
@@ -10,7 +17,7 @@ namespace mods
           _it(_buffer.begin()),
           _end(_buffer.end()),
           _defaultValue(defaultValue),
-          _statCollector(std::move(statCollector))
+          _statCollector(statCollector)
             {
             }
         

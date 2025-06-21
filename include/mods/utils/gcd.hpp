@@ -3,29 +3,31 @@
 
 #include "mods/utils/types.hpp"
 
+#include <limits>
+
 namespace mods
 {
    namespace utils
      {
-        constexpr auto gcd(u64 a, u64 b) -> u64
+        constexpr auto gcd(u64 paramA, u64 paramB) -> u64
           {
-             u64 r = 0;
-             do
+             u64 remaining = std::numeric_limits<u64>::max();
+             while(remaining != 0)
                {
-                  if(a < b)
+                  if(paramA < paramB)
                     {
-                       u64 t = a;
-                       a = b;
-                       b = t;
+                       const u64 tmp = paramA;
+                       paramA = paramB;
+                       paramB = tmp;
                     }
-                  r = a % b;
-                  if(r != 0)
+                  remaining = paramA % paramB;
+                  if(remaining != 0)
                     {
-                       a = b;
-                       b = r;
+                       paramA = paramB;
+                       paramB = remaining;
                     }
-               } while(r != 0);
-             return b;
+               }
+             return paramB;
           }
      } // namespace utils
 } // namespace mods

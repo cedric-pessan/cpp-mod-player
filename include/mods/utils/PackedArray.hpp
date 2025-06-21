@@ -40,21 +40,21 @@ namespace mods
                   using const_reference = const value_type&;
                   
                   Iterator(const PackedArray& packedArray, size_t pos) :
-                    _packedArray(packedArray),
+                    _packedArray(&packedArray),
                     _pos(pos)
                       {
                       }
                   
                   Iterator() = delete;
                   Iterator(const Iterator&) = delete;
-                  Iterator(Iterator&&) = default;
+                  Iterator(Iterator&&) noexcept = default;
                   auto operator=(const Iterator&) -> Iterator& = delete;
                   auto operator=(Iterator&&) -> Iterator& = delete;
                   ~Iterator() = default;
                   
-                  auto operator!=(const Iterator& it) -> bool
+                  auto operator!=(const Iterator& rightIt) -> bool
                     {
-                       return _pos != it._pos;
+                       return _pos != rightIt._pos;
                     }
                   
                   auto operator++() -> Iterator&
@@ -65,10 +65,11 @@ namespace mods
                   
                   auto operator*() const -> const_reference
                     {
-                       return _packedArray[_pos];
+                       return (*_packedArray)[_pos];
                     }
                   
-                  const PackedArray<T, SIZE>& _packedArray;
+                private:
+                  const PackedArray<T, SIZE>* _packedArray;
                   size_t _pos;
                };
              

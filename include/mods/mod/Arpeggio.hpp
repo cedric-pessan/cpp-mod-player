@@ -12,6 +12,13 @@ namespace mods
         class Arpeggio : public Effect
           {
            public:
+             struct Parameters
+               {
+                  int x;
+                  int y;
+                  u16 period;
+               };
+             
              Arpeggio();
              Arpeggio(const Arpeggio&) = delete;
              Arpeggio(Arpeggio&&) = delete;
@@ -19,7 +26,7 @@ namespace mods
              auto operator=(Arpeggio&&) -> Arpeggio& = delete;
              ~Arpeggio() override = default;
              
-             void init(int x, int y, u16 period);
+             void init(Parameters parameters);
              
              auto getModifiedPeriod(u16 period) -> u16 override;
              auto getModifiedVolume(u16 volume) const -> u16 override;
@@ -27,11 +34,13 @@ namespace mods
              
            private:
              int _currentNote = 0;
-             std::array<double, 16> _fineTuneFactors;
+             
+             constexpr static int ARPEGGIO_FACTOR_TABLE_SIZE = 16;
+             std::array<double, ARPEGGIO_FACTOR_TABLE_SIZE> _fineTuneFactors {};
              
              int _x = 0;
              int _y = 0;
-             u16 _period;
+             u16 _period = 0;
           };
      } // namespace mod
 } // namespace mods

@@ -45,16 +45,17 @@ namespace mods
              void tick();
              
              auto hasSpeedDefined() const -> bool;
-             auto getSpeed() const -> int;
+             auto getSpeed() const -> u32;
              
              auto hasPatternJump() const -> bool;
              auto getPatternOfJumpTarget() const -> int;
              auto getLineOfJumpTarget() const -> int;
              
            private:
-             auto toDouble(s8 sample) -> double;
+             static auto toDouble(s8 sample) -> double;
              auto getFineTuneFactor(int fineTune) -> double;
              void processNextSample(s8 sample);
+             void applyEffect(const mods::utils::RBuffer<Note>& note);
              
              size_t _instrument = 0;
              size_t _currentSample = 0;
@@ -63,16 +64,17 @@ namespace mods
              u16 _volume = 0;
              RLESample _currentValue;
              bool _speedSetOnLastLine = false;
-             int _speed = 0;
+             u32 _speed = 0;
              
              bool _hasPatternJump = false;
              int _patternOfJumpTarget = 0;
              int _lineOfJumpTarget = 0;
              
-             const std::vector<mods::utils::RBuffer<s8>>& _sampleBuffers;
+             const std::vector<mods::utils::RBuffer<s8>>* _sampleBuffers;
              mods::utils::RBuffer<Instrument> _instruments;
              
-             std::array<double, 16> _fineTuneFactors;
+             constexpr static size_t NUMBER_OF_FINETUNE_FACTORS = 16;
+             std::array<double, NUMBER_OF_FINETUNE_FACTORS> _fineTuneFactors;
              
              std::unique_ptr<NoEffect> _noEffect;
              std::unique_ptr<Vibrato> _vibrato;

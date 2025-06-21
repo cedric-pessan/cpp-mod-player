@@ -1,5 +1,9 @@
 
 #include "mods/mod/Instrument.hpp"
+#include "mods/utils/types.hpp"
+
+#include <cstddef>
+#include <string>
 
 namespace mods
 {
@@ -8,15 +12,15 @@ namespace mods
         auto Instrument::getSampleName() const -> std::string
           {
              size_t length = 0;
-             for(auto c : _sampleName)
+             for(auto character : _sampleName)
                {
-                  if(c == '\0')
+                  if(character == '\0')
                     {
                        break;
                     }
                   ++length;
                }
-             return std::string(_sampleName.data(), length);
+             return { _sampleName.data(), length };
           }
         
         auto Instrument::getSampleLength() const -> u16
@@ -26,13 +30,15 @@ namespace mods
         
         auto Instrument::getFineTune() const -> s8
           {
-             s8 v = _fineTune & 0xF;
-             if(v & 0x8)
-               {
-                  v |= 0xF0;
-               }
+             constexpr u8 signBitMask = 0x8U;
+             constexpr u8 valueMask = 7U;
              
-             return v;
+             if((_fineTune & signBitMask) == 0)
+               {
+                  return static_cast<s8>(_fineTune & valueMask);
+               }
+             const u8 absoluteValueFineTune = _fineTune & valueMask;
+             return static_cast<s8>(-((absoluteValueFineTune ^ valueMask) + 1));
           }
         
         auto Instrument::getVolume() const -> u8

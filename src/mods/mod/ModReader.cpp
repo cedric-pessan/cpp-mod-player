@@ -1,16 +1,33 @@
 
+#include "mods/converters/Converter.hpp"
 #include "mods/converters/FromDoubleConverter.hpp"
 #include "mods/converters/MultiplexerConverter.hpp"
 #include "mods/converters/OpenCLConverterTypes.hpp"
 #include "mods/converters/ResampleParameters.hpp"
 #include "mods/converters/SoftwareResampleConverter.hpp"
+#include "mods/mod/ChannelId.hpp"
 #include "mods/mod/Instrument.hpp"
 #include "mods/mod/ModChannelConverter.hpp"
 #include "mods/mod/ModReader.hpp"
+#include "mods/mod/Note.hpp"
+#include "mods/mod/PatternReader.hpp"
+#include "mods/utils/AmigaRLESample.hpp"
 #include "mods/utils/FileUtils.hpp"
+#include "mods/utils/OpenCLManager.hpp"
+#include "mods/utils/PackedArray.hpp"
+#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
 
+#include <algorithm>
+#include <cstddef>
+#include <iostream>
 #include <map>
+#include <memory>
 #include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace mods
 {
@@ -18,8 +35,8 @@ namespace mods
      {
         namespace
           {
-             constexpr static int oldModNumberOfInstruments = 15;
-             constexpr static int newModNumberOfInstruments = 31;
+             constexpr int oldModNumberOfInstruments = 15;
+             constexpr int newModNumberOfInstruments = 31;
              
              auto getTagsToChans() -> const std::map<std::string, size_t>&
                {
@@ -43,8 +60,8 @@ namespace mods
           _nbChannels(getNumberOfChannelsFromFormatTag()),
           _patterns(parsePatternsBuffer()),
           _sampleBuffers(parseSampleBuffers()),
-          _patternListReader(std::make_unique<PatternListReader>(_numberOfPatterns, _patternsOrderList, _nbChannels, _patterns, _instruments, _sampleBuffers)),
-          _modConverter(buildModConverter(_patternListReader))
+          _patternListReader(_numberOfPatterns, _patternsOrderList, _nbChannels, _patterns, _instruments, _sampleBuffers),
+          _modConverter(buildModConverter(&_patternListReader))
             {
             }
         
@@ -54,7 +71,7 @@ namespace mods
              
              checkInit(_fileBuffer.size() > _songFieldLength, "File too small to contain song title");
              auto buf = _fileBuffer.slice<SongArray>(0, 1);
-             auto& array = buf[0];
+             const auto& array = buf[0];
              size_t length = 0;
              for(length = 0; length<_songFieldLength; ++length) 
                {
@@ -65,7 +82,7 @@ namespace mods
                }
              
              _notParsedBuffer = _notParsedBuffer.slice<u8>(_songFieldLength, _notParsedBuffer.size() - _songFieldLength);
-             return std::string(array.data(), length);
+             return {array.data(), length};
           }
         
         auto ModReader::detectNumberOfInstruments() const -> u32
@@ -83,16 +100,16 @@ namespace mods
              
              auto tmp = _notParsedBuffer.slice<Instrument>(0, newModNumberOfInstruments);
              
-             for(auto& instrument : tmp) 
+             for(const auto& instrument : tmp) 
                {
                   bool ascii = true;
-                  for(auto& c : instrument.getSampleName())
+                  for(auto& curC : instrument.getSampleName())
                     {
-                       if(c == '\0')
+                       if(curC == '\0')
                          {
                             break;
                          }
-                       if(c < minValidAscii && c > maxValidAscii)
+                       if(curC < minValidAscii || curC > maxValidAscii)
                          {
                             ascii = false;
                             break;
@@ -111,15 +128,15 @@ namespace mods
           {
              auto instruments = _fileBuffer.slice<Instrument>(_songFieldLength, _numberOfInstruments);
              _notParsedBuffer = _notParsedBuffer.slice<u8>(_numberOfInstruments * sizeof(Instrument),
-                                                           _notParsedBuffer.size() - _numberOfInstruments * sizeof(Instrument));
+                                                           _notParsedBuffer.size() - (_numberOfInstruments * sizeof(Instrument)));
              return instruments;
           }
         
         auto ModReader::parseNumberOfPatterns() -> size_t
           {
-             checkInit(_notParsedBuffer.size() > 0, "File is too small to contain number of patterns");
+             checkInit(!_notParsedBuffer.empty(), "File is too small to contain number of patterns");
              
-             u8 numberOfPatterns = _notParsedBuffer[0];
+             const u8 numberOfPatterns = _notParsedBuffer[0];
              _notParsedBuffer = _notParsedBuffer.slice<u8>(1, _notParsedBuffer.size() - 1);
              
              checkInit(numberOfPatterns > 0, "A module should contain at least one pattern");
@@ -129,9 +146,9 @@ namespace mods
         
         auto ModReader::parseEndJumpPosition() -> size_t
           {
-             checkInit(_notParsedBuffer.size() > 0, "File is too small to contain end jump position");
+             checkInit(!_notParsedBuffer.empty(), "File is too small to contain end jump position");
              
-             u8 endJumpPosition = _notParsedBuffer[0];
+             const u8 endJumpPosition = _notParsedBuffer[0];
              _notParsedBuffer = _notParsedBuffer.slice<u8>(1, _notParsedBuffer.size() - 1);
              return endJumpPosition;
           }
@@ -153,34 +170,31 @@ namespace mods
              
              if(_instruments.size() == oldModNumberOfInstruments)
                {
-                  std::cout << "TODO: ModReader::getNumberOfChannelsFromFormatTag() const, 15 instruments mod" << std::endl;
+                  std::cout << "TODO: ModReader::getNumberOfChannelsFromFormatTag() const, 15 instruments mod" << '\n';
                }
              
              checkInit(_notParsedBuffer.size() >= tagSize, "File is too small to contain format tag");
              
-             std::string tag(_notParsedBuffer.begin(), _notParsedBuffer.begin() + tagSize);
+             const std::string tag(_notParsedBuffer.begin(), _notParsedBuffer.begin() + tagSize);
              _notParsedBuffer = _notParsedBuffer.slice<u8>(tagSize, _notParsedBuffer.size() - tagSize);
              
-             auto& tagsToChans = getTagsToChans();
-             auto it = tagsToChans.find(tag);
-             if(it != tagsToChans.end())
+             const auto& tagsToChans = getTagsToChans();
+             auto itTag = tagsToChans.find(tag);
+             if(itTag != tagsToChans.end())
                {
-                  return it->second;
+                  return itTag->second;
                }
              
-             std::cout << "Unknown format tag:" << tag << std::endl;
+             std::cout << "Unknown format tag:" << tag << '\n';
              return 0;
           }
         
         auto ModReader::parsePatternsBuffer() -> mods::utils::RBuffer<Note>
           {
              size_t maxPatternIndex = 0;
-             for(auto p : _patternsOrderList)
+             for(auto patternIndex : _patternsOrderList)
                {
-                  if(p > maxPatternIndex)
-                    {
-                       maxPatternIndex = p;
-                    }
+                  maxPatternIndex = std::max<size_t>(patternIndex, maxPatternIndex);
                }
              
              auto numberOfNotes = (maxPatternIndex + 1) * _nbChannels * PatternReader::getNumberOfLines();
@@ -197,9 +211,9 @@ namespace mods
           {
              std::vector<mods::utils::RBuffer<s8>> bufs;
              
-             for(auto& instrument : _instruments)
+             for(const auto& instrument : _instruments)
                {
-                  size_t length = instrument.getSampleLength();
+                  const size_t length = instrument.getSampleLength();
                   
                   checkInit(_notParsedBuffer.size() >= length, "File is too small to contain all instruments");
                   
@@ -222,18 +236,18 @@ namespace mods
         
         auto ModReader::getInfo() const -> std::string
           {
-             std::stringstream ss;
-             ss << getSongTitle() << std::endl;
-             for(auto& instrument : _instruments)
+             std::stringstream sStream;
+             sStream << getSongTitle() << '\n';
+             for(const auto& instrument : _instruments)
                {
-                  ss << instrument.getSampleName() << std::endl;
+                  sStream << instrument.getSampleName() << '\n';
                }
-             return ss.str();
+             return sStream.str();
           }
         
         auto ModReader::getProgressInfo() const -> std::string
           {
-             return _patternListReader->getProgressInfo();
+             return _patternListReader.getProgressInfo();
           }
         
         auto ModReader::getSongTitle() const -> std::string
@@ -241,7 +255,7 @@ namespace mods
              return _songTitle;
           }
         
-        auto ModReader::buildModConverter(std::shared_ptr<PatternListReader> patternListReader) -> mods::converters::Converter<s16>::ptr
+        auto ModReader::buildModConverter(PatternListReader* patternListReader) -> mods::converters::Converter<s16>::ptr
           {
              auto left = std::make_unique<ModChannelConverter>(patternListReader, ChannelId::LEFT);
              auto right = std::make_unique<ModChannelConverter>(patternListReader, ChannelId::RIGHT);
@@ -267,16 +281,14 @@ namespace mods
              using mods::utils::AmigaRLESample;
              
              using ParamType = AmigaResampleParameters;
-             ParamType params;
+             const ParamType params;
              if(mods::utils::OpenCLManager::isEnabled())
                {
                   using ResampleConverterImpl = OpenCLConverterTypes<ParamType, AmigaRLESample>::ResampleConverterImpl;
                   return std::make_unique<ResampleConverterImpl>(std::move(channel), params);
                }
-             else
-               {
-                  return std::make_unique<SoftwareResampleConverter<ParamType, AmigaRLESample>>(std::move(channel), params);
-               }
+             
+             return std::make_unique<SoftwareResampleConverter<ParamType, AmigaRLESample>>(std::move(channel), params);
           }
         
         auto ModReader::buildFromDoubleStage(mods::converters::Converter<double>::ptr left,
@@ -295,7 +307,7 @@ namespace mods
           {
              using mods::converters::MultiplexerConverter;
              
-             return std::make_unique<MultiplexerConverter<s16>>(std::move(left), std::move(right));
+             return std::make_unique<MultiplexerConverter<s16>>(MultiplexerConverter<s16>::LeftAndRightChannels{std::move(left), std::move(right)});
           }
      } // namespace mod
 } // namespace mods

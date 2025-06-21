@@ -1,11 +1,12 @@
 
 #include "mods/utils/AmigaRLESample.hpp"
+#include "mods/utils/types.hpp"
 
 namespace mods
 {
    namespace utils
      {
-        AmigaRLESample::AmigaRLESample(double value, u32 length, bool filtered)
+        AmigaRLESample::AmigaRLESample(double value, SampleLength length, bool filtered)
           : _value(value),
           _filtered(filtered),
           _length(length)

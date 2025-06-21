@@ -23,7 +23,7 @@ namespace mods
              auto operator=(VibratoAndVolumeSlide&&) -> VibratoAndVolumeSlide& = delete;
              ~VibratoAndVolumeSlide() override = default;
              
-             void init(u16 currentVolume, u8 slideUp, u8 slideDown);
+             void init(u16 currentVolume, s16 delta);
              
              auto getModifiedPeriod(u16 period) -> u16 override;
              auto getModifiedVolume(u16 volume) const -> u16 override;

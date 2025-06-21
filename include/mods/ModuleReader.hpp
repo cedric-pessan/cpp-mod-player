@@ -10,7 +10,7 @@
 
 namespace mods
 {
-   enum struct ModuleFormat
+   enum struct ModuleFormat : u8
      {
         WAV,
           MOD,

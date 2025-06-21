@@ -15,7 +15,7 @@ namespace mods
              class Iterator;
              
            public:
-             using value_type = typename std::remove_reference<typename std::result_of<F(typename C::reference)>::type>::type;
+             using value_type = typename std::remove_reference_t<typename std::result_of_t<F(typename C::reference)>>;
              using reference = value_type&;
              using const_reference = const value_type&;
              using pointer = value_type*;
@@ -76,9 +76,9 @@ namespace mods
                   auto operator=(Iterator&&) -> Iterator& = delete;
                   ~Iterator() = default;
                   
-                  auto operator-(const Iterator& it) const -> difference_type
+                  auto operator-(const Iterator& rightIt) const -> difference_type
                     {
-                       return _internalIt - it._internalIt;
+                       return _internalIt - rightIt._internalIt;
                     }
                   
                   auto operator*() const -> reference
@@ -92,9 +92,9 @@ namespace mods
                        return *this;
                     }
                   
-                  auto operator!=(const Iterator& it)
+                  auto operator!=(const Iterator& rightIt)
                     {
-                       return _internalIt != it._internalIt;
+                       return _internalIt != rightIt._internalIt;
                     }
                   
                 private:

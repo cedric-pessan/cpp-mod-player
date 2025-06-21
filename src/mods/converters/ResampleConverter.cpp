@@ -1,7 +1,19 @@
 
+#include "mods/StandardFrequency.hpp"
+#include "mods/converters/Converter.hpp"
 #include "mods/converters/ResampleConverter.hpp"
 #include "mods/converters/ResampleParameters.hpp"
+#include "mods/converters/impl/ResampleConverterImpl.hpp"
 #include "mods/utils/AmigaRLESample.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
+#include "mods/utils/types.hpp"
+
+#include <algorithm>
+#include <cstddef>
+#include <memory>
+#include <utility>
+#include <vector>
 
 namespace mods
 {
@@ -17,7 +29,7 @@ namespace mods
           _currentSample(_resampleParameters.getNumTaps())
             {
                using impl::SampleWithZeros;
-               _history.push_back(SampleWithZeros(0.0, _resampleParameters.getNumTaps()-1, false));
+               _history.push_back(SampleWithZeros(0.0, false, _resampleParameters.getNumTaps()-1));
             }
         
         template<typename PARAMETERS, typename T>
@@ -87,64 +99,74 @@ namespace mods
         template<typename PARAMETERS, typename T>
           void ResampleConverter<PARAMETERS, T>::addToHistory()
             {
-               using impl::SampleWithZeros;
-               
                int toAdd = _resampleParameters.getDecimationFactor();
                while(toAdd > 0)
                  {
-                    if(toAdd <= _zerosToNextInterpolatedSample)
-                      {
-                         bool merged = false;
-                         if(!_history.isEmpty())
-                           {
-                              auto& latestElement = _history.back();
-                              if(latestElement.getSample() == 0.0)
-                                {
-                                   latestElement.setNumberOfZeros(latestElement.getNumberOfZeros() + toAdd);
-                                   merged = true;
-                                }
-                           }
-                         if(!merged)
-                           {
-                              if(shouldDedup())
-                                {
-                                   _history.tryToMergeLast2Elements();
-                                }
-                              _history.push_back(SampleWithZeros(0.0, toAdd-1, _resampleParameters.isFiltered()));
-                           }
-                         _zerosToNextInterpolatedSample -= toAdd;
-                         toAdd = 0;
-                      }
-                    else
-                      {
-                         if(nextSampleExists())
-                           {
-                              double sample = getNextSample();
-                              bool merged = false;
-                              if(!_history.isEmpty())
-                                {
-                                   auto& latestElement = _history.back();
-                                   if(latestElement.getSample() == 0.0)
-                                     {
-                                        latestElement.setNumberOfZeros(latestElement.getNumberOfZeros() + 1 + _zerosToNextInterpolatedSample);
-                                        latestElement.setSample(sample);
-                                        merged = true;
-                                     }
-                                }
-                              if(!merged)
-                                {
-                                   if(shouldDedup())
-                                     {
-                                        _history.tryToMergeLast2Elements();
-                                     }
-                                   _history.push_back(SampleWithZeros(sample, _zerosToNextInterpolatedSample, _resampleParameters.isFiltered()));
-                                }
-                              toAdd -= (_zerosToNextInterpolatedSample + 1);
-                              _zerosToNextInterpolatedSample = _resampleParameters.getInterpolationFactor() - 1;
-                           } else {
-                              toAdd = 0;
-                           }
-                      }
+                    toAdd = addNextSamplesToHistory(toAdd);
+                 }
+            }
+        
+        template<typename PARAMETERS, typename T>
+          auto ResampleConverter<PARAMETERS, T>::addNextSamplesToHistory(int toAdd) -> int
+          {
+             using impl::SampleWithZeros;
+             
+             if(toAdd <= _zerosToNextInterpolatedSample)
+               {
+                  bool merged = false;
+                  if(!_history.isEmpty())
+                    {
+                       auto& latestElement = _history.back();
+                       if(latestElement.getSample() == 0.0)
+                         {
+                            latestElement.setNumberOfZeros(latestElement.getNumberOfZeros() + toAdd);
+                            merged = true;
+                         }
+                    }
+                  if(!merged)
+                    {
+                       tryToDedup();
+                       _history.push_back(SampleWithZeros(0.0, _resampleParameters.isFiltered(), toAdd-1));
+                    }
+                  _zerosToNextInterpolatedSample -= toAdd;
+                  toAdd = 0;
+               }
+             else
+               {
+                  if(nextSampleExists())
+                    {
+                       const double sample = getNextSample();
+                       bool merged = false;
+                       if(!_history.isEmpty())
+                         {
+                            auto& latestElement = _history.back();
+                            if(latestElement.getSample() == 0.0)
+                              {
+                                 latestElement.setNumberOfZeros(latestElement.getNumberOfZeros() + 1 + _zerosToNextInterpolatedSample);
+                                 latestElement.setSample(sample);
+                                 merged = true;
+                              }
+                         }
+                       if(!merged)
+                         {
+                            tryToDedup();
+                            _history.push_back(SampleWithZeros(sample, _resampleParameters.isFiltered(), _zerosToNextInterpolatedSample));
+                         }
+                       toAdd -= (_zerosToNextInterpolatedSample + 1);
+                       _zerosToNextInterpolatedSample = _resampleParameters.getInterpolationFactor() - 1;
+                    } else {
+                       toAdd = 0;
+                    }
+               }
+             return toAdd;
+          }
+        
+        template<typename PARAMETERS, typename T>
+          void ResampleConverter<PARAMETERS, T>::tryToDedup()
+            {
+               if(shouldDedup())
+                 {
+                    _history.tryToMergeLast2Elements();
                  }
             }
         
@@ -211,7 +233,7 @@ namespace mods
         
         namespace impl
           {
-             SampleWithZeros::SampleWithZeros(double sample, int zeros, bool filtered)
+             SampleWithZeros::SampleWithZeros(double sample, bool filtered, int zeros)
                : _numberOfZeros(zeros),
                _sample(sample),
                _filtered(filtered)
@@ -253,11 +275,11 @@ namespace mods
                   return _filtered;
                }
              
-             auto SampleWithZeros::isMergableWith(const SampleWithZeros& o) -> bool
+             auto SampleWithZeros::isMergableWith(const SampleWithZeros& neighborSample) const -> bool
                {
-                  return _numberOfZeros == o._numberOfZeros &&
-                    _sample == o._sample &&
-                    _filtered == o._filtered;
+                  return _numberOfZeros == neighborSample._numberOfZeros &&
+                    _sample == neighborSample._sample &&
+                    _filtered == neighborSample._filtered;
                }
              
              void SampleWithZeros::setRepeatCount(int repeatCount)
@@ -277,7 +299,7 @@ namespace mods
              
              History::History(int numTaps)
                : _v(numTaps),
-               _zeros(0.0, 0, false)
+               _zeros(0.0, false, 0)
                  {
                  }
              
@@ -285,7 +307,7 @@ namespace mods
                {
                   if(_begin == _end)
                     {
-                       static SampleWithZeros zero(0.0, 0, false);
+                       static SampleWithZeros zero(0.0, false, 0);
                        return zero;
                     }
                   
@@ -296,7 +318,7 @@ namespace mods
                {
                   if(_begin == _end)
                     {
-                       static SampleWithZeros zero(0.0, 0, false);
+                       static SampleWithZeros zero(0.0, false, 0);
                        return zero;
                     }
                   if(_end == 0)
@@ -368,14 +390,14 @@ namespace mods
                   return _begin == _end;
                }
              
-             auto History::getSample(size_t i) -> SampleWithZeros&
+             auto History::getSample(size_t num) -> SampleWithZeros&
                {
-                  size_t idx = _begin + i;
+                  size_t idx = _begin + num;
                   if(idx >= _v.size())
                     {
                        idx -= _v.size();
                     }
-                  if(idx >= _end && !(idx >= _begin && idx < _v.size()))
+                  if(idx >= _end && (idx < _begin || idx >= _v.size()))
                     {
                        _zeros.setNumberOfZeros(_sizeOfZeroChunksReturnedWhenEmpty); // Large number for fast interpolation of zeros (zeros are skipped)
                        return _zeros;
@@ -412,63 +434,61 @@ namespace mods
                {
                   if(size() >= 3) // after the merge we never want to be below 2 elements for the remove element algorithm to work
                     {
-                       auto& e1 = getSample(size() - 2);
-                       auto& e2 = getSample(size() - 1);
-                       if(e1.isMergableWith(e2) && e2.getRepeatCount() == 1)
+                       auto& el1 = getSample(size() - 2);
+                       auto& el2 = getSample(size() - 1);
+                       if(el1.isMergableWith(el2) && el2.getRepeatCount() == 1)
                          {
-                            e1.setRepeatCount(e1.getRepeatCount()+1);
+                            el1.setRepeatCount(el1.getRepeatCount()+1);
                             pop_back();
                          }
                     }
                }
              
-             int History::popFrontAndUnmergeNextElement(int maxToRemove)
+             auto History::popFrontAndUnmergeNextElement(int maxToRemove) -> int
                {
                   if(size() == 1)
                     {
                        pop_front();
                        return 0;
                     }
-                  auto& e2 = getSample(1);
-                  if(e2.getRepeatCount() > 1)
+                  auto& el2 = getSample(1);
+                  if(el2.getRepeatCount() > 1)
                     {
-                       auto& e1 = getSample(0);
-                       e1 = e2;
-                       e1.setRepeatCount(1);
-                       e2.setRepeatCount(e2.getRepeatCount()-1);
+                       auto& el1 = getSample(0);
+                       el1 = el2;
+                       el1.setRepeatCount(1);
+                       el2.setRepeatCount(el2.getRepeatCount()-1);
                        
-                       if(e2.getRepeatCount() > 1)
+                       if(el2.getRepeatCount() > 1)
                          {
-                            int countPerElem = e1.getNumberOfZeros() + 1;
-                            int maxRepeatDecrease = e2.getRepeatCount() - 1;
-                            int requestedRepeatDecrease = std::max(0, (maxToRemove - countPerElem*2) / countPerElem);
-                            int repeatDecrease = std::min(maxRepeatDecrease, requestedRepeatDecrease);
-                            e2.setRepeatCount(e2.getRepeatCount() - repeatDecrease);
+                            const int countPerElem = el1.getNumberOfZeros() + 1;
+                            const int maxRepeatDecrease = el2.getRepeatCount() - 1;
+                            const int requestedRepeatDecrease = std::max(0, (maxToRemove - countPerElem*2) / countPerElem);
+                            const int repeatDecrease = std::min(maxRepeatDecrease, requestedRepeatDecrease);
+                            el2.setRepeatCount(el2.getRepeatCount() - repeatDecrease);
                             return repeatDecrease * countPerElem;
                          }
                        return 0;
                     }
-                  else
-                    {
-                       pop_front();
-                       return 0;
-                    }
+                  
+                  pop_front();
+                  return 0;
                }
              
              History::Iterator::Iterator(History* history, size_t idx)
-               : _history(*history),
+               : _history(history),
                _idx(idx)
                  {
                  }
              
-             auto History::Iterator::operator-(const Iterator& it) const -> History::difference_type
+             auto History::Iterator::operator-(const Iterator& itRight) const -> History::difference_type
                {
-                  return _idx - it._idx;
+                  return static_cast<difference_type>(_idx) - static_cast<difference_type>(itRight._idx);
                }
              
              auto History::Iterator::operator*() const -> History::reference
                {
-                  return _history.getSample(_idx);
+                  return _history->getSample(_idx);
                }
              
              auto History::Iterator::operator++() -> History::Iterator&

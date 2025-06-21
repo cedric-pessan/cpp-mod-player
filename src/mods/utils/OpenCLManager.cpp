@@ -1,10 +1,17 @@
 
 #include "config.hpp"
 #include "mods/utils/OpenCLManager.hpp"
+#include "mods/utils/optional.hpp"
+#include "mods/utils/types.hpp"
 
+#include <CL/cl.h>
+#include <CL/opencl.hpp>
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
-#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace mods
 {
@@ -13,7 +20,7 @@ namespace mods
 #ifdef WITH_OPENCL
         auto OpenCLManager::getConfig() -> const OpenCLConfig&
           {
-             static OpenCLConfig config;
+             static const OpenCLConfig config;
              return config;
           }
         
@@ -29,7 +36,7 @@ namespace mods
         
         OpenCLManager::OpenCLConfig::OpenCLConfig()
           {
-             if(getenv("DISABLE_OPENCL") != nullptr)
+             if(getenv("DISABLE_OPENCL") != nullptr) // NOLINT(concurrency-mt-unsafe)
                {
                   _enabled = false;
                   return;
@@ -40,17 +47,17 @@ namespace mods
              
              std::vector<cl::Platform> platforms;
              cl::Platform::get(&platforms);
-             for(auto& p : platforms)
+             for(auto& platform : platforms)
                {
                   u64 power = 0;
                   bool gpuPlatform = false;
                   std::vector<cl::Device> usableDevices;
                   
                   std::vector<cl::Device> devices;
-                  p.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-                  for(auto& d : devices)
+                  platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+                  for(auto& device : devices)
                     {
-                       auto versionString = d.getInfo<CL_DEVICE_VERSION>();
+                       auto versionString = device.getInfo<CL_DEVICE_VERSION>();
                        auto version = parseVersion(versionString);
                        
                        // check the device is at lease OpenCL 1.2
@@ -62,21 +69,21 @@ namespace mods
                          }
                        
                        // check the device support operations on double floating point numbers.
-                       if(d.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>() == 0 ||
-                          d.getInfo<CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE>() == 0)
+                       if(device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>() == 0 ||
+                          device.getInfo<CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE>() == 0)
                          {
                             continue;
                          }
                        
-                       auto type = d.getInfo<CL_DEVICE_TYPE>();
-                       if(type == CL_DEVICE_TYPE_GPU) // NOLINT(hicpp-signed-bitwise)
+                       auto type = device.getInfo<CL_DEVICE_TYPE>();
+                       if(type == CL_DEVICE_TYPE_GPU) // GOLINT(hicpp-signed-bitwise)
                          {
                             _enabled = true;
                             gpuPlatform = true;
                          }
                        
-                       usableDevices.push_back(d);
-                       power += d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() * d.getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>();
+                       usableDevices.push_back(device);
+                       power += static_cast<u64>(device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>()) * static_cast<u64>(device.getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>());
                     }
                   
                   if(gpuPlatform && power > bestPlatformPower)
@@ -107,42 +114,42 @@ namespace mods
              if(versionString.size() <= openCLString.size() ||
                 versionString.rfind(openCLString, 0) != 0)
                {
-                  return mods::optional<std::pair<int, int>>();
+                  return {};
                }
              
              // remove OpenCL header from string
-             std::string v = versionString.substr(openCLString.size());
-             auto nextSpace = v.find(' ');
+             std::string strV = versionString.substr(openCLString.size());
+             auto nextSpace = strV.find(' ');
              if(nextSpace != std::string::npos)
                {
-                  v = v.substr(0, nextSpace);
+                  strV = strV.substr(0, nextSpace);
                }
              
              // find version separator
-             auto minorMajorSep = v.find('.');
+             auto minorMajorSep = strV.find('.');
              if(minorMajorSep == std::string::npos)
                {
-                  return mods::optional<std::pair<int, int>>();
+                  return {};
                }
              
              // check there is exactly 1 version separator
-             if(minorMajorSep == v.size()-1 ||
-                v.find('.', minorMajorSep+1) != std::string::npos)
+             if(minorMajorSep == strV.size()-1 ||
+                strV.find('.', minorMajorSep+1) != std::string::npos)
                {
-                  return mods::optional<std::pair<int, int>>();
+                  return {};
                }
              
-             std::string majorString = v.substr(0, minorMajorSep);
-             std::string minorString = v.substr(minorMajorSep+1);
+             std::string majorString = strV.substr(0, minorMajorSep);
+             std::string minorString = strV.substr(minorMajorSep+1);
              
              if(!std::all_of(majorString.begin(), majorString.end(), ::isdigit) ||
                 !std::all_of(minorString.begin(), minorString.end(), ::isdigit))
                {
-                  return mods::optional<std::pair<int, int>>();
+                  return {};
                }
              
-             u64 major = ::strtol(majorString.c_str(), nullptr, 0);
-             u64 minor = ::strtol(minorString.c_str(), nullptr, 0);
+             const u64 major = ::strtol(majorString.c_str(), nullptr, 0);
+             const u64 minor = ::strtol(minorString.c_str(), nullptr, 0);
              
              return mods::optional<std::pair<int, int>>(major, minor);
           }

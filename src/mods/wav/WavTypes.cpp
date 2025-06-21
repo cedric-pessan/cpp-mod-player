@@ -1,6 +1,8 @@
 
 #include "mods/wav/WavTypes.hpp"
 
+#include <string>
+
 namespace mods
 {
    namespace wav

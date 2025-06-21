@@ -1,10 +1,20 @@
 
+#include "mods/converters/Converter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
 #include "mods/utils/arithmeticShifter.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/ADPCMDecoderConverter.hpp"
 #include "mods/wav/Format.hpp"
+#include "mods/wav/impl/ADPCMDecoderConverterImpl.hpp"
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
 #include <iostream>
 #include <limits>
+#include <memory>
+#include <utility>
 
 namespace mods
 {
@@ -23,17 +33,17 @@ namespace mods
 	    {
                if(format.getBitsPerSample() != 4)
                  {
-                    std::cout << "Warning: ADPCMDecoderConverter: stream is not 4 bits per sample" << std::endl;
+                    std::cout << "Warning: ADPCMDecoderConverter: stream is not 4 bits per sample" << '\n';
                  }
                
                if(_blockSize != format.getBitsPerContainer() * NB_CHANNELS / BITS_IN_BYTE)
                  {
-                    std::cout << "Warning: ADPCMDecoderConverter: blocks contain padding" << std::endl;
+                    std::cout << "Warning: ADPCMDecoderConverter: blocks contain padding" << '\n';
                  }
                
-               if(_extension->getNumCoef() * 2 < _coefs.size())
+               if(static_cast<u64>(_extension->getNumCoef() * 2) < _coefs.size())
                  {
-                    _coefs = _coefs.slice<s16>(0, _extension->getNumCoef() * 2);
+                    _coefs = _coefs.slice<s16>(0, _extension->getNumCoef() * 2UL);
                  }
 	    }
         
@@ -44,16 +54,16 @@ namespace mods
              
              if((samplesPerBlock & 1U) != 0)
                {
-                  std::cout << "Warning: ADPCMDecoderConverter: samples per block is odd" << std::endl;
+                  std::cout << "Warning: ADPCMDecoderConverter: samples per block is odd" << '\n';
                }
              if(samplesPerBlock <= 2)
                {
-                  std::cout << "Warning: ADPCMDecoderConverter: samples per block too small" << std::endl;
+                  std::cout << "Warning: ADPCMDecoderConverter: samples per block too small" << '\n';
                }
              
              auto samplesAfterPreamble = samplesPerBlock - 2;
              
-             return samplesAfterPreamble / 2 * NB_CHANNELS + sizeof(Preamble);
+             return (samplesAfterPreamble / 2UL * NB_CHANNELS) + sizeof(Preamble);
           }
         
         template<int NB_CHANNELS>
@@ -98,7 +108,7 @@ namespace mods
                using mods::utils::at;
 	       
 	       size_t count = 0;
-	       size_t nbElems = buf->size();
+	       const size_t nbElems = buf->size();
 	       auto& out = *buf;
 	       
 	       static constexpr u8 nibbleMask = 0xFU;
@@ -117,7 +127,7 @@ namespace mods
 			      _src->read(&_encodedBuffer);
 			      for(int i=0; i<NB_CHANNELS; ++i)
 				{
-				   at(_decoders, i).initDecoder(_preamble->getSampleTMinus1(i), _preamble->getSampleTMinus2(i), _preamble->getBlockPredictor(i), _coefs, _preamble->getInitialDelta(i));
+				   at(_decoders, i).initDecoder(impl::ChannelPreamble{_preamble->getSampleTMinus1(i), _preamble->getSampleTMinus2(i), _preamble->getBlockPredictor(i), _preamble->getInitialDelta(i)}, _coefs);
 				}
 			      _itDataBuffer = _dataBuffer.RBuffer<u8>::begin();
 			      
@@ -137,12 +147,12 @@ namespace mods
 		      }
 		    else
 		      {
-			 u8 v = *_itDataBuffer;
-			 int sample = static_cast<u8>(v >> 4U) & nibbleMask;
+			 const u8 val = *_itDataBuffer;
+			 int sample = static_cast<u8>(val >> 4U) & nibbleMask;
 			 _nextSample = _decoders[0].decodeSample(sample);
 			 out[count++] = _nextSample;
 			 
-			 sample = v & nibbleMask;
+			 sample = val & nibbleMask;
                          _nextSample = _decoders.back().decodeSample(sample);
 			 _sampleAvailable = true;
 			 
@@ -153,26 +163,28 @@ namespace mods
 	
 	namespace impl
 	  {
-	     void ADPCMChannelDecoder::initDecoder(s16 sampleTMinus1, s16 sampleTMinus2, size_t predictor, const mods::utils::RBuffer<s16>& coefs, s16 initialDelta)
+	     void ADPCMChannelDecoder::initDecoder(const ChannelPreamble& channelPreamble, const mods::utils::RBuffer<s16>& coefs)
 	       {
 		  using mods::utils::at;
 		  
-		  _sampleTMinus1 = sampleTMinus1;
-		  _sampleTMinus2 = sampleTMinus2;
+		  _sampleTMinus1 = channelPreamble.sampleTMinus1;
+		  _sampleTMinus2 = channelPreamble.sampleTMinus2;
+                  const auto predictor = channelPreamble.predictor;
+                  const auto initialDelta = channelPreamble.initialDelta;
 		  
 		  if(predictor * 2 + 1 < coefs.size())
 		    {
 		       _coef1 = coefs[predictor * 2];
-		       _coef2 = coefs[predictor * 2 + 1];
+		       _coef2 = coefs[(predictor * 2) + 1];
 		    }
 		  else if(predictor * 2 + 1 < defaultCoefs.size())
 		    {
 		       _coef1 = at(defaultCoefs, predictor * 2);
-		       _coef2 = at(defaultCoefs, predictor * 2 + 1);
+		       _coef2 = at(defaultCoefs, (predictor * 2) + 1);
 		    }
 		  else
 		    {
-		       std::cout << "Warning: invalid predictor: " << predictor << std::endl;
+		       std::cout << "Warning: invalid predictor: " << predictor << '\n';
 		    }
 		  
 		  _delta = initialDelta;
@@ -191,34 +203,32 @@ namespace mods
 	     auto ADPCMChannelDecoder::decodeSample(u8 sample) -> s16
 	       {
 		  using mods::utils::at;
+                  using mods::utils::arithmeticShifter::Shift;
 		  
 		  static constexpr s32 fixedPointCoefBase = 256;
 		  static constexpr s32 fixedPointAdaptationBase = 256;
 		  static constexpr u32 nibleSignExtensionShift = 28U;
 		  
-		  s32 errorDelta = static_cast<u32>(sample) << nibleSignExtensionShift;
-		  errorDelta = mods::utils::arithmeticShifter::shiftRight(errorDelta, nibleSignExtensionShift);
+		  s32 errorDelta = static_cast<s32>(static_cast<u32>(sample) << nibleSignExtensionShift);
+		  errorDelta = mods::utils::arithmeticShifter::shiftRight(errorDelta, static_cast<Shift>(nibleSignExtensionShift));
 		  
-		  s32 predSample = (static_cast<s32>(_sampleTMinus1) * _coef1 + static_cast<s32>(_sampleTMinus2) * _coef2) / fixedPointCoefBase;
-		  s32 nextSample = predSample + _delta * errorDelta;
+		  const s32 predSample = (static_cast<s32>(_sampleTMinus1) * _coef1 + static_cast<s32>(_sampleTMinus2) * _coef2) / fixedPointCoefBase;
+		  s32 nextSample = predSample + (_delta * errorDelta);
 		  
 		  nextSample = mods::utils::clamp(nextSample, 
 						  static_cast<int>(std::numeric_limits<s16>::min()),
 						  static_cast<int>(std::numeric_limits<s16>::max()));
 		  
-		  _delta = _delta * at(adaptationTable,sample) / fixedPointAdaptationBase;
+		  _delta = static_cast<s16>(_delta * at(adaptationTable,sample) / fixedPointAdaptationBase);
 		  
                   static constexpr s16 MIN_ALLOWED_DELTA = 16;
                   
-		  if(_delta < MIN_ALLOWED_DELTA) 
-		    {
-		       _delta = MIN_ALLOWED_DELTA;
-		    }
+                  _delta = std::max(_delta, MIN_ALLOWED_DELTA);
 		  
 		  _sampleTMinus2 = _sampleTMinus1;
-		  _sampleTMinus1 = nextSample;
+		  _sampleTMinus1 = static_cast<s16>(nextSample);
 		  
-		  return nextSample;
+		  return static_cast<s16>(nextSample);
 	       }
 	  } // namespace impl
         

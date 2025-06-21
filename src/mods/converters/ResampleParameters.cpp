@@ -1,24 +1,33 @@
 
+#include "mods/StandardFrequency.hpp"
 #include "mods/converters/ResampleParameters.hpp"
+#include "mods/utils/ConstFraction.hpp"
+#include "mods/utils/FirFilterDesigner.hpp"
+#include "mods/utils/types.hpp"
+
+#include <algorithm>
+#include <cstddef>
 
 namespace mods
 {
    namespace converters
      {
         template<StandardFrequency InFrequency, StandardFrequency OutFrequency>
-          auto StaticResampleParameters<InFrequency, OutFrequency>::getTap(size_t i) -> double
+          auto StaticResampleParameters<InFrequency, OutFrequency>::getTap(size_t tapIndex) -> double
           {
-             return FilterType::getTap(i);
+             return FilterType::getTap(tapIndex);
           }
         
-        DynamicResampleParameters::DynamicResampleParameters(int inFrequency, int outFrequency)
-          : _resampleFraction(mods::utils::ConstFraction(inFrequency, outFrequency).reduce()),
-          _designer(inFrequency * getInterpolationFactor(), // sampleFrequency
-                    std::min(inFrequency, outFrequency) / _nyquistFactor, _expectedAttenuation, _transitionWidth) // cutoffFrequency
+        DynamicResampleParameters::DynamicResampleParameters(u32 inFrequency, u32 outFrequency)
+          : _resampleFraction(mods::utils::ConstFraction(static_cast<mods::utils::ConstFraction::Numerator>(inFrequency),
+                                                         static_cast<mods::utils::ConstFraction::Denominator>(outFrequency)).reduce()),
+          _designer(mods::utils::FirFilterDesigner::Params{static_cast<u64>(inFrequency) * getInterpolationFactor(), // sampleFrequency
+               std::min(inFrequency, outFrequency) / _nyquistFactor, // cutoffFrequency
+               _expectedAttenuation, _transitionWidth})
             {
             }
         
-        auto DynamicResampleParameters::getNumTaps() const -> int
+        auto DynamicResampleParameters::getNumTaps() const -> size_t
           {
              return _designer.getTaps().size();
           }
@@ -28,19 +37,19 @@ namespace mods
              return _resampleFraction;
           }
         
-        auto DynamicResampleParameters::getInterpolationFactor() const -> int
+        auto DynamicResampleParameters::getInterpolationFactor() const -> u64
           {
              return getResampleFraction().getDenominator();
           }
         
-        auto DynamicResampleParameters::getDecimationFactor() const -> int
+        auto DynamicResampleParameters::getDecimationFactor() const -> u64
           {
              return getResampleFraction().getNumerator();
           }
         
-        auto DynamicResampleParameters::getTap(size_t i) const -> double
+        auto DynamicResampleParameters::getTap(size_t tapIndex) const -> double
           {
-             return _designer.getTaps()[i];
+             return _designer.getTaps()[tapIndex];
           }
         
         auto DynamicResampleParameters::getTaps() const -> const typename mods::utils::FirFilterDesigner::TapsType&
@@ -55,7 +64,10 @@ namespace mods
         
         auto AmigaResampleParameters::getAndConsumeCurrentSampleLength() -> u32
           {
-             if(_currentSampleLength == 0) return 0;
+             if(_currentSampleLength == 0)
+               {
+                  return 0;
+               }
              return _currentSampleLength--;
           }
         
@@ -94,14 +106,14 @@ namespace mods
              return LedFilterType::getTaps();
           }
         
-        auto AmigaResampleParameters::getTap(size_t i) -> double
+        auto AmigaResampleParameters::getTap(size_t tapIndex) -> double
           {
-             return DefaultFilterType::getTap(i);
+             return DefaultFilterType::getTap(tapIndex);
           }
         
-        auto AmigaResampleParameters::getFilteredTap(size_t i) -> double
+        auto AmigaResampleParameters::getFilteredTap(size_t tapIndex) -> double
           {
-             return LedFilterType::getTap(i);
+             return LedFilterType::getTap(tapIndex);
           }
         
         template class StaticResampleParameters<StandardFrequency::_22000, StandardFrequency::_44100>;

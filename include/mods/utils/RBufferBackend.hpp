@@ -42,7 +42,9 @@ namespace mods
                   auto operator=(EmptyDeleter&&) -> EmptyDeleter& = delete;
                };
              
-             RBufferBackend(const u8* buf, size_t length, Deleter::ptr deleter);
+             explicit RBufferBackend(Deleter::ptr deleter);
+             template<typename T>
+               RBufferBackend(const T* buf, size_t length, Deleter::ptr deleter);
              ~RBufferBackend() = default;
              
              RBufferBackend() = delete;

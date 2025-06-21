@@ -16,7 +16,8 @@ namespace mods
              
              using EmptyDeleter = RBufferBackend::EmptyDeleter;
              
-             RWBufferBackend(u8* buf, size_t length, Deleter::ptr deleter);
+             template<typename T>
+               RWBufferBackend(T* buf, size_t length, Deleter::ptr deleter);
              ~RWBufferBackend() = default;
              
              RWBufferBackend() = delete;

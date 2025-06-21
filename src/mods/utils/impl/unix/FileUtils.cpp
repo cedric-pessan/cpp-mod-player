@@ -1,13 +1,17 @@
 
 #include "mods/utils/RBufferBackend.hpp"
+#include "mods/utils/impl/FileUtils.hpp"
 #include "mods/utils/impl/unix/FileUtils.h"
+#include "mods/utils/types.hpp"
 
+#include <cstddef>
+#include <cstdio>
 #include <fcntl.h>
+#include <memory>
 #include <string>
 #include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
+#include <utility>
 
 namespace mods
 {
@@ -20,8 +24,8 @@ namespace mods
                   class UnixMapperDeleter : public RBufferBackend::Deleter
                     {
                      public:
-                       UnixMapperDeleter(int fd, void *ptr, size_t length)
-                         : _fd(fd),
+                       UnixMapperDeleter(int fileD, void *ptr, size_t length)
+                         : _fd(fileD),
                          _ptr(ptr),
                          _length(length)
                            {
@@ -46,23 +50,23 @@ namespace mods
              
              auto mapFileToBuffer(const std::string& filename) -> RBufferBackend::ptr
                {
-                  int fd = modsOpen(filename.c_str(), O_RDONLY);
-                  if(fd == -1)
+                  const int fileDescriptor = modsOpen(filename.c_str(), O_RDONLY);
+                  if(fileDescriptor == -1)
                     {
-                       return RBufferBackend::ptr();
+                       return {};
                     }
-                  size_t length = ::lseek(fd, 0, SEEK_END);
-                  if(length == static_cast<size_t>(static_cast<off_t>(-1)))
+                  const size_t length = ::lseek(fileDescriptor, 0, SEEK_END);
+                  if(length == static_cast<size_t>(1))
                     {
-                       return RBufferBackend::ptr();
+                       return {};
                     }
-                  void* ptr = ::mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
+                  void* ptr = ::mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fileDescriptor, 0);
                   if(modsHasMapFailed(ptr) == FILEUTILS_TRUE)
                     {
-                       return RBufferBackend::ptr();
+                       return {};
                     }
                   
-                  auto deleter = std::make_unique<UnixMapperDeleter>(fd, ptr, length);
+                  auto deleter = std::make_unique<UnixMapperDeleter>(fileDescriptor, ptr, length);
                   return std::make_unique<RBufferBackend>(static_cast<u8*>(ptr), length, std::move(deleter));
                }
           } // namespace FileUtils

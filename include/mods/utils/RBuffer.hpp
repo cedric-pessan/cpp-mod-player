@@ -2,6 +2,7 @@
 #define MODS_UTILS_RBUFFER_HPP
 
 #include "RBufferBackend.hpp"
+#include "RBufferBase.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -11,16 +12,19 @@ namespace mods
    namespace utils
      {
         template<typename T>
-          class RBuffer
+          class RBuffer : RBufferBase
           {
            public:
              using size_type = size_t;
              using const_reference = const T&;
              using backend_type = RBufferBackend;
              
+             using Offset = RBufferBase::Offset;
+             using Length = RBufferBase::Length;
+             
              explicit RBuffer(RBufferBackend::ptr backend)
                : _backend(std::move(backend)),
-               _buf(static_cast<const T*>(static_cast<const void*>(RBufferBackend::Attorney::getBuffer(*_backend)))),
+               _buf(reinterpret_cast<const T*>(RBufferBackend::Attorney::getBuffer(*_backend))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
                _len(RBufferBackend::Attorney::getLength(*_backend) / sizeof(T))
                  {
                  }
@@ -129,8 +133,8 @@ namespace mods
                   
                   auto operator+(ssize_t n) -> const_iterator
                     {
-                       auto it(*this);
-                       return it += n;
+                       auto tmpIt(*this);
+                       return tmpIt += n;
                     }
                   
                 private:
@@ -172,16 +176,16 @@ namespace mods
                   return true;
                }
              
-             RBuffer(RBufferBackend::sptr backend, size_t offset, size_t len)
+             RBuffer(RBufferBackend::sptr backend, Offset offset, Length len)
                : _backend(std::move(backend)),
-               _buf(static_cast<const T*>(static_cast<const void*>(RBufferBackend::Attorney::getBuffer(*_backend) + offset))), // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+               _buf(reinterpret_cast<const T*>(RBufferBackend::Attorney::getBuffer(*_backend) + offset)), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-bounds-pointer-arithmetic)
                _len(len)
                  {
                  }
              
              explicit RBuffer(RBufferBackend::sptr backend)
-               : _backend(backend),
-               _buf(static_cast<const T*>(static_cast<const void*>(RBufferBackend::Attorney::getBuffer(*_backend)))),
+               : _backend(std::move(backend)),
+               _buf(reinterpret_cast<const T*>(RBufferBackend::Attorney::getBuffer(*_backend))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
                _len(RBufferBackend::Attorney::getLength(*_backend) / sizeof(T))
                  {
                  }
@@ -194,9 +198,10 @@ namespace mods
                {
                   using BackendType = typename Buf::backend_type;
                   auto backend = std::static_pointer_cast<BackendType>(_backend);
-                  size_t currentOffset = static_cast<const u8*>(static_cast<const void*>(buf)) - BackendType::Attorney::getBuffer(*backend);
+                  const size_t currentOffset = reinterpret_cast<const u8*>(buf) - BackendType::Attorney::getBuffer(*backend); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
                   check(offset * sizeof(T) + len * sizeof(T2) <= _len * sizeof(T), "invalid slice limits");
-                  return Buf(backend, currentOffset + offset * sizeof(T), len);
+                  auto translatedOffset = static_cast<Offset>(currentOffset + (offset * sizeof(T)));
+                  return Buf(backend, translatedOffset, static_cast<Length>(len));
                }
           };
      } // namespace utils

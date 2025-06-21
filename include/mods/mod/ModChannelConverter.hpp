@@ -16,7 +16,7 @@ namespace mods
            public:
              using RLESample = mods::utils::AmigaRLESample;
              
-             explicit ModChannelConverter(std::shared_ptr<PatternListReader> patternListReader, ChannelId channel);
+             explicit ModChannelConverter(PatternListReader* patternListReader, ChannelId channel);
              
              ModChannelConverter() = delete;
              ModChannelConverter(const ModChannelConverter&) = delete;
@@ -29,7 +29,7 @@ namespace mods
              void read(mods::utils::RWBuffer<RLESample>* buf) override;
              
            private:
-             std::shared_ptr<PatternListReader> _reader;
+             PatternListReader* _reader;
              ChannelId _channel;
           };
      } // namespace mod

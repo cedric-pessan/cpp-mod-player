@@ -1,5 +1,10 @@
 
 #include "mods/converters/CastConverter.hpp"
+#include "mods/converters/Converter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/types.hpp"
+
+#include <iostream>
 
 namespace mods
 {
@@ -22,7 +27,7 @@ namespace mods
             {
                if(((buf->size() * sizeof(TOut)) % sizeof(TIn)) != 0)
                  {
-                    std::cout << "Wrong buffer length to cast a type of size " << sizeof(TIn) << " to a  type of size " << sizeof(TOut) << std::endl;
+                    std::cout << "Wrong buffer length to cast a type of size " << sizeof(TIn) << " to a  type of size " << sizeof(TOut) << '\n';
                  }
                
                auto castedBuf = buf->template slice<TIn>(0, (buf->size() * sizeof(TOut)) / sizeof(TIn));

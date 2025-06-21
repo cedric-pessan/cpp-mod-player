@@ -25,9 +25,12 @@ namespace mods
               ~WavConverterFactory() = delete;
              
            private:
-             static auto isResamplableByPositiveIntegerFactor(int frequency) -> bool;
+             static auto isResamplableByPositiveIntegerFactor(u32 frequency) -> bool;
              
-             enum struct WavBitsPerContainer : int
+             enum Frequency : u32;
+             enum ChannelMask : u32;
+             
+             enum struct WavBitsPerContainer : u8
                {
                   _8 = 8,
                     _16 = 16,
@@ -36,7 +39,7 @@ namespace mods
                     _64 = 64
                };
              
-             enum struct WavBitsPerSample : int
+             enum struct WavBitsPerSample : u8
                {
                   _8 = 8,
                     _16 = 16,
@@ -61,7 +64,7 @@ namespace mods
                                             u32 frequency,
                                             double peak,
                                             u32 channelMask,
-                                            bool floatingPointStream) -> typename std::enable_if<std::is_signed<T>::value, mods::converters::Converter<s16>::ptr>::type;
+                                            bool floatingPointStream) -> typename std::enable_if_t<std::is_signed<T>::value, mods::converters::Converter<s16>::ptr>;
              
              template<typename T>
                static auto buildUnpackStage(std::vector<typename mods::converters::Converter<T>::ptr>&& channels,
@@ -70,12 +73,12 @@ namespace mods
                                             u32 frequency,
                                             double peak,
                                             u32 channelMask,
-                                            bool floatingPointStream) -> typename std::enable_if<std::is_unsigned<T>::value, mods::converters::Converter<s16>::ptr>::type;
+                                            bool floatingPointStream) -> typename std::enable_if_t<std::is_unsigned<T>::value, mods::converters::Converter<s16>::ptr>;
              
              template<typename T>
                static auto buildScaleToContainerSizeStage(std::vector<typename mods::converters::Converter<T>::ptr>&& channels,
-                                                          WavBitsPerContainer bitsPerContainer,
                                                           u16 bitsPerSample,
+                                                          WavBitsPerContainer bitsPerContainer,
                                                           u32 frequency,
                                                           double peak,
                                                           u32 channelMask) -> mods::converters::Converter<s16>::ptr;
@@ -87,17 +90,17 @@ namespace mods
                                              u32 channelMask) -> mods::converters::Converter<s16>::ptr;
              
              static auto buildPeakStage(std::vector<mods::converters::Converter<double>::ptr>&& channels,
-                                        u32 frequency,
+                                        Frequency frequency,
                                         double peak,
-                                        u32 channelMask) -> mods::converters::Converter<s16>::ptr;
+                                        ChannelMask channelMask) -> mods::converters::Converter<s16>::ptr;
              
              static auto buildResamplingStage(std::vector<typename mods::converters::Converter<double>::ptr>&& channels,
                                               u32 frequency,
                                               u32 channelMask) -> mods::converters::Converter<s16>::ptr;
              
              template<typename T>
-               static auto buildPositiveIntegerResamplingStage(std::vector<typename mods::converters::Converter<T>::ptr>&& channels,
-                                                               u32 frequency,
+               static auto buildPositiveIntegerResamplingStage(u32 frequency,
+                                                               std::vector<typename mods::converters::Converter<T>::ptr>&& channels,
                                                                u32 channelMask) -> mods::converters::Converter<s16>::ptr;
              
              template<typename T>

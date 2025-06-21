@@ -2,8 +2,7 @@
 #include "mods/mod/Vibrato.hpp"
 #include "mods/mod/VibratoAndVolumeSlide.hpp"
 #include "mods/mod/VolumeSlide.hpp"
-
-#include <iostream>
+#include "mods/utils/types.hpp"
 
 namespace mods
 {
@@ -16,9 +15,12 @@ namespace mods
             {
             }
         
-        void VibratoAndVolumeSlide::init(u16 currentVolume, u8 slideUp, u8 slideDown)
+        void VibratoAndVolumeSlide::init(u16 currentVolume, s16 delta)
           {
-             _volumeSlide->init(currentVolume, slideUp, slideDown);
+             using Volume = VolumeSlide::Volume;
+             using Delta = VolumeSlide::Delta;
+             
+             _volumeSlide->init(static_cast<Volume>(currentVolume), static_cast<Delta>(delta));
           }
         
         auto VibratoAndVolumeSlide::getModifiedPeriod(u16 period) -> u16

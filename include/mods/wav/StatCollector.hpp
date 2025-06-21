@@ -20,7 +20,7 @@ namespace mods
              
              auto getBytesRead() const -> size_t;
              
-             void inc(size_t i);
+             void inc(size_t newBytesRead);
              
            private:
              size_t _value = 0;

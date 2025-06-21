@@ -1,9 +1,13 @@
 
-#include "mods/utils/bessel.hpp"
 #include "mods/utils/FirFilterDesigner.hpp"
+#include "mods/utils/MathConstants.hpp"
+#include "mods/utils/bessel.hpp"
+#include "mods/utils/types.hpp"
 
 #include <cmath>
-#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace mods
 {
@@ -14,14 +18,14 @@ namespace mods
              constexpr double minAttenuation = 21.0;
           } // namespace
         
-	FirFilterDesigner::FirFilterDesigner(u64 sampleFrequency, double cutOff, double expectedAttenuation, double transitionWidth)
-	  : _sampleFrequency(sampleFrequency),
-	  _cutOff(cutOff),
-          _expectedAttenuation(expectedAttenuation),
-          _transitionWidth(transitionWidth)
+	FirFilterDesigner::FirFilterDesigner(const FirFilterDesigner::Params& params)
+	  : _sampleFrequency(static_cast<double>(params.sampleFrequency)),
+	  _cutOff(params.cutOff),
+          _expectedAttenuation(params.expectedAttenuation),
+          _transitionWidth(params.transitionWidth)
 	    {
-               checkInit(transitionWidth > 0, "transition width should be positive");
-               checkInit(expectedAttenuation > minAttenuation, "attenuation should be greater than 8dB");
+               checkInit(params.transitionWidth > 0, "transition width should be positive");
+               checkInit(params.expectedAttenuation > minAttenuation, "attenuation should be greater than 8dB");
                computeFilter();
 	    }
         
@@ -35,32 +39,33 @@ namespace mods
 	
 	void FirFilterDesigner::computeFilter()
 	  {
+             using mods::utils::math::cPI;
+             
              static constexpr double two = 2.0;
              static constexpr double highAttenuationLimit = 50.0;
              
-             double A = _expectedAttenuation;
-	     double nyquistFrequency = _sampleFrequency / two;
-	     double deltaOmega = _transitionWidth / nyquistFrequency * M_PI;
+	     const double nyquistFrequency = _sampleFrequency / two;
+	     const double deltaOmega = _transitionWidth / nyquistFrequency * cPI;
              // apply empirical kaiser window formula to determine number of taps
-	     s64 M = std::lround((A - 8.0) / (2.285 * deltaOmega)); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-	     if((static_cast<u64>(M)&1U) == 0)
+	     s64 MTaps = std::lround((_expectedAttenuation - 8.0) / (2.285 * deltaOmega)); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+	     if((static_cast<u64>(MTaps)&1U) == 0)
                {
-                  ++M;
+                  ++MTaps;
                }
 	     
-	     double wc = _cutOff / _sampleFrequency;
+	     const double omegaC = _cutOff / _sampleFrequency;
 	     
-	     for(s64 i=0; i<M; ++i)
+	     for(s64 i=0; i<MTaps; ++i)
 	       {
-		  if((i-(M/2)) == 0)
+		  if((i-(MTaps/2)) == 0)
 		    {
-		       _taps.push_back(wc * two);
+		       _taps.push_back(omegaC * two);
 		    }
 		  else
 		    {
-                       s64 shiftedFrequency = i-M/2;
-                       auto w = static_cast<double>(shiftedFrequency);
-		       _taps.push_back(std::sin(two * M_PI * wc * w) / (M_PI * w));
+                       const s64 shiftedFrequency = i-(MTaps/2);
+                       auto omega = static_cast<double>(shiftedFrequency);
+		       _taps.push_back(std::sin(two * cPI * omegaC * omega) / (cPI * omega));
 		    }
 	       }
 	     
@@ -68,22 +73,22 @@ namespace mods
 	     
 	     // compute beta parameter
 	     double beta = 0.0;
-	     if(A > highAttenuationLimit)
+	     if(_expectedAttenuation > highAttenuationLimit)
 	       {
-		  beta = 0.1102 * (A - 8.7); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+		  beta = 0.1102 * (_expectedAttenuation - 8.7); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 	       }
-	     else if(A > minAttenuation)
+	     else if(_expectedAttenuation > minAttenuation)
 	       {
-		  beta = 0.5842 * std::pow(A - minAttenuation, 0.4) + 0.07886 * (A - minAttenuation); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+		  beta = 0.5842 * std::pow(_expectedAttenuation - minAttenuation, 0.4) + 0.07886 * (_expectedAttenuation - minAttenuation); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 	       }
 	     
 	     // compute and apply kaiser window
-	     double alpha = M / two;
-	     for(s64 i=0; i<M; ++i)
+	     const double alpha = static_cast<double>(MTaps) / two;
+	     for(s64 i=0; i<MTaps; ++i)
 	       {
-                  s64 shiftedFrequency = i-M/2;
-                  auto w = static_cast<double>(shiftedFrequency);
-		  double kaiserValue = bessel::i0(beta * std::sqrt(1.0 - std::pow(w / alpha, 2))) / bessel::i0(beta);
+                  const s64 shiftedFrequency = i-(MTaps/2);
+                  auto omega = static_cast<double>(shiftedFrequency);
+		  const double kaiserValue = bessel::i0(beta * std::sqrt(1.0 - std::pow(omega / alpha, 2))) / bessel::i0(beta);
 		  
 		  _taps[i] *= kaiserValue;
 	       }

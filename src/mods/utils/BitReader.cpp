@@ -1,6 +1,9 @@
 
 #include "mods/utils/BitReader.hpp"
+#include "mods/utils/RBuffer.hpp"
 #include "mods/utils/types.hpp"
+
+#include <cstddef>
 
 namespace mods
 {
@@ -30,10 +33,10 @@ namespace mods
 		      {
 			 bytePos ^= 3U;
 		      }
-		    u8 byte = _buf[bytePos];
+		    const u8 byte = _buf[bytePos];
 		    
                     static constexpr u32 bitPositionMask = 0x7U;
-		    size_t bitInByte = _position & bitPositionMask;
+		    const size_t bitInByte = _position & bitPositionMask;
 		    u8 bitMask = 0;
 		    if(BITORDER == BitOrder::LsbToMsb)
 		      {

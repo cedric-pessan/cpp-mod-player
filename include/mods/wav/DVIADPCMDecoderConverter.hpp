@@ -48,9 +48,9 @@ namespace mods
              class Decoder
                {
                 public:
-                  Decoder(mods::utils::RBuffer<u8> dataBuffer,
+                  Decoder(int numChannel,
+                          mods::utils::RBuffer<u8> dataBuffer,
                           const mods::utils::RBuffer<impl::DVIADPCMHeader>& headers,
-                          int numChannel,
                           int nbChannels);
                   
                   Decoder() = delete;
@@ -69,11 +69,11 @@ namespace mods
                   
                 private:
                   bool _sampleAvailable = false;
-                  const mods::utils::RBuffer<u8> _dataBuffer;
+                  mods::utils::RBuffer<u8> _dataBuffer;
                   mods::utils::RBuffer<u8>::const_iterator _itDataBuffer;
                   int _currentByteInDataWord = 0;
                   bool _firstSampleInBlock = true;
-                  const impl::DVIADPCMHeader& _header;
+                  const impl::DVIADPCMHeader* _header;
                   int _nbChannels;
                   int _numChannel;
                   

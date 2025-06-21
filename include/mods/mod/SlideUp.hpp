@@ -1,3 +1,5 @@
+#ifndef MODS_MOD_SLIDEUP_HPP
+#define MODS_MOD_SLIDEUP_HPP
 
 #include "mods/mod/Effect.hpp"
 
@@ -27,3 +29,5 @@ namespace mods
           };
      } // namespace mod
 } // namespace mods
+
+#endif // MODS_MOD_SLIDEUP_HPP

@@ -1,7 +1,14 @@
 
+#include "mods/StandardFrequency.hpp"
+#include "mods/converters/Converter.hpp"
+#include "mods/converters/ResampleConverter.hpp"
 #include "mods/converters/ResampleParameters.hpp"
 #include "mods/converters/SoftwareResampleConverter.hpp"
+#include "mods/converters/impl/ResampleConverterImpl.hpp"
 #include "mods/utils/AmigaRLESample.hpp"
+#include "mods/utils/RWBuffer.hpp"
+
+#include <cstddef>
 
 namespace mods
 {
@@ -16,9 +23,9 @@ namespace mods
         template<typename PARAMETERS, typename T>
           void SoftwareResampleConverter<PARAMETERS, T>::read(mods::utils::RWBuffer<double>* buf)
             {
-               for(size_t i=0; i<buf->size(); ++i)
+               for(auto& elem : *buf)
                  {
-                    (*buf)[i] = getNextDecimatedSample();
+                    elem = getNextDecimatedSample();
                  }
             }
         
@@ -37,26 +44,21 @@ namespace mods
             }
         
         template<typename PARAMETERS, typename T>
-          auto SoftwareResampleConverter<PARAMETERS, T>::getTap(size_t i, const impl::SampleWithZeros& sample) const -> double
+          auto SoftwareResampleConverter<PARAMETERS, T>::getTap(size_t tapIndex, const impl::SampleWithZeros& /* sample */) const -> double
           {
              auto& resampleParameters = this->getResampleParameters();
              
-             return resampleParameters.getTap(i);
+             return resampleParameters.getTap(tapIndex);
           }
         
         template<>
-          auto SoftwareResampleConverter<AmigaResampleParameters, mods::utils::AmigaRLESample>::getTap(size_t i, const impl::SampleWithZeros& sample) const -> double
+          auto SoftwareResampleConverter<AmigaResampleParameters, mods::utils::AmigaRLESample>::getTap(size_t tapIndex, const impl::SampleWithZeros& sample) const -> double
           {
-             auto& resampleParameters = getResampleParameters();
-             
              if(sample.isFiltered())
                {
-                  return resampleParameters.getFilteredTap(i);
+                  return AmigaResampleParameters::getFilteredTap(tapIndex);
                }
-             else
-               {
-                  return resampleParameters.getTap(i);
-               }
+             return AmigaResampleParameters::getTap(tapIndex);
           }
         
         template<typename PARAMETERS, typename T>
@@ -69,7 +71,7 @@ namespace mods
              int idxSampleWithZeros = 0;
              
              auto interpolationFactor = resampleParameters.getInterpolationFactor();
-             for(int i = 0; i < resampleParameters.getNumTaps(); ++i) 
+             for(size_t i = 0; i < resampleParameters.getNumTaps(); ++i) 
                {
                   const auto& sampleWithZeros = history.getSample(idxSampleWithZeros++);
                   i += sampleWithZeros.getNumberOfZeros();
@@ -84,20 +86,19 @@ namespace mods
         template<>
           auto SoftwareResampleConverter<AmigaResampleParameters, mods::utils::AmigaRLESample>::calculateInterpolatedSample() -> double
           {
-             auto& resampleParameters = this->getResampleParameters();
              auto& history = this->getHistory();
              
              double sample = 0.0;
              int idxSampleWithZeros = 0;
              
-             auto interpolationFactor = resampleParameters.getInterpolationFactor();
-             for(int i = 0; i < resampleParameters.getNumTaps(); ++i) 
+             auto interpolationFactor = static_cast<double>(AmigaResampleParameters::getInterpolationFactor());
+             for(int i = 0; i < AmigaResampleParameters::getNumTaps(); ++i) 
                {
                   const auto& sampleWithZeros = history.getSample(idxSampleWithZeros++);
-                  for(int j = 0; j < sampleWithZeros.getRepeatCount() && i < resampleParameters.getNumTaps(); ++j)
+                  for(int j = 0; j < sampleWithZeros.getRepeatCount() && i < AmigaResampleParameters::getNumTaps(); ++j)
                     {
                        i += sampleWithZeros.getNumberOfZeros();
-                       if(i < resampleParameters.getNumTaps()) 
+                       if(i < AmigaResampleParameters::getNumTaps()) 
                          {
                             sample += sampleWithZeros.getSample() * interpolationFactor * getTap(i, sampleWithZeros);
                          }

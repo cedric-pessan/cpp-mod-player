@@ -1,17 +1,24 @@
 
-#include "mods/wav/Format.hpp"
 #include "mods/utils/FileUtils.hpp"
+#include "mods/utils/RBuffer.hpp"
+#include "mods/utils/RWBuffer.hpp"
 #include "mods/utils/optional.hpp"
+#include "mods/utils/types.hpp"
 #include "mods/wav/ADPCMDecoderConverter.hpp"
 #include "mods/wav/ALawConverter.hpp"
+#include "mods/wav/Format.hpp"
 #include "mods/wav/GSMDecoderConverter.hpp"
 #include "mods/wav/MuLawConverter.hpp"
 #include "mods/wav/WavConverterFactory.hpp"
 #include "mods/wav/WavReader.hpp"
 #include "mods/wav/WavTypes.hpp"
 
+#include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <utility>
 
 namespace mods
 {
@@ -151,7 +158,7 @@ namespace mods
                  {
                     if((riffBuffer.size() - offset) < sizeof(ChunkHeader))
                       {
-                         std::cout << "Warning: Incomplete last chunk" << std::endl;
+                         std::cout << "Warning: Incomplete last chunk" << '\n';
                          break;
                       }
                     auto chunkHeader = riffBuffer.slice<ChunkHeader>(offset, 1);
@@ -177,25 +184,7 @@ namespace mods
                       }
                     else if(chunkHeader->getChunkID() == getLIST())
                       {
-                         checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
-                                   chunkHeader->getChunkSize() >= sizeof(ListHeader) - sizeof(ChunkHeader) , "Incomplete LIST chunk");
-                         
-                         auto listHeader = riffBuffer.slice<ListHeader>(offset, 1);
-                         
-                         if(listHeader->getListTypeID() == getINFO())
-                           {
-                              parseInfoList(listHeader, riffBuffer, offset, description);
-                           }
-                         else if(listHeader->getListTypeID() == getADTL())
-                           {
-                              parseAdtl();
-                           }
-                         else
-                           {
-                              std::stringstream ss;
-                              ss << "Unknown LIST chunk: " << listHeader->getListTypeID();
-                              checkInit(false, ss.str());
-                           }
+                         readListChunk(chunkHeader, riffBuffer, offset, description);
                       }
                     else if(chunkHeader->getChunkID() == getAfsp())
                       {
@@ -207,12 +196,12 @@ namespace mods
                       }
                     else if(chunkHeader->getChunkID() == getPEAK())
                       {
-                         int nbChannels = optFmt.has_value() ? (*optFmt).getNumChannels() : 0;
+                         const int nbChannels = optFmt.has_value() ? (*optFmt).getNumChannels() : 0;
                          peak = readPeak(chunkHeader, riffBuffer, offset, nbChannels);
                       }
                     else
                       {
-                         std::cout << "Warning: Unknown RIFF chunk: " << chunkHeader->getChunkID() << std::endl;
+                         std::cout << "Warning: Unknown RIFF chunk: " << chunkHeader->getChunkID() << '\n';
                       }
                     
                     auto chunkSize = chunkHeader->getChunkSize();
@@ -230,7 +219,7 @@ namespace mods
                _converter = WavConverterFactory::buildConverter(data, fmt, &_statCollector, peak);
                _length = data.size();
                
-               buildInfo(fmt.getBitsPerSample(), fmt.getBitsPerContainer(), fmt.getNumChannels(), fmt.getSampleRate(), description.str(), fmt.getAudioFormat());
+               buildInfo(fmt, description.str());
             }
         
         auto WavReader::readFMT(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
@@ -270,7 +259,7 @@ namespace mods
                        const auto& ext = *extensibleHeader;
                        format = ext->getAudioFormat();
                        
-                       if(!((fmtHeader->getNumChannels() == 1 && ext->getChannelMask() == 1) || (fmtHeader->getNumChannels() == 2 && ext->getChannelMask() == 3) || ext->getChannelMask() == 0))
+                       if((fmtHeader->getNumChannels() != 1 || ext->getChannelMask() != 1) && (fmtHeader->getNumChannels() != 2 || ext->getChannelMask() != 3) && ext->getChannelMask() != 0)
                          {
                             useChannelMask = true;
                          }
@@ -334,9 +323,9 @@ namespace mods
                   
                 default:
                     {
-                       std::stringstream ss;
-                       ss << "Codec not supported: " << std::hex << decodedFormat.getAudioFormatAsNumber() << std::dec;
-                       checkInit(false, ss.str());
+                       std::stringstream sStream;
+                       sStream << "Codec not supported: " << std::hex << decodedFormat.getAudioFormatAsNumber() << std::dec;
+                       checkInit(false, sStream.str());
                     }
                }
              
@@ -381,9 +370,9 @@ namespace mods
                {
                   auto payload = riffBuffer.slice<u8>(offset + sizeof(DispHeader), chunkHeader->getChunkSize() - (sizeof(DispHeader) - sizeof(ChunkHeader)));
                   
-                  if(description.str().length() > 0)
+                  if(!description.str().empty())
                     {
-                       description << std::endl;
+                       description << '\n';
                     }
                   
                   for(auto byte : payload)
@@ -397,6 +386,32 @@ namespace mods
                }
           }
         
+        void WavReader::readListChunk(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
+                                      const mods::utils::RBuffer<u8>& riffBuffer,
+                                      size_t offset,
+                                      std::stringstream& description)
+          {
+             checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
+                       chunkHeader->getChunkSize() >= sizeof(ListHeader) - sizeof(ChunkHeader) , "Incomplete LIST chunk");
+             
+             auto listHeader = riffBuffer.slice<ListHeader>(offset, 1);
+             
+             if(listHeader->getListTypeID() == getINFO())
+               {
+                  parseInfoList(listHeader, riffBuffer, offset, description);
+               }
+             else if(listHeader->getListTypeID() == getADTL())
+               {
+                  parseAdtl();
+               }
+             else
+               {
+                  std::stringstream sStream;
+                  sStream << "Unknown LIST chunk: " << listHeader->getListTypeID();
+                  checkInit(false, sStream.str());
+               }
+          }
+        
         void WavReader::readAfsp(const mods::utils::RBuffer<ChunkHeader>& chunkHeader,
                                  const mods::utils::RBuffer<u8>& riffBuffer,
                                  size_t offset,
@@ -406,19 +421,19 @@ namespace mods
                        chunkHeader->getChunkSize() >= sizeof(AfspHeader), "Incomplete Afsp chunk");
              
              auto stringBuffer = riffBuffer.slice<char>(offset + sizeof(AfspHeader), chunkHeader->getChunkSize() - (sizeof(AfspHeader) - sizeof(ChunkHeader)));
-             std::string s = std::string(stringBuffer.begin(), stringBuffer.end());
-             for(size_t i = 0; i < s.length(); ++i)
+             std::string infos = std::string(stringBuffer.begin(), stringBuffer.end());
+             for(size_t i = 0; i < infos.length(); ++i)
                {
-                  if(s[i] == '\0' && i != s.length()-1)
+                  if(infos[i] == '\0' && i != infos.length()-1)
                     {
-                       s[i] = '\n';
+                       infos[i] = '\n';
                     }
                }
              if(!description.str().empty())
                {
-                  description << std::endl;
+                  description << '\n';
                }
-             description << "Afsp infos:" << s;
+             description << "Afsp infos:" << infos;
           }
         
         void WavReader::readCue() const
@@ -426,7 +441,7 @@ namespace mods
              // no need to read cue until we handle play lists
           }
         
-        void WavReader::parseAdtl() const
+        void WavReader::parseAdtl()
           {
              // no need to read adtl until we handle play lists and cue
           }
@@ -438,7 +453,7 @@ namespace mods
           {
              if(nbChannels == 0)
                {
-                  std::cout << "Peak chunk defined before number of channels is known" << std::endl;
+                  std::cout << "Peak chunk defined before number of channels is known" << '\n';
                }
              
              checkInit(chunkHeader->getChunkSize() <= riffBuffer.size() - offset - sizeof(ChunkHeader) &&
@@ -450,10 +465,7 @@ namespace mods
              
              for(int i=0; i<nbChannels; ++i)
                {
-                  if(ppeak[i].value > maxPeak)
-                    {
-                       maxPeak = ppeak[i].value;
-                    }
+                  maxPeak = std::max(ppeak[i].value, maxPeak);
                }
              
              return maxPeak;
@@ -470,10 +482,10 @@ namespace mods
                {
                   auto chunkHeader = listBuffer.slice<ChunkHeader>(listOffset, 1);
                   auto stringBuffer = listBuffer.slice<char>(listOffset + sizeof(ChunkHeader), chunkHeader->getChunkSize());
-                  std::string info = std::string(stringBuffer.begin(), stringBuffer.end());
+                  const std::string info(stringBuffer.begin(), stringBuffer.end());
                   if(!description.str().empty())
                     {
-                       description << std::endl;
+                       description << '\n';
                     }
                   
                   if(chunkHeader->getChunkID() == getICOP())
@@ -502,9 +514,9 @@ namespace mods
                     }
                   else
                     {
-                       std::stringstream ss;
-                       ss << "Unknown Info chunk: " << chunkHeader->getChunkID();
-                       checkInit(false, ss.str());
+                       std::stringstream sStream;
+                       sStream << "Unknown Info chunk: " << chunkHeader->getChunkID();
+                       checkInit(false, sStream.str());
                     }
                   description << info;
                   
@@ -517,19 +529,19 @@ namespace mods
                }
           }
         
-        void WavReader::buildInfo(int bitsPerSample, int bitsPerContainer, int nbChannels, int frequency, const std::string& description, WavAudioFormat codec)
+        void WavReader::buildInfo(const Format& format, const std::string& description)
           {
-             std::stringstream ss;
-             if(description.length() > 0)
+             std::stringstream sStream;
+             if(!description.empty())
                {
-                  ss << "description: " << description << std::endl;
+                  sStream << "description: " << description << '\n';
                }
-             ss << "bits per container:" << bitsPerContainer << std::endl;
-             ss << "bits per sample: " << bitsPerSample << std::endl;
-             ss << "number of channels: " << nbChannels << std::endl;
-             ss << "frequency: " << frequency << std::endl;
-             ss << "codec: " << toString(codec);
-             _info = ss.str();
+             sStream << "bits per container:" << format.getBitsPerContainer() << '\n';
+             sStream << "bits per sample: " << format.getBitsPerSample() << '\n';
+             sStream << "number of channels: " << format.getNumChannels() << '\n';
+             sStream << "frequency: " << format.getSampleRate() << '\n';
+             sStream << "codec: " << toString(format.getAudioFormat());
+             _info = sStream.str();
           }
         
         auto WavReader::isFinished() const -> bool
@@ -551,11 +563,11 @@ namespace mods
           {
              static constexpr int fullProgressValue = 100;
              
-             size_t read = _statCollector.getBytesRead();
-             size_t percentage = read * fullProgressValue / _length;
-             std::stringstream ss;
-             ss << "Reading..." << percentage << "%";
-             return ss.str();
+             const size_t read = _statCollector.getBytesRead();
+             const size_t percentage = read * fullProgressValue / _length;
+             std::stringstream sStream;
+             sStream << "Reading..." << percentage << "%";
+             return sStream.str();
           }
      } // namespace wav
 } // namespace mods

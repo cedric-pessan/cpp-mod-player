@@ -26,7 +26,7 @@ namespace mods
         
         auto toString(WavAudioFormat fmt) -> const std::string&;
         
-        enum struct DispType : u32
+        enum struct DispType : u32 // NOLINT(performance-enum-size)
           {
              TEXT = 1
           };
@@ -41,7 +41,7 @@ namespace mods
            public:
              auto getChunkID() const noexcept -> std::string
                {
-                  return std::string(chunkID.data(), sizeof(chunkID));
+                  return { chunkID.data(), sizeof(chunkID) };
                }
              
              auto getChunkSize() const noexcept -> u32
@@ -64,7 +64,7 @@ namespace mods
              
              auto getFormat() const noexcept -> std::string
                {
-                  return std::string(format.data(), sizeof(format));
+                  return { format.data(), sizeof(format) };
                }
           };
         
@@ -87,7 +87,7 @@ namespace mods
              
              auto getAudioFormat() const noexcept -> WavAudioFormat
                {
-                  u16 value = static_cast<u16>(audioFormat);
+                  const u16 value = static_cast<u16>(audioFormat);
                   return static_cast<WavAudioFormat>(value);
                }
              
@@ -144,7 +144,7 @@ namespace mods
            public:
              auto getAudioFormat() const noexcept -> WavAudioFormat
                {
-                  u16 value = static_cast<u16>(audioFormat);
+                  const u16 value = static_cast<u16>(audioFormat);
                   return static_cast<WavAudioFormat>(value);
                }
              
@@ -191,7 +191,7 @@ namespace mods
            public:
              auto getType() const noexcept -> DispType
                {
-                  u32 value = static_cast<u32>(type);
+                  const u32 value = static_cast<u32>(type);
                   return static_cast<DispType>(value);
                }
           };
@@ -210,7 +210,7 @@ namespace mods
              
              auto getListTypeID() const noexcept -> std::string
                {
-                  return std::string(listTypeID.data(), sizeof(listTypeID));
+                  return {listTypeID.data(), sizeof(listTypeID)};
                }
           };
         

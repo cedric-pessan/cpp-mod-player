@@ -1,12 +1,14 @@
 
+#include "mods/mod/ChannelId.hpp"
 #include "mods/mod/ModChannelConverter.hpp"
 #include "mods/mod/PatternListReader.hpp"
+#include "mods/utils/RWBuffer.hpp"
 
 namespace mods
 {
    namespace mod
      {
-        ModChannelConverter::ModChannelConverter(std::shared_ptr<PatternListReader> patternListReader, ChannelId channel)
+        ModChannelConverter::ModChannelConverter(PatternListReader* patternListReader, ChannelId channel)
           : _reader(patternListReader),
           _channel(channel)
             {

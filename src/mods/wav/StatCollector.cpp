@@ -1,13 +1,15 @@
 
 #include "mods/wav/StatCollector.hpp"
 
+#include <cstddef>
+
 namespace mods
 {
    namespace wav
      {
-        void StatCollector::inc(size_t i)
+        void StatCollector::inc(size_t newBytesRead)
           {
-             _value += i;
+             _value += newBytesRead;
           }
         
         auto StatCollector::getBytesRead() const -> size_t

@@ -1,16 +1,22 @@
 
 #include "mods/converters/MultiplexerConverter.hpp"
+#include "mods/utils/RWBuffer.hpp"
+#include "mods/utils/RWBufferBackend.hpp"
+#include "mods/utils/types.hpp"
 
+#include <cstddef>
 #include <iostream>
+#include <memory>
+#include <utility>
 
 namespace mods
 {
    namespace converters
      {
         template<typename T>
-          MultiplexerConverter<T>::MultiplexerConverter(typename Converter<T>::ptr left, typename Converter<T>::ptr right)
-            : _left(std::move(left)),
-          _right(std::move(right)),
+          MultiplexerConverter<T>::MultiplexerConverter(LeftAndRightChannels inputChannels)
+            : _left(std::move(inputChannels.left)),
+          _right(std::move(inputChannels.right)),
           _temp(allocateNewTempBuffer(0))
             {
             }
@@ -26,12 +32,12 @@ namespace mods
             {
                if((buf->size() % 2) != 0)
                  {
-                    std::cout << "TODO: wrong buffer length in MultiplexerWavConverter" << std::endl;
+                    std::cout << "TODO: wrong buffer length in MultiplexerWavConverter" << '\n';
                  }
                
                ensureTempBufferSize(buf->size());
                
-               size_t nbElems = buf->size();
+               const size_t nbElems = buf->size();
                auto leftBuf = _temp.template slice<T>(0, nbElems/2);
                auto rightBuf = _temp.template slice<T>(nbElems/2, nbElems/2);
                
@@ -43,7 +49,7 @@ namespace mods
                for(size_t i=0; i<nbElems/2; ++i)
                  {
                     outView[i*2] = leftBuf[i];
-                    outView[i*2+1] = rightBuf[i];
+                    outView[(i*2)+1] = rightBuf[i];
                  }
             }
         

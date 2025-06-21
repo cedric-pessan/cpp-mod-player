@@ -1,5 +1,6 @@
 
 #include "mods/utils/ChebyshevPolynom.hpp"
+#include "mods/utils/bessel.hpp"
 
 #include <array>
 #include <cmath>
@@ -78,23 +79,23 @@ namespace mods
                   constexpr double limitBetweenPolynoms = 8.0;
                } // namespace
              
-             auto i0(double x) -> double
+             auto i0(double xParam) -> double
                {
                   namespace chebyshev = mods::utils::chebyshevPolynom;
                   static constexpr double const_2 = 2.0;
                   static constexpr double const_32 = 32.0;
                   
-                  if(x < 0)
+                  if(xParam < 0)
                     {
-                       x = -x;
+                       xParam = -xParam;
                     }
-                  if(x <= limitBetweenPolynoms)
+                  if(xParam <= limitBetweenPolynoms)
                     {
-                       double y = (x / const_2) - const_2;
-                       return std::exp(x) * chebyshev::eval(y, i0_0_8_coefficients);
+                       const double yValue = (xParam / const_2) - const_2;
+                       return std::exp(xParam) * chebyshev::eval(yValue, i0_0_8_coefficients);
                     }
                   
-                  return std::exp(x) * chebyshev::eval(const_32 / x - const_2, i0_8_infinity_coefficients) / std::sqrt(x);
+                  return std::exp(xParam) * chebyshev::eval((const_32 / xParam) - const_2, i0_8_infinity_coefficients) / std::sqrt(xParam);
                }
           } // namespace bessel
      } // namespace utils
