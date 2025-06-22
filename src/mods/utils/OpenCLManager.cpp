@@ -76,7 +76,7 @@ namespace mods
                          }
                        
                        auto type = device.getInfo<CL_DEVICE_TYPE>();
-                       if(type == CL_DEVICE_TYPE_GPU) // GOLINT(hicpp-signed-bitwise)
+                       if(type == CL_DEVICE_TYPE_GPU)
                          {
                             _enabled = true;
                             gpuPlatform = true;

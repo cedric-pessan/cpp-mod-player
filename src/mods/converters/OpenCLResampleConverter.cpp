@@ -187,7 +187,7 @@ namespace mods
                     
                     if(_outputBuffer.get() == nullptr || _outputBuffer.getInfo<CL_MEM_SIZE>() < nbElems * sizeof(double))
                       {
-                         _outputBuffer = cl::Buffer(_context, CL_MEM_WRITE_ONLY, nbElems * sizeof(double)); // GOLINT(hicpp-signed-bitwise)
+                         _outputBuffer = cl::Buffer(_context, CL_MEM_WRITE_ONLY, nbElems * sizeof(double));
                       }
                     
                     const cl::NDRange global(nbElems);

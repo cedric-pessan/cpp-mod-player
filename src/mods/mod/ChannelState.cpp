@@ -329,7 +329,7 @@ namespace mods
                   break;
                   
                 default:
-                  std::cout << "unknown effect:" << std::hex << toUnderlying(effect) << std::dec << '\n';
+                  std::cout << "unknown effect:" << std::hex << static_cast<u32>(toUnderlying(effect)) << std::dec << '\n';
                }
           }
         
