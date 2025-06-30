@@ -59,6 +59,7 @@ namespace mods
                _arpeggio = std::make_unique<Arpeggio>();
                _slideDown = std::make_unique<SlideDown>();
                _slideUp = std::make_unique<SlideUp>();
+               _slideToNote = std::make_unique<SlideToNote>();
                
                _currentEffect = _noEffect.get();
             }
@@ -157,28 +158,31 @@ namespace mods
              _speedSetOnLastLine = false;
              _hasPatternJump = false;
              
-             if(note->getInstrument() != 0)
+             if(note->getEffect() != EffectType::SLIDE_TO_NOTE)
                {
-                  _instrument = note->getInstrument();
-                  _volume = _instruments[_instrument-1].getVolume();
-                  _currentSample = 0;
-                  _currentRepeatSample = 0;
-                  _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
-               }
-             if(note->getPeriod() != 0)
-               {
-                  _currentSample = 0;
-                  _currentRepeatSample = 0;
-                  _period = note->getPeriod();
-                  _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
-                  
-                  if(_instrument != 0)
+                  if(note->getInstrument() != 0)
                     {
-                       if(_instruments[_instrument-1].getFineTune() != 0)
+                       _instrument = note->getInstrument();
+                       _volume = _instruments[_instrument-1].getVolume();
+                       _currentSample = 0;
+                       _currentRepeatSample = 0;
+                       _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
+                    }
+                  if(note->getPeriod() != 0)
+                    {
+                       _currentSample = 0;
+                       _currentRepeatSample = 0;
+                       _period = note->getPeriod();
+                       _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
+                       
+                       if(_instrument != 0)
                          {
-                            auto fineTune = _instruments[_instrument-1].getFineTune();
-                            auto factor = getFineTuneFactor(fineTune);
-                            _period = static_cast<u16>(std::round(static_cast<double>(_period) * factor));
+                            if(_instruments[_instrument-1].getFineTune() != 0)
+                              {
+                                 auto fineTune = _instruments[_instrument-1].getFineTune();
+                                 auto factor = getFineTuneFactor(fineTune);
+                                 _period = static_cast<u16>(std::round(static_cast<double>(_period) * factor));
+                              }
                          }
                     }
                }
@@ -188,7 +192,7 @@ namespace mods
         
         void ChannelState::applyEffect(const mods::utils::RBuffer<Note>& note)
           {
-             const auto effect = static_cast<EffectType>(note->getEffect());
+             const auto effect = note->getEffect();
              switch(effect)
                {
                 case EffectType::ARPEGGIO:
@@ -221,6 +225,18 @@ namespace mods
                        const auto arg = static_cast<int>(note->getEffectArgument());
                        _slideDown->init(arg);
                        _currentEffect = _slideDown.get();
+                    }
+                  break;
+                  
+                case EffectType::SLIDE_TO_NOTE:
+                    {
+                       const auto arg = static_cast<int>(note->getEffectArgument());
+                       auto targetPeriod = note->getPeriod();
+                       auto fineTune = _instruments[_instrument-1].getFineTune();
+                       auto factor = getFineTuneFactor(fineTune);
+                       targetPeriod = static_cast<u16>(std::round(static_cast<double>(targetPeriod) * factor));
+                       _slideToNote->init(targetPeriod, arg);
+                       _currentEffect = _slideToNote.get();
                     }
                   break;
                   

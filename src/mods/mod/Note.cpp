@@ -27,11 +27,11 @@ namespace mods
              return periodMSB | periodLSB;
           }
         
-        auto Note::getEffect() const -> u8
+        auto Note::getEffect() const -> EffectType
           {
              const u8 nibbleMask = 0xF;
              
-             return _value[2] & nibbleMask;
+             return static_cast<EffectType>(_value[2] & nibbleMask);
           }
         
         auto Note::getEffectArgument() const -> u32

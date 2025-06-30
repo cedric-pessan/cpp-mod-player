@@ -1,6 +1,7 @@
 #ifndef MODS_MOD_NOTE_HPP
 #define MODS_MOD_NOTE_HPP
 
+#include "mods/mod/EffectType.hpp"
 #include "mods/utils/PackedArray.hpp"
 #include "mods/utils/types.hpp"
 
@@ -21,7 +22,7 @@ namespace mods
              
              auto getInstrument() const -> size_t;
              auto getPeriod() const -> u16;
-             auto getEffect() const -> u8;
+             auto getEffect() const -> EffectType;
              auto getEffectArgument() const -> u32;
              
            private:

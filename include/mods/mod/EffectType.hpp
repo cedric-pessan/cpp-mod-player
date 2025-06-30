@@ -1,6 +1,8 @@
 #ifndef MODS_MOD_EFFECTTYPE_HPP
 #define MODS_MOD_EFFECTTYPE_HPP
 
+#include "mods/utils/types.hpp"
+
 namespace mods
 {
    namespace mod
@@ -10,6 +12,7 @@ namespace mods
              ARPEGGIO = 0x0,
                SLIDE_UP = 0x1,
                SLIDE_DOWN = 0x2,
+               SLIDE_TO_NOTE = 0x3,
                VIBRATO = 0x4,
                VIBRATO_AND_VOLUME_SLIDE = 0x6,
                SET_SAMPLE_OFFSET = 0x9,
