@@ -10,6 +10,8 @@ namespace mods
         class SlideToNote : public Effect
           {
            public:
+             enum Period : u16;
+             
              SlideToNote() = default;
              SlideToNote(const SlideToNote&) = delete;
              SlideToNote(SlideToNote&&) = delete;
@@ -17,7 +19,7 @@ namespace mods
              auto operator=(SlideToNote&&) -> SlideToNote& = delete;
              ~SlideToNote() override = default;
              
-             void init(u16 targetPeriod, u16 speed);
+             void init(Period targetPeriod, u16 speed);
              
              auto getModifiedPeriod(u16 period) -> u16 override;
              auto getModifiedVolume(u16 volume) const -> u16 override;

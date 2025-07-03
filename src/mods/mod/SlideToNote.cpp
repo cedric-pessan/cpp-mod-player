@@ -1,5 +1,6 @@
 
 #include "mods/mod/SlideToNote.hpp"
+#include "mods/utils/types.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -8,7 +9,7 @@ namespace mods
 {
    namespace mod
      {
-        void SlideToNote::init(u16 targetPeriod, u16 speed)
+        void SlideToNote::init(Period targetPeriod, u16 speed)
           {
              _newTick = false;
              if(targetPeriod != 0)
@@ -28,12 +29,12 @@ namespace mods
                   _newTick = false;
                   if(period > _targetPeriod)
                     {
-                       u16 delta = std::min(_speed, static_cast<u16>(period - _targetPeriod));
+                       const u16 delta = std::min(_speed, static_cast<u16>(period - _targetPeriod));
                        return period - delta;
                     }
-                  else if(period < _targetPeriod)
+                  if(period < _targetPeriod)
                     {
-                       std::cout << "TODO: SlideToNote::getModifiedPeriod(u16) <" << std::endl;
+                       std::cout << "TODO: SlideToNote::getModifiedPeriod(u16) <" << '\n';
                     }
                }
              return period;

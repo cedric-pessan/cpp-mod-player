@@ -6,6 +6,7 @@
 #include "mods/mod/NoEffect.hpp"
 #include "mods/mod/Note.hpp"
 #include "mods/mod/SlideDown.hpp"
+#include "mods/mod/SlideToNote.hpp"
 #include "mods/mod/SlideUp.hpp"
 #include "mods/mod/Vibrato.hpp"
 #include "mods/mod/VibratoAndVolumeSlide.hpp"
@@ -235,7 +236,7 @@ namespace mods
                        auto fineTune = _instruments[_instrument-1].getFineTune();
                        auto factor = getFineTuneFactor(fineTune);
                        targetPeriod = static_cast<u16>(std::round(static_cast<double>(targetPeriod) * factor));
-                       _slideToNote->init(targetPeriod, arg);
+                       _slideToNote->init(static_cast<SlideToNote::Period>(targetPeriod), arg);
                        _currentEffect = _slideToNote.get();
                     }
                   break;

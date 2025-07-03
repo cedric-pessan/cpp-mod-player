@@ -1,4 +1,5 @@
 
+#include "mods/mod/EffectType.hpp"
 #include "mods/mod/Note.hpp"
 #include "mods/utils/types.hpp"
 
