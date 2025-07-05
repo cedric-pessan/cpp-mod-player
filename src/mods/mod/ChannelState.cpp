@@ -339,6 +339,10 @@ namespace mods
                     }
                   break;
                   
+                case EffectType::EXTENDED_EFFECT:
+                  applyExtendedEffect(note);
+                  break;
+                  
                 case EffectType::SET_SPEED:
                   _speedSetOnLastLine = true;
                   _speed = note->getEffectArgument();
@@ -347,6 +351,21 @@ namespace mods
                   
                 default:
                   std::cout << "unknown effect:" << std::hex << static_cast<u32>(toUnderlying(effect)) << std::dec << '\n';
+               }
+          }
+        
+        void ChannelState::applyExtendedEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             const auto extendedEffect = note->getExtendedEffect();
+             switch(extendedEffect)
+               {
+                case ExtendedEffectType::FINE_SLIDE_UP:
+                  _period -= note->getExtendedEffectArgument();
+                  _currentEffect = _noEffect.get();
+                  break;
+                  
+                default:
+                  std::cout << "unknown extended effect:" << std::hex << static_cast<u32>(toUnderlying(extendedEffect)) << std::dec << '\n';
                }
           }
         

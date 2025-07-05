@@ -19,7 +19,13 @@ namespace mods
                VOLUME_SLIDE = 0xa,
                SET_VOLUME = 0xc,
                PATTERN_BREAK = 0xd,
+               EXTENDED_EFFECT = 0xe,
                SET_SPEED = 0xf
+          };
+        
+        enum struct ExtendedEffectType : u8
+          {
+             FINE_SLIDE_UP = 0x1
           };
      } // namespace mod
 } // namespace mods

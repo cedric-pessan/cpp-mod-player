@@ -57,6 +57,7 @@ namespace mods
              auto getFineTuneFactor(int fineTune) -> double;
              void processNextSample(s8 sample);
              void applyEffect(const mods::utils::RBuffer<Note>& note);
+             void applyExtendedEffect(const mods::utils::RBuffer<Note>& note);
              
              size_t _instrument = 0;
              size_t _currentSample = 0;

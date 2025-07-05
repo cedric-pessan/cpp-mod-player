@@ -24,6 +24,8 @@ namespace mods
              auto getPeriod() const -> u16;
              auto getEffect() const -> EffectType;
              auto getEffectArgument() const -> u32;
+             auto getExtendedEffect() const -> ExtendedEffectType;
+             auto getExtendedEffectArgument() const -> u32;
              
            private:
              constexpr static size_t noteSize = 4;

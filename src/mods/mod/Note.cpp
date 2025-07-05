@@ -39,5 +39,15 @@ namespace mods
           {
              return _value[3];
           }
+        
+        auto Note::getExtendedEffect() const -> ExtendedEffectType
+          {
+             return static_cast<ExtendedEffectType>(_value[3] >> 4);
+          }
+        
+        auto Note::getExtendedEffectArgument() const -> u32
+          {
+             return _value[3] & 0xF;
+          }
      } // namespace mod
 } // namespace mods

@@ -34,7 +34,8 @@ namespace mods
                     }
                   if(period < _targetPeriod)
                     {
-                       std::cout << "TODO: SlideToNote::getModifiedPeriod(u16) <" << '\n';
+                       const u16 delta = std::min(_speed, static_cast<u16>(_targetPeriod - period));
+                       return period + delta;
                     }
                }
              return period;
