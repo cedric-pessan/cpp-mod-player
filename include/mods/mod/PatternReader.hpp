@@ -59,6 +59,7 @@ namespace mods
              void decodeLine();
              void updateSpeed();
              void updatePatternJump();
+             void updateLoop();
              void signalNewTick();
              
              static constexpr u32 _numberOfLines = 64;
@@ -74,6 +75,9 @@ namespace mods
              bool _patternJump = false;
              int _patternOfJumpTarget = 0;
              int _lineOfJumpTarget = 0;
+             
+             int _startOfLoop = 0;
+             int _remainingLoop = 0;
              
              std::vector<ChannelState> _channels;
              std::vector<ChannelState*> _leftChannels;

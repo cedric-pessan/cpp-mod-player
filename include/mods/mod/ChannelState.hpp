@@ -52,6 +52,10 @@ namespace mods
              auto getPatternOfJumpTarget() const -> int;
              auto getLineOfJumpTarget() const -> int;
              
+             auto isStartOfLoop() const -> bool;
+             auto isEndOfLoop() const -> bool;
+             auto getLoopLength() const -> int;
+             
            private:
              static auto toDouble(s8 sample) -> double;
              auto getFineTuneFactor(int fineTune) -> double;
@@ -71,6 +75,10 @@ namespace mods
              bool _hasPatternJump = false;
              int _patternOfJumpTarget = 0;
              int _lineOfJumpTarget = 0;
+             
+             bool _startOfLoop = false;
+             bool _endOfLoop = false;
+             int _loopLength = 0;
              
              const std::vector<mods::utils::RBuffer<s8>>* _sampleBuffers;
              mods::utils::RBuffer<Instrument> _instruments;

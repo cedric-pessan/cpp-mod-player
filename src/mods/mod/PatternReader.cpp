@@ -117,6 +117,7 @@ namespace mods
                   
                   updateSpeed();
                   updatePatternJump();
+                  updateLoop();
                }
           }
         
@@ -221,6 +222,30 @@ namespace mods
                        _patternJump = true;
                        _patternOfJumpTarget = channel.getPatternOfJumpTarget();
                        _lineOfJumpTarget = channel.getLineOfJumpTarget();
+                    }
+               }
+          }
+        
+        void PatternReader::updateLoop()
+          {
+             for(auto& channel : _channels)
+               {
+                  if(channel.isStartOfLoop())
+                    {
+                       _startOfLoop = _currentLine - 1;
+                    }
+                  if(channel.isEndOfLoop())
+                    {
+                       if(_remainingLoop == 0)
+                         {
+                            _remainingLoop = channel.getLoopLength();
+                         }
+                       else --_remainingLoop;
+                       
+                       if(_remainingLoop > 0)
+                         {
+                            _currentLine = _startOfLoop;
+                         }
                     }
                }
           }

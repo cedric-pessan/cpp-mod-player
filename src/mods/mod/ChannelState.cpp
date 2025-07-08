@@ -158,6 +158,8 @@ namespace mods
              
              _speedSetOnLastLine = false;
              _hasPatternJump = false;
+             _startOfLoop = false;
+             _endOfLoop = false;
              
              if(note->getEffect() != EffectType::SLIDE_TO_NOTE)
                {
@@ -364,6 +366,18 @@ namespace mods
                   _currentEffect = _noEffect.get();
                   break;
                   
+                case ExtendedEffectType::PATTERN_LOOP:
+                  _loopLength = note->getExtendedEffectArgument();
+                  if(_loopLength == 0)
+                    {
+                       _startOfLoop = true;
+                    }
+                  else
+                    {
+                       _endOfLoop = true;
+                    }
+                  break;
+                  
                 default:
                   std::cout << "unknown extended effect:" << std::hex << static_cast<u32>(toUnderlying(extendedEffect)) << std::dec << '\n';
                }
@@ -392,6 +406,21 @@ namespace mods
         auto ChannelState::getLineOfJumpTarget() const -> int
           {
              return _lineOfJumpTarget;
+          }
+        
+        auto ChannelState::isStartOfLoop() const -> bool
+          {
+             return _startOfLoop;
+          }
+        
+        auto ChannelState::isEndOfLoop() const -> bool
+          {
+             return _endOfLoop;
+          }
+        
+        auto ChannelState::getLoopLength() const -> int
+          {
+             return _loopLength;
           }
         
         void ChannelState::tick()
