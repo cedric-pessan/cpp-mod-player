@@ -3,7 +3,6 @@
 #include "mods/utils/types.hpp"
 
 #include <algorithm>
-#include <iostream>
 
 namespace mods
 {

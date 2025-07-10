@@ -418,7 +418,7 @@ namespace mods
              return _endOfLoop;
           }
         
-        auto ChannelState::getLoopLength() const -> int
+        auto ChannelState::getLoopLength() const -> u32
           {
              return _loopLength;
           }

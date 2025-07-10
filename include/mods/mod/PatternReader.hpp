@@ -76,8 +76,8 @@ namespace mods
              int _patternOfJumpTarget = 0;
              int _lineOfJumpTarget = 0;
              
-             int _startOfLoop = 0;
-             int _remainingLoop = 0;
+             u32 _startOfLoop = 0;
+             u32 _remainingLoop = 0;
              
              std::vector<ChannelState> _channels;
              std::vector<ChannelState*> _leftChannels;

@@ -54,7 +54,7 @@ namespace mods
              
              auto isStartOfLoop() const -> bool;
              auto isEndOfLoop() const -> bool;
-             auto getLoopLength() const -> int;
+             auto getLoopLength() const -> u32;
              
            private:
              static auto toDouble(s8 sample) -> double;
@@ -78,7 +78,7 @@ namespace mods
              
              bool _startOfLoop = false;
              bool _endOfLoop = false;
-             int _loopLength = 0;
+             u32 _loopLength = 0;
              
              const std::vector<mods::utils::RBuffer<s8>>* _sampleBuffers;
              mods::utils::RBuffer<Instrument> _instruments;

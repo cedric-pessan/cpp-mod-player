@@ -42,12 +42,14 @@ namespace mods
         
         auto Note::getExtendedEffect() const -> ExtendedEffectType
           {
-             return static_cast<ExtendedEffectType>(_value[3] >> 4);
+             return static_cast<ExtendedEffectType>(_value[3] >> 4U);
           }
         
         auto Note::getExtendedEffectArgument() const -> u32
           {
-             return _value[3] & 0xF;
+             const u8 nibbleMask = 0xF;
+             
+             return _value[3] & nibbleMask;
           }
      } // namespace mod
 } // namespace mods

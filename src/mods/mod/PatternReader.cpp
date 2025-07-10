@@ -240,7 +240,10 @@ namespace mods
                          {
                             _remainingLoop = channel.getLoopLength();
                          }
-                       else --_remainingLoop;
+                       else
+                         {
+                            --_remainingLoop;
+                         }
                        
                        if(_remainingLoop > 0)
                          {
