@@ -14,6 +14,7 @@ namespace mods
                SLIDE_DOWN = 0x2,
                SLIDE_TO_NOTE = 0x3,
                VIBRATO = 0x4,
+               SLIDE_TO_NOTE_AND_VOLUME_SLIDE = 0x5,
                VIBRATO_AND_VOLUME_SLIDE = 0x6,
                SET_SAMPLE_OFFSET = 0x9,
                VOLUME_SLIDE = 0xa,

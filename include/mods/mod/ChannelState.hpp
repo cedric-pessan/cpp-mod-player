@@ -5,6 +5,7 @@
 #include "mods/mod/NoEffect.hpp"
 #include "mods/mod/SlideDown.hpp"
 #include "mods/mod/SlideToNote.hpp"
+#include "mods/mod/SlideToNoteAndVolumeSlide.hpp"
 #include "mods/mod/SlideUp.hpp"
 #include "mods/mod/Vibrato.hpp"
 #include "mods/mod/VibratoAndVolumeSlide.hpp"
@@ -94,6 +95,7 @@ namespace mods
              std::unique_ptr<SlideDown> _slideDown;
              std::unique_ptr<SlideUp> _slideUp;
              std::unique_ptr<SlideToNote> _slideToNote;
+             std::unique_ptr<SlideToNoteAndVolumeSlide> _slideToNoteAndVolumeSlide;
              Effect* _currentEffect = nullptr;
           };
      } // namespace mod

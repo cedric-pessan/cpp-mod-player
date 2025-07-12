@@ -61,6 +61,7 @@ namespace mods
                _slideDown = std::make_unique<SlideDown>();
                _slideUp = std::make_unique<SlideUp>();
                _slideToNote = std::make_unique<SlideToNote>();
+               _slideToNoteAndVolumeSlide = std::make_unique<SlideToNoteAndVolumeSlide>(_slideToNote.get(), _volumeSlide.get());
                
                _currentEffect = _noEffect.get();
             }
@@ -257,6 +258,30 @@ namespace mods
                             _vibrato->tick();
                          }
                        _currentEffect = _vibrato.get();
+                    }
+                  break;
+                  
+                case EffectType::SLIDE_TO_NOTE_AND_VOLUME_SLIDE:
+                    {
+                       using Volume = SlideToNoteAndVolumeSlide::Volume;
+                       using Delta = SlideToNoteAndVolumeSlide::Delta;
+                       
+                       const u32 arg = note->getEffectArgument();
+                       const u8 slideUp = (arg >> 4U) & 0xFU;
+                       const u8 slideDown = arg & 0xFU;
+                       if(slideUp > 0 && slideDown > 0)
+                         {
+                            _slideToNoteAndVolumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(0));
+                         }
+                       else if(slideUp > 0)
+                         {
+                            _slideToNoteAndVolumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(slideUp));
+                         }
+                       else
+                         {
+                            _slideToNoteAndVolumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(-slideDown));
+                         }
+                       _currentEffect = _slideToNoteAndVolumeSlide.get();
                     }
                   break;
                   
