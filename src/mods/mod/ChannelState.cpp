@@ -7,6 +7,7 @@
 #include "mods/mod/Note.hpp"
 #include "mods/mod/SlideDown.hpp"
 #include "mods/mod/SlideToNote.hpp"
+#include "mods/mod/SlideToNoteAndVolumeSlide.hpp"
 #include "mods/mod/SlideUp.hpp"
 #include "mods/mod/Vibrato.hpp"
 #include "mods/mod/VibratoAndVolumeSlide.hpp"
@@ -200,170 +201,47 @@ namespace mods
              switch(effect)
                {
                 case EffectType::ARPEGGIO:
-                    {
-                       const u32 arg = note->getEffectArgument();
-                       if(arg != 0)
-                         {
-                            const u16 argX = arg >> 4U;
-                            const u16 argY = arg & 0xFU;
-                            _arpeggio->init(Arpeggio::Parameters{argX, argY, _period});
-                            _currentEffect = _arpeggio.get();
-                         }
-                       else
-                         {
-                            _currentEffect = _noEffect.get();
-                         }
-                    }
+                  applyArpeggioEffect(note);
                   break;
                   
                 case EffectType::SLIDE_UP:
-                    {
-                       const auto arg = static_cast<int>(note->getEffectArgument());
-                       _slideUp->init(arg);
-                       _currentEffect = _slideUp.get();
-                    }
+                  applySlideUpEffect(note);
                   break;
                   
                 case EffectType::SLIDE_DOWN:
-                    {
-                       const auto arg = static_cast<int>(note->getEffectArgument());
-                       _slideDown->init(arg);
-                       _currentEffect = _slideDown.get();
-                    }
+                  applySlideDownEffect(note);
                   break;
                   
                 case EffectType::SLIDE_TO_NOTE:
-                    {
-                       const auto arg = static_cast<int>(note->getEffectArgument());
-                       auto targetPeriod = note->getPeriod();
-                       auto fineTune = _instruments[_instrument-1].getFineTune();
-                       auto factor = getFineTuneFactor(fineTune);
-                       targetPeriod = static_cast<u16>(std::round(static_cast<double>(targetPeriod) * factor));
-                       _slideToNote->init(static_cast<SlideToNote::Period>(targetPeriod), arg);
-                       _currentEffect = _slideToNote.get();
-                    }
+                  applySlideToNoteEffect(note);
                   break;
                   
                 case EffectType::VIBRATO:
-                    {
-                       const u32 arg = note->getEffectArgument();
-                       const u32 oscillationFrequency = arg >> 4U;
-                       const u32 amplitude = arg & 0xFU;
-                       if(arg != 0)
-                         {
-                            _vibrato->init(static_cast<Vibrato::Depth>(amplitude), static_cast<Vibrato::VibratoFrequency>(oscillationFrequency), _period);
-                         }
-                       else
-                         {
-                            _vibrato->tick();
-                         }
-                       _currentEffect = _vibrato.get();
-                    }
+                  applyVibratoEffect(note);
                   break;
                   
                 case EffectType::SLIDE_TO_NOTE_AND_VOLUME_SLIDE:
-                    {
-                       using Volume = SlideToNoteAndVolumeSlide::Volume;
-                       using Delta = SlideToNoteAndVolumeSlide::Delta;
-                       
-                       const u32 arg = note->getEffectArgument();
-                       const u8 slideUp = (arg >> 4U) & 0xFU;
-                       const u8 slideDown = arg & 0xFU;
-                       if(slideUp > 0 && slideDown > 0)
-                         {
-                            _slideToNoteAndVolumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(0));
-                         }
-                       else if(slideUp > 0)
-                         {
-                            _slideToNoteAndVolumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(slideUp));
-                         }
-                       else
-                         {
-                            _slideToNoteAndVolumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(-slideDown));
-                         }
-                       _currentEffect = _slideToNoteAndVolumeSlide.get();
-                    }
+                  applySlideToNoteAndVolumeSlideEffect(note);
                   break;
                   
                 case EffectType::VIBRATO_AND_VOLUME_SLIDE:
-                    {
-                       const u32 arg = note->getEffectArgument();
-                       const u8 slideUp = (arg >> 4U) & 0xFU;
-                       const u8 slideDown = arg & 0xFU;
-                       _vibrato->tick();
-                       if(slideUp > 0 && slideDown > 0)
-                         {
-                            _vibratoAndVolumeSlide->init(_volume, 0);
-                         }
-                       else if(slideUp > 0)
-                         {
-                            _vibratoAndVolumeSlide->init(_volume, slideUp);
-                         }
-                       else
-                         {
-                            _vibratoAndVolumeSlide->init(_volume, static_cast<s16>(-slideDown));
-                         }
-                       _currentEffect = _vibratoAndVolumeSlide.get();
-                    }
+                  applyVibratoAndVolumeSlideEffect(note);
                   break;
                   
                 case EffectType::SET_SAMPLE_OFFSET:
-                    {
-                       const u32 arg = note->getEffectArgument();
-                       if(arg != 0)
-                         {
-                            _currentSample = arg << BITS_IN_BYTE;
-                            _currentRepeatSample = 0;
-                         }
-                       _currentEffect = _noEffect.get();
-                    }
+                  applySampleOffsetEffect(note);
                   break;
                   
                 case EffectType::VOLUME_SLIDE:
-                    {
-                       using Volume = VolumeSlide::Volume;
-                       using Delta = VolumeSlide::Delta;
-                       
-                       const u32 arg = note->getEffectArgument();
-                       const u8 slideUp = (arg >> 4U) & 0xFU;
-                       const u8 slideDown = arg & 0xFU;
-                       if(slideUp > 0 && slideDown > 0)
-                         {
-                            _volumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(0));
-                         }
-                       else if(slideUp > 0)
-                         {
-                            _volumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(slideUp));
-                         }
-                       else
-                         {
-                            _volumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(-slideDown));
-                         }
-                       _currentEffect = _volumeSlide.get();
-                    }
+                  applyVolumeSlideEffect(note);
                   break;
                   
                 case EffectType::SET_VOLUME:
-                  _volume = std::min(note->getEffectArgument(), static_cast<u32>(MAXIMUM_VOLUME));
-                  _currentEffect = _noEffect.get();
+                  applySetVolumeEffect(note);
                   break;
                   
                 case EffectType::PATTERN_BREAK:
-                    {
-                       constexpr static int xCoef = 10;
-                       constexpr static int linesPerPattern = 64;
-                       
-                       const u32 arg = note->getEffectArgument();
-                       const u8 xArg = (arg >> 4U) & 0xFU;
-                       const u8 yArg = arg & 0xFU;
-                       _hasPatternJump = true;
-                       _patternOfJumpTarget = -1;
-                       _lineOfJumpTarget = xArg * xCoef + yArg;
-                       if(_lineOfJumpTarget >= linesPerPattern) 
-                         {
-                            _lineOfJumpTarget = 0;
-                         }
-                    }
+                  applyPatternBreakEffect(note);
                   break;
                   
                 case EffectType::EXTENDED_EFFECT:
@@ -371,13 +249,169 @@ namespace mods
                   break;
                   
                 case EffectType::SET_SPEED:
-                  _speedSetOnLastLine = true;
-                  _speed = note->getEffectArgument();
-                  _currentEffect = _noEffect.get();
+                  applySetSpeedEffect(note);
                   break;
                   
                 default:
                   std::cout << "unknown effect:" << std::hex << static_cast<u32>(toUnderlying(effect)) << std::dec << '\n';
+               }
+          }
+        
+        void ChannelState::applyArpeggioEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             const u32 arg = note->getEffectArgument();
+             if(arg != 0)
+               {
+                  const u16 argX = arg >> 4U;
+                  const u16 argY = arg & 0xFU;
+                  _arpeggio->init(Arpeggio::Parameters{argX, argY, _period});
+                  _currentEffect = _arpeggio.get();
+               }
+             else
+               {
+                  _currentEffect = _noEffect.get();
+               }
+          }
+        
+        void ChannelState::applySlideUpEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             const auto arg = static_cast<int>(note->getEffectArgument());
+             _slideUp->init(arg);
+             _currentEffect = _slideUp.get();
+          }
+        
+        void ChannelState::applySlideDownEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             const auto arg = static_cast<int>(note->getEffectArgument());
+             _slideDown->init(arg);
+             _currentEffect = _slideDown.get();
+          }
+        
+        void ChannelState::applySlideToNoteEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             const auto arg = static_cast<int>(note->getEffectArgument());
+             auto targetPeriod = note->getPeriod();
+             auto fineTune = _instruments[_instrument-1].getFineTune();
+             auto factor = getFineTuneFactor(fineTune);
+             targetPeriod = static_cast<u16>(std::round(static_cast<double>(targetPeriod) * factor));
+             _slideToNote->init(static_cast<SlideToNote::Period>(targetPeriod), arg);
+             _currentEffect = _slideToNote.get();
+          }
+        
+        void ChannelState::applyVibratoEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             const u32 arg = note->getEffectArgument();
+             const u32 oscillationFrequency = arg >> 4U;
+             const u32 amplitude = arg & 0xFU;
+             if(arg != 0)
+               {
+                  _vibrato->init(static_cast<Vibrato::Depth>(amplitude), static_cast<Vibrato::VibratoFrequency>(oscillationFrequency), _period);
+               }
+             else
+               {
+                  _vibrato->tick();
+               }
+             _currentEffect = _vibrato.get();
+          }
+        
+        void ChannelState::applySlideToNoteAndVolumeSlideEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             using Volume = SlideToNoteAndVolumeSlide::Volume;
+             using Delta = SlideToNoteAndVolumeSlide::Delta;
+             
+             const u32 arg = note->getEffectArgument();
+             const u8 slideUp = (arg >> 4U) & 0xFU;
+             const u8 slideDown = arg & 0xFU;
+             if(slideUp > 0 && slideDown > 0)
+               {
+                  _slideToNoteAndVolumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(0));
+               }
+             else if(slideUp > 0)
+               {
+                  _slideToNoteAndVolumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(slideUp));
+               }
+             else
+               {
+                  _slideToNoteAndVolumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(-slideDown));
+               }
+             _currentEffect = _slideToNoteAndVolumeSlide.get();
+          }
+        
+        void ChannelState::applyVibratoAndVolumeSlideEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             const u32 arg = note->getEffectArgument();
+             const u8 slideUp = (arg >> 4U) & 0xFU;
+             const u8 slideDown = arg & 0xFU;
+             _vibrato->tick();
+             if(slideUp > 0 && slideDown > 0)
+               {
+                  _vibratoAndVolumeSlide->init(_volume, 0);
+               }
+             else if(slideUp > 0)
+               {
+                  _vibratoAndVolumeSlide->init(_volume, slideUp);
+               }
+             else
+               {
+                  _vibratoAndVolumeSlide->init(_volume, static_cast<s16>(-slideDown));
+               }
+             _currentEffect = _vibratoAndVolumeSlide.get();
+          }
+        
+        void ChannelState::applySampleOffsetEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             const u32 arg = note->getEffectArgument();
+             if(arg != 0)
+               {
+                  _currentSample = arg << BITS_IN_BYTE;
+                  _currentRepeatSample = 0;
+               }
+             _currentEffect = _noEffect.get();
+          }
+        
+        void ChannelState::applyVolumeSlideEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             using Volume = VolumeSlide::Volume;
+             using Delta = VolumeSlide::Delta;
+             
+             const u32 arg = note->getEffectArgument();
+             const u8 slideUp = (arg >> 4U) & 0xFU;
+             const u8 slideDown = arg & 0xFU;
+             if(slideUp > 0 && slideDown > 0)
+               {
+                  _volumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(0));
+               }
+             else if(slideUp > 0)
+               {
+                  _volumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(slideUp));
+               }
+             else
+               {
+                  _volumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(-slideDown));
+               }
+             _currentEffect = _volumeSlide.get();
+          }
+        
+        void ChannelState::applySetVolumeEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             _volume = std::min(note->getEffectArgument(), static_cast<u32>(MAXIMUM_VOLUME));
+             _currentEffect = _noEffect.get();
+          }
+        
+        void ChannelState::applyPatternBreakEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             constexpr static int xCoef = 10;
+             constexpr static int linesPerPattern = 64;
+             
+             const u32 arg = note->getEffectArgument();
+             const u8 xArg = (arg >> 4U) & 0xFU;
+             const u8 yArg = arg & 0xFU;
+             _hasPatternJump = true;
+             _patternOfJumpTarget = -1;
+             _lineOfJumpTarget = xArg * xCoef + yArg;
+             if(_lineOfJumpTarget >= linesPerPattern) 
+               {
+                  _lineOfJumpTarget = 0;
                }
           }
         
@@ -387,24 +421,41 @@ namespace mods
              switch(extendedEffect)
                {
                 case ExtendedEffectType::FINE_SLIDE_UP:
-                  _period -= note->getExtendedEffectArgument();
-                  _currentEffect = _noEffect.get();
+                  applyFineSlideUpEffect(note);
                   break;
                   
                 case ExtendedEffectType::PATTERN_LOOP:
-                  _loopLength = note->getExtendedEffectArgument();
-                  if(_loopLength == 0)
-                    {
-                       _startOfLoop = true;
-                    }
-                  else
-                    {
-                       _endOfLoop = true;
-                    }
+                  applyPatternLoopEffect(note);
                   break;
                   
                 default:
                   std::cout << "unknown extended effect:" << std::hex << static_cast<u32>(toUnderlying(extendedEffect)) << std::dec << '\n';
+               }
+          }
+        
+        void ChannelState::applySetSpeedEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             _speedSetOnLastLine = true;
+             _speed = note->getEffectArgument();
+             _currentEffect = _noEffect.get();
+          }
+        
+        void ChannelState::applyFineSlideUpEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             _period -= note->getExtendedEffectArgument();
+             _currentEffect = _noEffect.get();
+          }
+        
+        void ChannelState::applyPatternLoopEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             _loopLength = note->getExtendedEffectArgument();
+             if(_loopLength == 0)
+               {
+                  _startOfLoop = true;
+               }
+             else
+               {
+                  _endOfLoop = true;
                }
           }
         

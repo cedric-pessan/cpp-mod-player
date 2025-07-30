@@ -62,7 +62,23 @@ namespace mods
              auto getFineTuneFactor(int fineTune) -> double;
              void processNextSample(s8 sample);
              void applyEffect(const mods::utils::RBuffer<Note>& note);
+             
+             void applyArpeggioEffect(const mods::utils::RBuffer<Note>& note);
+             void applySlideUpEffect(const mods::utils::RBuffer<Note>& note);
+             void applySlideDownEffect(const mods::utils::RBuffer<Note>& note);
+             void applySlideToNoteEffect(const mods::utils::RBuffer<Note>& note);
+             void applyVibratoEffect(const mods::utils::RBuffer<Note>& note);
+             void applySlideToNoteAndVolumeSlideEffect(const mods::utils::RBuffer<Note>& note);
+             void applyVibratoAndVolumeSlideEffect(const mods::utils::RBuffer<Note>& note);
+             void applySampleOffsetEffect(const mods::utils::RBuffer<Note>& note);
+             void applyVolumeSlideEffect(const mods::utils::RBuffer<Note>& note);
+             void applySetVolumeEffect(const mods::utils::RBuffer<Note>& note);
+             void applyPatternBreakEffect(const mods::utils::RBuffer<Note>& note);
              void applyExtendedEffect(const mods::utils::RBuffer<Note>& note);
+             void applySetSpeedEffect(const mods::utils::RBuffer<Note>& note);
+             
+             void applyFineSlideUpEffect(const mods::utils::RBuffer<Note>& note);
+             void applyPatternLoopEffect(const mods::utils::RBuffer<Note>& note);
              
              size_t _instrument = 0;
              size_t _currentSample = 0;

@@ -7,6 +7,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -155,6 +156,13 @@ namespace mods
              void openCpp(std::ofstream& outcpp)
                {
                   outcpp << "#include \"mods/utils/Filters.hpp\"" << '\n';
+                  outcpp << "#include \"mods/utils/RBufferBackend.hpp\"" << '\n';
+                  outcpp << "#include \"mods/utils/types.hpp\"" << '\n';
+                  outcpp << '\n';
+                  outcpp << "#include <array>" << '\n';
+                  outcpp << "#include <cstddef>" << '\n';
+                  outcpp << "#include <memory>" << '\n';
+                  outcpp << "#include <utility>" << '\n';
                   outcpp << '\n';
                   outcpp << "namespace mods {" << '\n';
                   outcpp << "  namespace utils {" << '\n';
@@ -166,7 +174,7 @@ namespace mods
                   outcpp << "} // namespace mods" << '\n';
                }
              
-             void generateLowPassFilter(const LowPassParam& param, std::ofstream& out, std::ofstream& outcpp)
+             void generateLowPassFilter(const LowPassParam& param, std::ofstream& out, std::ofstream& outcpp, std::unordered_set<int>* definedCutoff, std::unordered_set<u64>* definedTmpFreq)
                {
                   using mods::utils::FirFilterDesigner;
                   
@@ -223,16 +231,35 @@ namespace mods
                   outcpp << '\n';
                   outcpp << "    };" << '\n';
                   
+                  if(definedCutoff->find(param.getCutoffFrequency()) == definedCutoff->end())
+                    {
+                       outcpp << '\n';
+                       outcpp << "  namespace {" << '\n';
+                       outcpp << "    constexpr int cutOff_" << param.getCutoffFrequency() << " = " << param.getCutoffFrequency() << ';' << '\n';
+                       outcpp << "  } // namespace" << '\n';
+                       outcpp << '\n';
+                       definedCutoff->insert(param.getCutoffFrequency());
+                    }
+                  if(definedTmpFreq->find(param.getSampleFrequency()) == definedTmpFreq->end())
+                    {
+                       outcpp << '\n';
+                       outcpp << "  namespace {" << '\n';
+                       outcpp << "    constexpr u64 tmpFreq_" << param.getSampleFrequency() << " = " << param.getSampleFrequency() << ";" << '\n';
+                       outcpp << "  } // namespace" << '\n';
+                       outcpp << '\n';
+                       definedTmpFreq->insert(param.getSampleFrequency());
+                    }
+                  
                   outcpp << '\n';
-                  outcpp << "    auto LowPassFilter<" << param.getCutoffFrequency() << "," << param.getCutoffFrequencyDivider() << "," << param.getSampleFrequency() << ">::getTap(size_t i) -> double {" << '\n';
-                  outcpp << "      return getTaps()[i];" << '\n';
+                  outcpp << "    auto LowPassFilter<cutOff_" << param.getCutoffFrequency() << "," << param.getCutoffFrequencyDivider() << ", tmpFreq_" << param.getSampleFrequency() << ">::getTap(size_t idx) -> double {" << '\n';
+                  outcpp << "      return getTaps()[idx];" << '\n';
                   outcpp << "    }" << '\n';
                   outcpp << '\n';
                   
-                  outcpp << "    auto LowPassFilter<" << param.getCutoffFrequency() << "," << param.getCutoffFrequencyDivider() << "," << param.getSampleFrequency() << ">::getTaps() -> const TapsType& {" << '\n';
+                  outcpp << "    auto LowPassFilter<cutOff_" << param.getCutoffFrequency() << "," << param.getCutoffFrequencyDivider() << ", tmpFreq_" << param.getSampleFrequency() << ">::getTaps() -> const TapsType& {" << '\n';
                   outcpp << "      static auto deleter = std::make_unique<mods::utils::RBufferBackend::EmptyDeleter>();" << '\n';
                   outcpp << "      static auto backend = std::make_unique<mods::utils::RBufferBackend>(_tapsBinaryImage.data(), _tapsBinaryImage.size(), std::move(deleter));" << '\n';
-                  outcpp << "      static mods::utils::RBuffer<u8> buffer(std::move(backend));" << '\n';
+                  outcpp << "      static const mods::utils::RBuffer<u8> buffer(std::move(backend));" << '\n';
                   outcpp << "      static auto doubleView = buffer.slice<double>(0, numberOfTaps);" << '\n';
                   outcpp << "      return doubleView;" << '\n';
                   outcpp << "    }" << '\n';
@@ -241,6 +268,8 @@ namespace mods
              
              void generateFilters(const std::string& headerFilename, const std::string& cppFilename)
                {
+                  std::unordered_set<int> definedCutoff;
+                  std::unordered_set<u64> definedTmpFreq;
                   std::ofstream out;
                   std::ofstream outcpp;
                   const std::string moduleName = generateModuleName(headerFilename);
@@ -283,7 +312,7 @@ namespace mods
                   
                   for(const auto& lowPassParam : getLowPassParams())
                     {
-                       generateLowPassFilter(lowPassParam, out, outcpp);
+                       generateLowPassFilter(lowPassParam, out, outcpp, &definedCutoff, &definedTmpFreq);
                     }
                   
                   closeCpp(outcpp);
