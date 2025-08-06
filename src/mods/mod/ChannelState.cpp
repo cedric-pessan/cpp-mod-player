@@ -63,6 +63,7 @@ namespace mods
                _slideUp = std::make_unique<SlideUp>();
                _slideToNote = std::make_unique<SlideToNote>();
                _slideToNoteAndVolumeSlide = std::make_unique<SlideToNoteAndVolumeSlide>(_slideToNote.get(), _volumeSlide.get());
+               _retrigger = std::make_unique<Retrigger>();
                
                _currentEffect = _noEffect.get();
             }
@@ -78,10 +79,16 @@ namespace mods
                        _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
                        return;
                     }
+                  if(_currentEffect->retriggerSample())
+                    {
+                       _currentSample = 0;
+                       _currentRepeatSample = 0;
+                    }
                   const auto& buffer = (*_sampleBuffers)[_instrument-1];
                   if(_currentSample >= buffer.size())
                     {
                        const auto& instrument = _instruments[_instrument-1];
+                       
                        if(instrument.getRepeatLength() > 0)
                          {
                             if(_currentRepeatSample == 0 ||
@@ -229,7 +236,7 @@ namespace mods
                   break;
                   
                 case EffectType::SET_SAMPLE_OFFSET:
-                  applySampleOffsetEffect(note);
+                  applySetSampleOffsetEffect(note);
                   break;
                   
                 case EffectType::VOLUME_SLIDE:
@@ -358,7 +365,7 @@ namespace mods
              _currentEffect = _vibratoAndVolumeSlide.get();
           }
         
-        void ChannelState::applySampleOffsetEffect(const mods::utils::RBuffer<Note>& note)
+        void ChannelState::applySetSampleOffsetEffect(const mods::utils::RBuffer<Note>& note)
           {
              const u32 arg = note->getEffectArgument();
              if(arg != 0)
@@ -428,6 +435,10 @@ namespace mods
                   applyPatternLoopEffect(note);
                   break;
                   
+                case ExtendedEffectType::RETRIGGER_SAMPLE:
+                  applyRetriggerSampleEffect(note);
+                  break;
+                  
                 default:
                   std::cout << "unknown extended effect:" << std::hex << static_cast<u32>(toUnderlying(extendedEffect)) << std::dec << '\n';
                }
@@ -457,6 +468,15 @@ namespace mods
                {
                   _endOfLoop = true;
                }
+             _currentEffect = _noEffect.get();
+          }
+        
+        void ChannelState::applyRetriggerSampleEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             int retriggerPeriod = note->getExtendedEffectArgument();
+             
+             _retrigger->init(retriggerPeriod);
+             _currentEffect = _retrigger.get();
           }
         
         auto ChannelState::hasSpeedDefined() const -> bool

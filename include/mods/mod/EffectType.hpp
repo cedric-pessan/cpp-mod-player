@@ -27,7 +27,8 @@ namespace mods
         enum struct ExtendedEffectType : u8
           {
              FINE_SLIDE_UP = 0x1,
-               PATTERN_LOOP = 0x6
+               PATTERN_LOOP = 0x6,
+               RETRIGGER_SAMPLE = 0x9
           };
      } // namespace mod
 } // namespace mods

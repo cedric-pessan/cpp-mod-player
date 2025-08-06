@@ -30,6 +30,11 @@ namespace mods
              return _volumeSlide->getModifiedVolume(volume);
           }
         
+        auto SlideToNoteAndVolumeSlide::retriggerSample() const -> bool
+          {
+             return false;
+          }
+        
         void SlideToNoteAndVolumeSlide::tick()
           {
              _slideToNote->tick();

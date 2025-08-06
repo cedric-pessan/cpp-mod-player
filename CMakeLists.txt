@@ -75,6 +75,7 @@ add_executable(modreader src/main.cpp
                          src/mods/mod/Note.cpp
                          src/mods/mod/PatternListReader.cpp
                          src/mods/mod/PatternReader.cpp
+                         src/mods/mod/Retrigger.cpp
                          src/mods/mod/SlideDown.cpp
                          src/mods/mod/SlideToNote.cpp
                          src/mods/mod/SlideToNoteAndVolumeSlide.cpp

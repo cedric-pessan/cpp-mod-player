@@ -45,6 +45,11 @@ namespace mods
              return volume;
           }
         
+        auto SlideToNote::retriggerSample() const -> bool
+          {
+             return false;
+          }
+        
         void SlideToNote::tick()
           {
              _newTick = true;

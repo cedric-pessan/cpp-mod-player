@@ -27,6 +27,11 @@ namespace mods
              return volume;
           }
         
+        auto SlideDown::retriggerSample() const -> bool
+          {
+             return false;
+          }
+        
         void SlideDown::tick()
           {
              _newTick = true;

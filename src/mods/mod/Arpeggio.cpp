@@ -54,6 +54,11 @@ namespace mods
              return volume;
           }
         
+        auto Arpeggio::retriggerSample() const -> bool
+          {
+             return false;
+          }
+        
         void Arpeggio::tick()
           {
              _currentNote = (_currentNote + 1) % 3;

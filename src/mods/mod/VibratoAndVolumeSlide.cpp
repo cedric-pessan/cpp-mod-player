@@ -33,6 +33,11 @@ namespace mods
              return _volumeSlide->getModifiedVolume(volume);
           }
         
+        auto VibratoAndVolumeSlide::retriggerSample() const -> bool
+          {
+             return false;
+          }
+        
         void VibratoAndVolumeSlide::tick()
           {
              _vibrato->tick();

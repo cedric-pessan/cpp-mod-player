@@ -16,6 +16,11 @@ namespace mods
              return volume;
           }
         
+        auto NoEffect::retriggerSample() const -> bool
+          {
+             return false;
+          }
+        
         void NoEffect::tick()
           {
           }

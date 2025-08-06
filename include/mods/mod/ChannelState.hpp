@@ -3,6 +3,7 @@
 
 #include "mods/mod/Arpeggio.hpp"
 #include "mods/mod/NoEffect.hpp"
+#include "mods/mod/Retrigger.hpp"
 #include "mods/mod/SlideDown.hpp"
 #include "mods/mod/SlideToNote.hpp"
 #include "mods/mod/SlideToNoteAndVolumeSlide.hpp"
@@ -70,7 +71,7 @@ namespace mods
              void applyVibratoEffect(const mods::utils::RBuffer<Note>& note);
              void applySlideToNoteAndVolumeSlideEffect(const mods::utils::RBuffer<Note>& note);
              void applyVibratoAndVolumeSlideEffect(const mods::utils::RBuffer<Note>& note);
-             void applySampleOffsetEffect(const mods::utils::RBuffer<Note>& note);
+             void applySetSampleOffsetEffect(const mods::utils::RBuffer<Note>& note);
              void applyVolumeSlideEffect(const mods::utils::RBuffer<Note>& note);
              void applySetVolumeEffect(const mods::utils::RBuffer<Note>& note);
              void applyPatternBreakEffect(const mods::utils::RBuffer<Note>& note);
@@ -79,6 +80,7 @@ namespace mods
              
              void applyFineSlideUpEffect(const mods::utils::RBuffer<Note>& note);
              void applyPatternLoopEffect(const mods::utils::RBuffer<Note>& note);
+             void applyRetriggerSampleEffect(const mods::utils::RBuffer<Note>& note);
              
              size_t _instrument = 0;
              size_t _currentSample = 0;
@@ -112,6 +114,7 @@ namespace mods
              std::unique_ptr<SlideUp> _slideUp;
              std::unique_ptr<SlideToNote> _slideToNote;
              std::unique_ptr<SlideToNoteAndVolumeSlide> _slideToNoteAndVolumeSlide;
+             std::unique_ptr<Retrigger> _retrigger;
              Effect* _currentEffect = nullptr;
           };
      } // namespace mod
