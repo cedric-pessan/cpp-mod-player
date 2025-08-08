@@ -73,6 +73,7 @@ namespace mods
              void applyVibratoAndVolumeSlideEffect(const mods::utils::RBuffer<Note>& note);
              void applySetSampleOffsetEffect(const mods::utils::RBuffer<Note>& note);
              void applyVolumeSlideEffect(const mods::utils::RBuffer<Note>& note);
+             void applyPositionJumpEffect(const mods::utils::RBuffer<Note>& note);
              void applySetVolumeEffect(const mods::utils::RBuffer<Note>& note);
              void applyPatternBreakEffect(const mods::utils::RBuffer<Note>& note);
              void applyExtendedEffect(const mods::utils::RBuffer<Note>& note);

@@ -243,6 +243,10 @@ namespace mods
                   applyVolumeSlideEffect(note);
                   break;
                   
+                case EffectType::POSITION_JUMP:
+                  applyPositionJumpEffect(note);
+                  break;
+                  
                 case EffectType::SET_VOLUME:
                   applySetVolumeEffect(note);
                   break;
@@ -397,6 +401,13 @@ namespace mods
                   _volumeSlide->init(static_cast<Volume>(_volume), static_cast<Delta>(-slideDown));
                }
              _currentEffect = _volumeSlide.get();
+          }
+        
+        void ChannelState::applyPositionJumpEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             _hasPatternJump = true;
+             _patternOfJumpTarget = note->getEffectArgument();
+             _lineOfJumpTarget = 0;
           }
         
         void ChannelState::applySetVolumeEffect(const mods::utils::RBuffer<Note>& note)

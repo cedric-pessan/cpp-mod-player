@@ -18,6 +18,7 @@ namespace mods
                VIBRATO_AND_VOLUME_SLIDE = 0x6,
                SET_SAMPLE_OFFSET = 0x9,
                VOLUME_SLIDE = 0xa,
+               POSITION_JUMP = 0xb,
                SET_VOLUME = 0xc,
                PATTERN_BREAK = 0xd,
                EXTENDED_EFFECT = 0xe,
