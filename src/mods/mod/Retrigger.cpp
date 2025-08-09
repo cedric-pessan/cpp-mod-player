@@ -1,11 +1,12 @@
 
 #include "mods/mod/Retrigger.hpp"
+#include "mods/utils/types.hpp"
 
 namespace mods
 {
    namespace mod
      {
-        void Retrigger::init(int retriggerPeriod)
+        void Retrigger::init(u32 retriggerPeriod)
           {
              _tickCount = 0;
              _retriggerPeriod = retriggerPeriod;

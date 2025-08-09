@@ -17,7 +17,7 @@ namespace mods
              auto operator=(Retrigger&&) -> Retrigger& = delete;
              ~Retrigger() override = default;
              
-             void init(int retriggerPeriod);
+             void init(u32 retriggerPeriod);
              
              auto getModifiedPeriod(u16 period) -> u16 override;
              auto getModifiedVolume(u16 volume) const -> u16 override;
@@ -25,8 +25,8 @@ namespace mods
              void tick() override;
              
            private:
-             int _tickCount = 0;
-             int _retriggerPeriod = 0;
+             u32 _tickCount = 0;
+             u32 _retriggerPeriod = 0;
           };
      } // namespace mod
 } // namespace mods

@@ -5,6 +5,7 @@
 #include "mods/mod/Instrument.hpp"
 #include "mods/mod/NoEffect.hpp"
 #include "mods/mod/Note.hpp"
+#include "mods/mod/Retrigger.hpp"
 #include "mods/mod/SlideDown.hpp"
 #include "mods/mod/SlideToNote.hpp"
 #include "mods/mod/SlideToNoteAndVolumeSlide.hpp"
@@ -406,7 +407,7 @@ namespace mods
         void ChannelState::applyPositionJumpEffect(const mods::utils::RBuffer<Note>& note)
           {
              _hasPatternJump = true;
-             _patternOfJumpTarget = note->getEffectArgument();
+             _patternOfJumpTarget = static_cast<int>(note->getEffectArgument());
              _lineOfJumpTarget = 0;
           }
         
@@ -484,7 +485,7 @@ namespace mods
         
         void ChannelState::applyRetriggerSampleEffect(const mods::utils::RBuffer<Note>& note)
           {
-             int retriggerPeriod = note->getExtendedEffectArgument();
+             const u32 retriggerPeriod = note->getExtendedEffectArgument();
              
              _retrigger->init(retriggerPeriod);
              _currentEffect = _retrigger.get();
