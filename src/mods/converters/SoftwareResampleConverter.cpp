@@ -25,7 +25,8 @@ namespace mods
             {
                for(auto& elem : *buf)
                  {
-                    elem = getNextDecimatedSample();
+                    if(this->isFinished()) elem = 0.0;
+                    else elem = getNextDecimatedSample();
                  }
             }
         

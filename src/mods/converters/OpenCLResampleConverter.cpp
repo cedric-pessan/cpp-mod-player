@@ -241,10 +241,24 @@ namespace mods
              
              size_t blockSize = nbElems;
              
+             if(isFinished())
+               {
+                  for(auto& elem : *buf)
+                    {
+                       elem = 0.0;
+                    }
+                  return;
+               }
+             
              for(size_t i=0; i<nbElems; ++i)
                {
                   addToHistory();
                   if(_filtered != history.back().isFiltered())
+                    {
+                       blockSize = i+1;
+                       break;
+                    }
+                  if(isFinished())
                     {
                        blockSize = i+1;
                        break;

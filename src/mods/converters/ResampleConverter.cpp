@@ -156,6 +156,7 @@ namespace mods
                        _zerosToNextInterpolatedSample = _resampleParameters.getInterpolationFactor() - 1;
                     } else {
                        toAdd = 0;
+                       _zerosToNextInterpolatedSample = 0;
                     }
                }
              return toAdd;
