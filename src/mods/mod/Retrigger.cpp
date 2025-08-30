@@ -27,6 +27,11 @@ namespace mods
              return _tickCount == _retriggerPeriod - 1;
           }
         
+        auto Retrigger::isSampleEnabled() const -> bool
+          {
+             return true;
+          }
+        
         void Retrigger::tick()
           {
              ++_tickCount;

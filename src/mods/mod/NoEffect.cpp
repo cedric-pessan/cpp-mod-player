@@ -21,6 +21,11 @@ namespace mods
              return false;
           }
         
+        auto NoEffect::isSampleEnabled() const -> bool
+          {
+             return true;
+          }
+        
         void NoEffect::tick()
           {
           }

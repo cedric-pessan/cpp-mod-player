@@ -2,6 +2,7 @@
 #define MODS_MOD_CHANNELSTATE_HPP
 
 #include "mods/mod/Arpeggio.hpp"
+#include "mods/mod/DelaySample.hpp"
 #include "mods/mod/NoEffect.hpp"
 #include "mods/mod/Retrigger.hpp"
 #include "mods/mod/SlideDown.hpp"
@@ -58,6 +59,10 @@ namespace mods
              auto isEndOfLoop() const -> bool;
              auto getLoopLength() const -> u32;
              
+             auto hasNewFilterValue() const -> bool;
+             auto getNewFilterValue() const -> bool;
+             void setFilterValue(bool filtered);
+             
            private:
              static auto toDouble(s8 sample) -> double;
              auto getFineTuneFactor(int fineTune) -> double;
@@ -79,9 +84,11 @@ namespace mods
              void applyExtendedEffect(const mods::utils::RBuffer<Note>& note);
              void applySetSpeedEffect(const mods::utils::RBuffer<Note>& note);
              
+             void applySetFilter(const mods::utils::RBuffer<Note>& note);
              void applyFineSlideUpEffect(const mods::utils::RBuffer<Note>& note);
              void applyPatternLoopEffect(const mods::utils::RBuffer<Note>& note);
              void applyRetriggerSampleEffect(const mods::utils::RBuffer<Note>& note);
+             void applyDelaySampleEffect(const mods::utils::RBuffer<Note>& note);
              
              size_t _instrument = 0;
              size_t _currentSample = 0;
@@ -100,6 +107,10 @@ namespace mods
              bool _endOfLoop = false;
              u32 _loopLength = 0;
              
+             bool _filtered = false;
+             bool _hasNewFilterValue = false;
+             bool _newFilterValue = false;
+             
              const std::vector<mods::utils::RBuffer<s8>>* _sampleBuffers;
              mods::utils::RBuffer<Instrument> _instruments;
              
@@ -116,6 +127,7 @@ namespace mods
              std::unique_ptr<SlideToNote> _slideToNote;
              std::unique_ptr<SlideToNoteAndVolumeSlide> _slideToNoteAndVolumeSlide;
              std::unique_ptr<Retrigger> _retrigger;
+             std::unique_ptr<DelaySample> _delaySample;
              Effect* _currentEffect = nullptr;
           };
      } // namespace mod

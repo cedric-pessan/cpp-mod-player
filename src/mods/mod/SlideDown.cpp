@@ -32,6 +32,11 @@ namespace mods
              return false;
           }
         
+        auto SlideDown::isSampleEnabled() const -> bool
+          {
+             return true;
+          }
+        
         void SlideDown::tick()
           {
              _newTick = true;

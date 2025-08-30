@@ -32,6 +32,11 @@ namespace mods
              return false;
           }
         
+        auto SlideUp::isSampleEnabled() const -> bool
+          {
+             return true;
+          }
+        
         void SlideUp::tick()
           {
              _newTick = true;

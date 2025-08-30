@@ -38,6 +38,11 @@ namespace mods
              return false;
           }
         
+        auto VibratoAndVolumeSlide::isSampleEnabled() const -> bool
+          {
+             return true;
+          }
+        
         void VibratoAndVolumeSlide::tick()
           {
              _vibrato->tick();

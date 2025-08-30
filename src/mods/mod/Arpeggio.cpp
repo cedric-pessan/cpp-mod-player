@@ -59,6 +59,11 @@ namespace mods
              return false;
           }
         
+        auto Arpeggio::isSampleEnabled() const -> bool
+          {
+             return true;
+          }
+        
         void Arpeggio::tick()
           {
              _currentNote = (_currentNote + 1) % 3;

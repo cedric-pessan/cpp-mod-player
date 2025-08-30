@@ -27,6 +27,11 @@ namespace mods
              return false;
           }
         
+        auto VolumeSlide::isSampleEnabled() const -> bool
+          {
+             return true;
+          }
+        
         void VolumeSlide::tick()
           {
              const int maxVolume = 64;

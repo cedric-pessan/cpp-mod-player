@@ -61,6 +61,7 @@ namespace mods
              void updatePatternJump();
              void updateLoop();
              void signalNewTick();
+             void updateFilter();
              
              static constexpr u32 _numberOfLines = 64;
              static constexpr u32 _defaultSpeed = 6;

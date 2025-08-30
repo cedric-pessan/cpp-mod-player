@@ -35,6 +35,11 @@ namespace mods
              return false;
           }
         
+        auto SlideToNoteAndVolumeSlide::isSampleEnabled() const -> bool
+          {
+             return true;
+          }
+        
         void SlideToNoteAndVolumeSlide::tick()
           {
              _slideToNote->tick();

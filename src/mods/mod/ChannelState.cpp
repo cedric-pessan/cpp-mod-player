@@ -65,6 +65,7 @@ namespace mods
                _slideToNote = std::make_unique<SlideToNote>();
                _slideToNoteAndVolumeSlide = std::make_unique<SlideToNoteAndVolumeSlide>(_slideToNote.get(), _volumeSlide.get());
                _retrigger = std::make_unique<Retrigger>();
+               _delaySample = std::make_unique<DelaySample>();
                
                _currentEffect = _noEffect.get();
             }
@@ -77,7 +78,7 @@ namespace mods
                {
                   if(_instrument == 0)
                     {
-                       _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
+                       _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), _filtered);
                        return;
                     }
                   if(_currentEffect->retriggerSample())
@@ -90,7 +91,7 @@ namespace mods
                     {
                        const auto& instrument = _instruments[_instrument-1];
                        
-                       if(instrument.getRepeatLength() > 0)
+                       if(instrument.getRepeatLength() > 0 && _currentEffect->isSampleEnabled())
                          {
                             if(_currentRepeatSample == 0 ||
                                _currentRepeatSample >= instrument.getRepeatOffset() + instrument.getRepeatLength())
@@ -102,7 +103,7 @@ namespace mods
                          }
                        else
                          {
-                            _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
+                            _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), _filtered);
                          }
                        return;
                     }
@@ -119,7 +120,7 @@ namespace mods
              
              auto convertedSample = toDouble(sample);
              
-             _currentValue = RLESample(convertedSample, static_cast<AmigaRLESample::SampleLength>(_period), false);
+             _currentValue = RLESample(convertedSample, static_cast<AmigaRLESample::SampleLength>(_period), _filtered);
           }
         
         auto ChannelState::toDouble(s8 sample) -> double
@@ -170,6 +171,7 @@ namespace mods
              _hasPatternJump = false;
              _startOfLoop = false;
              _endOfLoop = false;
+             _hasNewFilterValue = false;
              
              if(note->getEffect() != EffectType::SLIDE_TO_NOTE)
                {
@@ -179,14 +181,14 @@ namespace mods
                        _volume = _instruments[_instrument-1].getVolume();
                        _currentSample = 0;
                        _currentRepeatSample = 0;
-                       _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
+                       _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), _filtered);
                     }
                   if(note->getPeriod() != 0)
                     {
                        _currentSample = 0;
                        _currentRepeatSample = 0;
                        _period = note->getPeriod();
-                       _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), false);
+                       _currentValue = RLESample(0.0, static_cast<AmigaRLESample::SampleLength>(0), _filtered);
                        
                        if(_instrument != 0)
                          {
@@ -439,6 +441,10 @@ namespace mods
              const auto extendedEffect = note->getExtendedEffect();
              switch(extendedEffect)
                {
+                case ExtendedEffectType::SET_FILTER:
+                  applySetFilter(note);
+                  break;
+                  
                 case ExtendedEffectType::FINE_SLIDE_UP:
                   applyFineSlideUpEffect(note);
                   break;
@@ -451,6 +457,10 @@ namespace mods
                   applyRetriggerSampleEffect(note);
                   break;
                   
+                case ExtendedEffectType::DELAY_SAMPLE:
+                  applyDelaySampleEffect(note);
+                  break;
+                  
                 default:
                   std::cout << "unknown extended effect:" << std::hex << static_cast<u32>(toUnderlying(extendedEffect)) << std::dec << '\n';
                }
@@ -461,6 +471,12 @@ namespace mods
              _speedSetOnLastLine = true;
              _speed = note->getEffectArgument();
              _currentEffect = _noEffect.get();
+          }
+        
+        void ChannelState::applySetFilter(const mods::utils::RBuffer<Note>& note)
+          {
+             _hasNewFilterValue = true;
+             _newFilterValue = (note->getExtendedEffectArgument() & 1) == 0;
           }
         
         void ChannelState::applyFineSlideUpEffect(const mods::utils::RBuffer<Note>& note)
@@ -489,6 +505,17 @@ namespace mods
              
              _retrigger->init(retriggerPeriod);
              _currentEffect = _retrigger.get();
+          }
+        
+        void ChannelState::applyDelaySampleEffect(const mods::utils::RBuffer<Note>& note)
+          {
+             if(note->getInstrument() != 0 && note->getPeriod() != 0)
+               {
+                  const auto& buffer = (*_sampleBuffers)[_instrument-1];
+                  _currentSample = buffer.size();
+                  _delaySample->init(note->getExtendedEffectArgument());
+                  _currentEffect = _delaySample.get();
+               }
           }
         
         auto ChannelState::hasSpeedDefined() const -> bool
@@ -529,6 +556,21 @@ namespace mods
         auto ChannelState::getLoopLength() const -> u32
           {
              return _loopLength;
+          }
+        
+        auto ChannelState::hasNewFilterValue() const -> bool
+          {
+             return _hasNewFilterValue;
+          }
+        
+        auto ChannelState::getNewFilterValue() const -> bool
+          {
+             return _newFilterValue;
+          }
+        
+        void ChannelState::setFilterValue(bool filtered)
+          {
+             _filtered = filtered;
           }
         
         void ChannelState::tick()

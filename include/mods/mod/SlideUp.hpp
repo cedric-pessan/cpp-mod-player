@@ -22,6 +22,7 @@ namespace mods
              auto getModifiedPeriod(u16 period) -> u16 override;
              auto getModifiedVolume(u16 volume) const -> u16 override;
              auto retriggerSample() const -> bool override;
+             auto isSampleEnabled() const -> bool override;
              void tick() override;
              
            private:

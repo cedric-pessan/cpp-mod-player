@@ -118,6 +118,7 @@ namespace mods
                   updateSpeed();
                   updatePatternJump();
                   updateLoop();
+                  updateFilter();
                }
           }
         
@@ -266,6 +267,29 @@ namespace mods
         auto PatternReader::getLineOfJumpTarget() const -> int
           {
              return _lineOfJumpTarget;
+          }
+        
+        void PatternReader::updateFilter()
+          {
+             bool hasNewFilterValue = false;
+             bool newFilterValue = false;
+             
+             for(auto& channel : _channels)
+               {
+                  if(channel.hasNewFilterValue())
+                    {
+                       hasNewFilterValue = true;
+                       newFilterValue = channel.getNewFilterValue();
+                    }
+               }
+             
+             if(hasNewFilterValue)
+               {
+                  for(auto& channel : _channels)
+                    {
+                       channel.setFilterValue(newFilterValue);
+                    }
+               }
           }
      } // namespace mod
 } // namespace mods

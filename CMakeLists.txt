@@ -68,6 +68,7 @@ add_executable(modreader src/main.cpp
                          src/mods/converters/UpscaleConverter.cpp
                          src/mods/mod/Arpeggio.cpp
                          src/mods/mod/ChannelState.cpp
+                         src/mods/mod/DelaySample.cpp
                          src/mods/mod/Instrument.cpp
                          src/mods/mod/ModChannelConverter.cpp
                          src/mods/mod/ModReader.cpp

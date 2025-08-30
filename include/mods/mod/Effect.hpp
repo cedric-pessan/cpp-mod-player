@@ -20,6 +20,7 @@ namespace mods
              virtual auto getModifiedPeriod(u16 period) -> u16 = 0;
              virtual auto getModifiedVolume(u16 volume) const -> u16 = 0;
              virtual auto retriggerSample() const -> bool = 0;
+             virtual auto isSampleEnabled() const -> bool = 0;
              virtual void tick() = 0;
           };
      } // namespace mod

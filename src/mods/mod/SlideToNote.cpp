@@ -50,6 +50,11 @@ namespace mods
              return false;
           }
         
+        auto SlideToNote::isSampleEnabled() const -> bool
+          {
+             return true;
+          }
+        
         void SlideToNote::tick()
           {
              _newTick = true;

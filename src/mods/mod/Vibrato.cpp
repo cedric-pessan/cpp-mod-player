@@ -56,6 +56,11 @@ namespace mods
              return false;
           }
         
+        auto Vibrato::isSampleEnabled() const -> bool
+          {
+             return true;
+          }
+        
         void Vibrato::tick()
           {
              _sinePos += _oscillationFrequency;
