@@ -17,7 +17,7 @@ namespace mods
              auto operator=(DelaySample&&) -> DelaySample& = delete;
              ~DelaySample() override = default;
              
-             void init(int delayCounter);
+             void init(u32 delayCounter);
              
              auto getModifiedPeriod(u16 period) -> u16 override;
              auto getModifiedVolume(u16 volume) const -> u16 override;

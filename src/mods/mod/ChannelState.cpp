@@ -1,6 +1,7 @@
 
 #include "mods/mod/Arpeggio.hpp"
 #include "mods/mod/ChannelState.hpp"
+#include "mods/mod/DelaySample.hpp"
 #include "mods/mod/EffectType.hpp"
 #include "mods/mod/Instrument.hpp"
 #include "mods/mod/NoEffect.hpp"
@@ -476,7 +477,7 @@ namespace mods
         void ChannelState::applySetFilter(const mods::utils::RBuffer<Note>& note)
           {
              _hasNewFilterValue = true;
-             _newFilterValue = (note->getExtendedEffectArgument() & 1) == 0;
+             _newFilterValue = (note->getExtendedEffectArgument() & 1U) == 0;
           }
         
         void ChannelState::applyFineSlideUpEffect(const mods::utils::RBuffer<Note>& note)

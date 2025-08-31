@@ -1,15 +1,16 @@
 
 #include "mods/mod/DelaySample.hpp"
+#include "mods/utils/types.hpp"
 
 namespace mods
 {
    namespace mod
      {
-        void DelaySample::init(int delayCounter)
+        void DelaySample::init(u32 delayCounter)
           {
              _retrigger = false;
              _sampleEnabled = false;
-             _delayCounter = delayCounter;
+             _delayCounter = static_cast<int>(delayCounter);
           }
         
         auto DelaySample::getModifiedPeriod(u16 period) -> u16
